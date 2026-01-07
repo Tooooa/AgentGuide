@@ -1,0 +1,751 @@
+{
+  "method": "watermark",
+  "total_steps": 20,
+  "final_answer": {
+    "return_type": "give_answer",
+    "final_answer": "[FakeCache] tool=Social_Media_Data_TT__Real_time_hashtag_search category=Social api=Real-time hashtag search args={} | response={\"error\": \"\", \"response\": \"{\\\"result\\\": [{\\\"cha_name\\\": \\\"summer\\\", \\\"view_count\\\": 142978897457, \\\"cid\\\": \\\"4100\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/4100\\\", \\\"likes\\\": 5000000, \\\"comments\\\": 120000, \\\"shares\\\": 300000}, {\\\"cha_name\\\": \\\"summervibes\\\", \\\"view_count\\\": 30923464949, \\\"cid\\\": \\\"45070\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/45070\\\", \\\"likes\\\": 2000000, \\\"comments\\\": 80000, \\\"shares\\\": 150000}, {\\\"cha_name\\\": \\\"summer2020\\\", \\\"view_count\\\": 11469218295, \\\"cid\\\": \\\"29910136\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/29910136\\\", \\\"likes\\\": 800000, \\\"comments\\\": 40000, \\\"shares\\\": 90000}, {\\\"cha_name\\\": \\\"summermashup\\\", \\\"view_count\\\": 10631482667, \\\"cid\\\": \\\"2697950\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/2697950\\\", \\\"likes\\\": 750000, \\\"comments\\\": 35000, \\\"shares\\\": 85000}, {\\\"cha_name\\\": \\\"summertime\\\", \\\"view_count\\\": 10169643679, \\\"cid\\\": \\\"18023\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/18023\\\", \\\"likes\\\": 700000, \\\"comments\\\": 30000, \\\"shares\\\": 80000}, {\\\"cha_name\\\": \\\"summerlooks\\\", \\\"view_count\\\": 6364200676, \\\"cid\\\": \\\"56400\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/56400\\\", \\\"likes\\\": 500000, \\\"comments\\\": 25000, \\\"shares\\\": 60000}, {\\\"cha_name\\\": \\\"summervlog\\\", \\\"view_count\\\": 4860614438, \\\"cid\\\": \\\"12859880\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/12859880\\\", \\\"likes\\\": 400000, \\\"comments\\\": 20000, \\\"shares\\\": 50000}, {\\\"cha_name\\\": \\\"summer2021\\\", \\\"view_count\\\": 4359522150, \\\"cid\\\": \\\"29909987\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/29909987\\\", \\\"likes\\\": 350000, \\\"comments\\\": 18000, \\\"shares\\\": 45000}, {\\\"cha_name\\\": \\\"summerofgaming\\\", \\\"view_count\\\": 4179286990, \\\"cid\\\": \\\"1667889786649606\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/1667889786649606\\\", \\\"likes\\\": 300000, \\\"comments\\\": 15000, \\\"shares\\\": 40000}, {\\\"cha_name\\\": \\\"summerproject\\\", \\\"view_count\\\": 3826653375, \\\"cid\\\": \\\"13240866\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/13240866\\\", \\\"likes\\\": 250000, \\\"comments\\\": 12000, \\\"shares\\\": 35000}, {\\\"cha_name\\\": \\\"summerfun\\\", \\\"view_count\\\": 3500000000, \\\"cid\\\": \\\"50000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/50000\\\", \\\"likes\\\": 220000, \\\"comments\\\": 10000, \\\"shares\\\": 30000}, {\\\"cha_name\\\": \\\"summeradventures\\\", \\\"view_count\\\": 3200000000, \\\"cid\\\": \\\"60000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/60000\\\", \\\"likes\\\": 200000, \\\"comments\\\": 9000, \\\"shares\\\": 28000}, {\\\"cha_name\\\": \\\"summerbeach\\\", \\\"view_count\\\": 2900000000, \\\"cid\\\": \\\"70000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/70000\\\", \\\"likes\\\": 180000, \\\"comments\\\": 8000, \\\"shares\\\": 25000}, {\\\"cha_name\\\": \\\"summermusic\\\", \\\"view_count\\\": 2600000000, \\\"cid\\\": \\\"80000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/80000\\\", \\\"likes\\\": 160000, \\\"comments\\\": 7000, \\\"shares\\\": 22000}, {\\\"cha_name\\\": \\\"summerfood\\\", \\\"view_count\\\": 2300000000, \\\"cid\\\": \\\"90000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/90000\\\", \\\"likes\\\": 140000, \\\"comments\\\": 6000, \\\"shares\\\": 20000}, {\\\"cha_name\\\": \\\"summerfashion\\\", \\\"view_count\\\": 2000000000, \\\"cid\\\": \\\"100000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/100000\\\", \\\"likes\\\": 120000, \\\"comments\\\": 5000, \\\"shares\\\": 18000}, {\\\"cha_name\\\": \\\"summerworkout\\\", \\\"view_count\\\": 1700000000, \\\"cid\\\": \\\"110000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/110000\\\", \\\"likes\\\": 100000, \\\"comments\\\": 4000, \\\"shares\\\": 15000}, {\\\"cha_name\\\": \\\"summerparty\\\", \\\"view_count\\\": 1400000000, \\\"cid\\\": \\\"120000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/120000\\\", \\\"likes\\\": 80000, \\\"comments\\\": 3000, \\\"shares\\\": 12000}, {\\\"cha_name\\\": \\\"summerart\\\", \\\"view_count\\\": 1100000000, \\\"cid\\\": \\\"130000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/130000\\\", \\\"likes\\\": 60000, \\\"comments\\\": 2000, \\\"shares\\\": 10000}, {\\\"cha_name\\\": \\\"summerrelaxation\\\", \\\"view_count\\\": 800000000, \\\"cid\\\": \\\"140000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/140000\\\", \\\"likes\\\": 40000, \\\"comments\\\": 1000, \\\"shares\\\": 8000}]}\"}"
+  },
+  "query": "I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.",
+  "available_tools": [
+    {
+      "name": "Social_Media_Data_TT__User_feed_Video_posts",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "User feed (Video posts)",
+      "category": "Social",
+      "description": "Get current user feed. \n\n- Before testing don't forget to fill out the username **OR** sec_uid inputs\n- Endpoint will return an array of objects with very useful metadata. \n- Direct urls to the video , statistics and more.",
+      "required_parameters": [],
+      "optional_parameters": [
+        {
+          "name": "username",
+          "type": "STRING",
+          "description": "The influencer username. For example: **charlidamelio**\n\n- **NOTE:** By using **sec_uid** instead of the **username** request will be executed faster\n- To use **sec_uid** use input field **BELOW**",
+          "default": "amazon"
+        },
+        {
+          "name": "limit",
+          "type": "NUMBER",
+          "description": "Limit the output number of records. \n\n- Default is 100\n- Max number is 500\n",
+          "default": ""
+        },
+        {
+          "name": "max_cursor",
+          "type": "NUMBER",
+          "description": "Pagination cursor. \nTo get more videos, paste here **max_cursor** value that you have received in previous request response.",
+          "default": ""
+        },
+        {
+          "name": "sec_uid",
+          "type": "STRING",
+          "description": "**NOTE:** By using **sec_uid**, request will be executed faster then if you will use username\n\n**NOTE:** **sec_uid** can be obtained from the **User Information** endpoint\n\n**NOTE:** **sec_uid** example: MS4wLjABAAAAv7iSuuXDJGDvJkmH_vz1qkDZYo1apxgzaxdBSeIuPiM",
+          "default": ""
+        },
+        {
+          "name": "country",
+          "type": "STRING",
+          "description": "",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "name": "Social_Media_Data_TT__User_feed_Video_posts_V2",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "User feed (Video posts) V2",
+      "category": "Social",
+      "description": "Get user feed V2\n\nV2 - returns more data then older version of the endpoint",
+      "required_parameters": [],
+      "optional_parameters": [
+        {
+          "name": "limit",
+          "type": "NUMBER",
+          "description": "Limit the output number of records. \n\n- Default is 30\n- Max number is 30\n",
+          "default": ""
+        },
+        {
+          "name": "max_cursor",
+          "type": "NUMBER",
+          "description": "Pagination cursor. \nTo get more videos, paste here **max_cursor** value that you have received in previous request response.",
+          "default": ""
+        },
+        {
+          "name": "username",
+          "type": "STRING",
+          "description": "The influencer username. For example: **charlidamelio**\n",
+          "default": "tiktok"
+        },
+        {
+          "name": "sec_uid",
+          "type": "STRING",
+          "description": "**NOTE:** By using **sec_uid**, request will be executed faster then if you will use username\n\n**NOTE:** **sec_uid** can be obtained from the **User Information** endpoint\n\n**NOTE:** **sec_uid** example: MS4wLjABAAAAv7iSuuXDJGDvJkmH_vz1qkDZYo1apxgzaxdBSeIuPiM",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "name": "Social_Media_Data_TT__Real_time_hashtag_search",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Real-time hashtag search",
+      "category": "Social",
+      "description": "Search for hashtags by keyword",
+      "required_parameters": [
+        {
+          "name": "keyword",
+          "type": "STRING",
+          "description": "",
+          "default": "blah"
+        }
+      ],
+      "optional_parameters": []
+    },
+    {
+      "name": "Social_Media_Data_TT__Direct_post_url",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Direct post url",
+      "category": "Social",
+      "description": "Get direct post url",
+      "required_parameters": [
+        {
+          "name": "video",
+          "type": "STRING",
+          "description": "",
+          "default": ""
+        }
+      ],
+      "optional_parameters": []
+    },
+    {
+      "name": "Social_Media_Data_TT__Hashtag_feed_Video_posts",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Hashtag feed (Video posts)",
+      "category": "Social",
+      "description": "Get current hashtag feed. \n\n- Before testing don't forget to fill out the name **OR** hashtag_id inputs\n- Endpoint will return an array of objects with very useful metadata. \n- Direct urls to the video , statistics and more.",
+      "required_parameters": [],
+      "optional_parameters": [
+        {
+          "name": "limit",
+          "type": "NUMBER",
+          "description": "Limit the output number of records. \n\n- Default is 100\n- Max number is 500\n",
+          "default": ""
+        },
+        {
+          "name": "hashtag_id",
+          "type": "STRING",
+          "description": "**NOTE:** By using **hashtag_id**, request will be executed faster then if you will use hashtag name\n\n**NOTE:** **hashtag_id** can be obtained from the **/live/hashtag** endpoint\n\n**NOTE:** **hashtag_id** example: 4232322",
+          "default": ""
+        },
+        {
+          "name": "max_cursor",
+          "type": "STRING",
+          "description": "Pagination cursor. \nTo get more videos, paste here **max_cursor** value that you have received in previous request response.",
+          "default": ""
+        },
+        {
+          "name": "name",
+          "type": "STRING",
+          "description": "Hashtag name. For example: **duett**\n\n- **NOTE:** By using **hashtag_id** instead of the hashtag **name** request will be executed faster\n- To use **hashtag_id** use input field **BELOW**",
+          "default": "summer"
+        }
+      ]
+    },
+    {
+      "name": "Social_Media_Data_TT__Hashtag_metadata_information",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Hashtag metadata (information)",
+      "category": "Social",
+      "description": "Get hashtag metadata\n\nBasic informations as number of posts and etc",
+      "required_parameters": [
+        {
+          "name": "hashtag",
+          "type": "STRING",
+          "description": "Hashtag name. For example: **summer**",
+          "default": "summer"
+        }
+      ],
+      "optional_parameters": []
+    },
+    {
+      "name": "Social_Media_Data_TT__Hashtag_metadata_information_V2",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Hashtag metadata (information) V2",
+      "category": "Social",
+      "description": "Get hashtag metadata V2\n\nV2 - returns more data then older version of the endpoint",
+      "required_parameters": [
+        {
+          "name": "hashtag",
+          "type": "STRING",
+          "description": "Hashtag name. For example: **summer**",
+          "default": "summer"
+        }
+      ],
+      "optional_parameters": []
+    },
+    {
+      "name": "Social_Media_Data_TT__Trending_feed_Video_posts",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Trending feed (Video posts)",
+      "category": "Social",
+      "description": "Get current trending feed. \n\n- Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default\n- Endpoint will return an array of objects with very useful metadata. \n- Direct urls to the video , statistics and more.",
+      "required_parameters": [],
+      "optional_parameters": [
+        {
+          "name": "limit",
+          "type": "NUMBER",
+          "description": "Limit the output number of records. \n\n- Default is 20\n- Max number is 20\n",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "name": "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Hashtag feed (Video posts) V2",
+      "category": "Social",
+      "description": "Get hashtag feed V2. \n\nV2 - returns more data then older version of the endpoint, video without watermark and etc\n\n- Before testing don't forget to fill out the **name** query\n- Endpoint will return an array of objects with very useful metadata. \n- Direct urls to the video , statistics and more.",
+      "required_parameters": [],
+      "optional_parameters": [
+        {
+          "name": "name",
+          "type": "STRING",
+          "description": "Hashtag name. For example: **duett**",
+          "default": "summer"
+        },
+        {
+          "name": "limit",
+          "type": "NUMBER",
+          "description": "Limit the output number of records. \n\n- Default is 20\n- Max number is 20\n",
+          "default": ""
+        },
+        {
+          "name": "max_cursor",
+          "type": "STRING",
+          "description": "Pagination cursor. \nTo get more videos, paste here **max_cursor** value that you have received in previous request response.",
+          "default": ""
+        }
+      ]
+    },
+    {
+      "name": "Social_Media_Data_TT__Video_post_metadata",
+      "raw_tool_name": "Social Media Data TT",
+      "api_name": "Video post metadata",
+      "category": "Social",
+      "description": "Get single post metadata",
+      "required_parameters": [
+        {
+          "name": "video",
+          "type": "STRING",
+          "description": "Post url",
+          "default": ""
+        }
+      ],
+      "optional_parameters": []
+    }
+  ],
+  "duration": 153.37122774124146,
+  "answer_details": [
+    {
+      "role": "assistant",
+      "message": "Thought: The user wants to explore trending content on social media, specifically the current trending feed of videos, limited to 20 records, with direct URLs and statistics, and optionally filtered by a hashtag like #summer. The most relevant tool is Social_Media_Data_TT__Trending_feed_Video_posts, which directly provides trending feed videos with metadata, supports a limit up to 20 (default 20), and includes direct URLs and statistics. However, it does not support filtering by hashtag. To incorporate the hashtag filter, I should first check if the hashtag exists and get its metadata, then possibly use the hashtag feed tools. But the user's primary request is for trending feed, not specifically hashtag feed. Since trending feed is general and hashtag filtering might not be directly combinable, I'll prioritize the trending feed tool. I can also consider using the hashtag feed tools if the user insists on filtering, but for now, I'll proceed with the trending feed and note the limitation. I'll assign high probability to the trending feed tool, low to others for exploration, and very low to Finish since I haven't retrieved data yet.\n\n{\n  \"action_weights\": {\n    \"Social_Media_Data_TT__User_feed_Video_posts\": 0.01,\n    \"Social_Media_Data_TT__User_feed_Video_posts_V2\": 0.01,\n    \"Social_Media_Data_TT__Real_time_hashtag_search\": 0.01,\n    \"Social_Media_Data_TT__Direct_post_url\": 0.01,\n    \"Social_Media_Data_TT__Hashtag_feed_Video_posts\": 0.05,\n    \"Social_Media_Data_TT__Hashtag_metadata_information\": 0.05,\n    \"Social_Media_Data_TT__Hashtag_metadata_information_V2\": 0.05,\n    \"Social_Media_Data_TT__Trending_feed_Video_posts\": 0.75,\n    \"Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\": 0.05,\n    \"Social_Media_Data_TT__Video_post_metadata\": 0.01,\n    \"Finish\": 0.0\n  },\n  \"action_args\": {\n    \"Social_Media_Data_TT__User_feed_Video_posts\": {\"username\": null, \"sec_uid\": null, \"limit\": null, \"max_cursor\": null},\n    \"Social_Media_Data_TT__User_feed_Video_posts_V2\": {\"username\": null, \"sec_uid\": null, \"limit\": null, \"max_cursor\": null},\n    \"Social_Media_Data_TT__Real_time_hashtag_search\": {\"keyword\": null},\n    \"Social_Media_Data_TT__Direct_post_url\": {\"video\": null},\n    \"Social_Media_Data_TT__Hashtag_feed_Video_posts\": {\"name\": null, \"hashtag_id\": null, \"limit\": null, \"max_cursor\": null},\n    \"Social_Media_Data_TT__Hashtag_metadata_information\": {\"hashtag\": null},\n    \"Social_Media_Data_TT__Hashtag_metadata_information_V2\": {\"hashtag\": null},\n    \"Social_Media_Data_TT__Trending_feed_Video_posts\": {\"limit\": 20},\n    \"Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\": {\"name\": null, \"limit\": null, \"max_cursor\": null},\n    \"Social_Media_Data_TT__Video_post_metadata\": {\"video\": null},\n    \"Finish\": {\"final_answer\": null}\n  }\n}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[Cache] tool=Social_Media_Data_TT__Trending_feed_Video_posts category=Social api=Trending feed (Video posts) args={'limit': 20} | response={\"message\": \"Method not found\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The trending feed tool returned a \"Method not found\" error, indicating it might not be available or the endpoint has changed. I need to try an alternative approach. The user wants trending content, which could be interpreted as popular videos from a general feed. Since filtering by hashtag like #summer is also desired, I should use the hashtag feed tools to get videos associated with that hashtag, which might serve as a proxy for trending content within that topic. The Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 tool can get hashtag feed with limit up to 20 (default 20) and returns direct URLs and statistics. I'll use that with the hashtag name \"summer\" (without the # symbol as per tool examples). I'll also check hashtag metadata first to ensure it exists, but I can proceed directly to the feed. I'll assign high probability to the V2 hashtag feed tool, moderate to the metadata tools for context, and low to others.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[Fake] tool=Social_Media_Data_TT__User_feed_Video_posts category=Social api=User feed (Video posts) args={} | response={\"error\": \"\", \"response\": \"[{\\\"id\\\": \\\"video_001\\\", \\\"title\\\": \\\"Summer Beach Vibes\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#beach\\\", \\\"#fun\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_001\\\", \\\"views\\\": 150000, \\\"likes\\\": 12000, \\\"comments\\\": 800, \\\"shares\\\": 3000, \\\"username\\\": \\\"summerlover123\\\", \\\"timestamp\\\": \\\"2023-07-15T10:30:00Z\\\"}, {\\\"id\\\": \\\"video_002\\\", \\\"title\\\": \\\"Summer Road Trip Adventures\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#travel\\\", \\\"#roadtrip\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_002\\\", \\\"views\\\": 200000, \\\"likes\\\": 18000, \\\"comments\\\": 1200, \\\"shares\\\": 4500, \\\"username\\\": \\\"adventurer_jane\\\", \\\"timestamp\\\": \\\"2023-07-14T14:45:00Z\\\"}, {\\\"id\\\": \\\"video_003\\\", \\\"title\\\": \\\"Summer Music Festival Highlights\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#music\\\", \\\"#festival\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_003\\\", \\\"views\\\": 300000, \\\"likes\\\": 25000, \\\"comments\\\": 1500, \\\"shares\\\": 6000, \\\"username\\\": \\\"festivalgoer_mike\\\", \\\"timestamp\\\": \\\"2023-07-13T20:15:00Z\\\"}, {\\\"id\\\": \\\"video_004\\\", \\\"title\\\": \\\"Summer BBQ Party\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#bbq\\\", \\\"#party\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_004\\\", \\\"views\\\": 100000, \\\"likes\\\": 9000, \\\"comments\\\": 600, \\\"shares\\\": 2000, \\\"username\\\": \\\"grillmaster_tom\\\", \\\"timestamp\\\": \\\"2023-07-12T18:00:00Z\\\"}, {\\\"id\\\": \\\"video_005\\\", \\\"title\\\": \\\"Summer Sunset Views\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#sunset\\\", \\\"#nature\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_005\\\", \\\"views\\\": 250000, \\\"likes\\\": 22000, \\\"comments\\\": 1400, \\\"shares\\\": 5000, \\\"username\\\": \\\"nature_enthusiast\\\", \\\"timestamp\\\": \\\"2023-07-11T19:30:00Z\\\"}]\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The user feed tool returned some video data, but it's not necessarily trending content and lacks the hashtag filtering explicitly. However, the response includes videos with #summer hashtags, which partially meets the user's request for trending content filtered by #summer. But the user asked for \"current trending feed\" and to \"limit the output to 20 records.\" This response has only 5 records and might not be from a trending feed. I should try the hashtag feed tools to get more targeted results. The Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 tool is designed for this purpose. I'll use it with the hashtag \"summer\" and limit 20. Also, I can check hashtag metadata for context. Since I have some data, I could finish, but it's not fully satisfying the request (e.g., not explicitly trending, limited records). I'll assign high probability to the V2 hashtag feed tool to get better data, and low to Finish for now.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[Cache] tool=Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 category=Social api=Hashtag feed (Video posts) V2 args={} | response=This API, known as the 'Hashtag feed (Video posts) V2', is designed to fetch video posts related to a specified hashtag. It's an upgraded version that provides an array of objects filled with extensive metadata. This includes direct URLs to access videos without watermarks, as well as a variety of statistical data about each video post. Users must specify a hashtag name in the query before testing. The information returned can be incredibly valuable for marketing analysis, content strategy developments, or simply understanding the popularity and spread of content associated with specific hashtags on social media platforms.",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The response for the hashtag feed V2 tool is a description of the API, not actual data. It indicates that I need to provide the required parameter \"name\" (hashtag name) to get results. I should call the tool again with the hashtag \"summer\" and limit 20 as per the user's request. Also, I can consider using the non-V2 hashtag feed tool if needed. I'll assign high probability to the V2 tool with proper arguments, and low to others.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[Cache] tool=Social_Media_Data_TT__Trending_feed_Video_posts category=Social api=Trending feed (Video posts) args={} | response={\"message\": \"Method not found\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The trending feed tool consistently returns \"Method not found\", so it's likely unavailable. I need to focus on alternative methods. The user wants trending content filtered by #summer. Since trending feed isn't working, I can use hashtag feed to get popular videos for #summer, which might be considered trending within that hashtag. I'll use Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 with name=\"summer\" and limit=20. Also, I can check hashtag metadata for additional context. I'll assign high probability to that tool with correct args, and low to others.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[FakeCache] tool=Social_Media_Data_TT__Hashtag_metadata_information category=Social api=Hashtag metadata (information) args={} | response={\"error\": \"\", \"response\": \"{\\\"challenge\\\": {\\\"id\\\": \\\"12345\\\", \\\"title\\\": \\\"summer\\\", \\\"desc\\\": \\\"Trending summer videos and activities\\\", \\\"profileThumb\\\": \\\"https://example.com/thumb.jpg\\\", \\\"profileMedium\\\": \\\"https://example.com/medium.jpg\\\", \\\"profileLarger\\\": \\\"https://example.com/large.jpg\\\", \\\"isCommerce\\\": false}, \\\"stats\\\": {\\\"videoCount\\\": 1500000, \\\"viewCount\\\": 5000000000}}\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The hashtag metadata tool returned information about the #summer hashtag, showing it has 1.5 million videos and 5 billion views, indicating it's popular. Now I should get the actual video feed for #summer using the hashtag feed tool V2 with limit 20 to meet the user's request for 20 records with direct URLs and statistics. I'll call that tool with the required parameters. I'll assign high probability to that, and low to Finish since I haven't provided the feed yet.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[Fake] tool=Social_Media_Data_TT__Video_post_metadata category=Social api=Video post metadata args={} | response={\"error\": \"\", \"response\": \"{\\\"trending_feed\\\": [{\\\"id\\\": \\\"1\\\", \\\"title\\\": \\\"Summer Beach Vibes\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#beach\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user1/video/1234567890\\\", \\\"views\\\": 1500000, \\\"likes\\\": 75000, \\\"comments\\\": 1200, \\\"shares\\\": 5000}, {\\\"id\\\": \\\"2\\\", \\\"title\\\": \\\"Summer Road Trip Adventures\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#travel\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user2/video/2345678901\\\", \\\"views\\\": 2000000, \\\"likes\\\": 90000, \\\"comments\\\": 1500, \\\"shares\\\": 6000}, {\\\"id\\\": \\\"3\\\", \\\"title\\\": \\\"Summer Fashion Trends\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#fashion\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user3/video/3456789012\\\", \\\"views\\\": 1800000, \\\"likes\\\": 85000, \\\"comments\\\": 1300, \\\"shares\\\": 5500}, {\\\"id\\\": \\\"4\\\", \\\"title\\\": \\\"Summer Music Festival Highlights\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#music\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user4/video/4567890123\\\", \\\"views\\\": 2200000, \\\"likes\\\": 95000, \\\"comments\\\": 1600, \\\"shares\\\": 6500}, {\\\"id\\\": \\\"5\\\", \\\"title\\\": \\\"Summer DIY Projects\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#diy\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user5/video/5678901234\\\", \\\"views\\\": 1700000, \\\"likes\\\": 80000, \\\"comments\\\": 1250, \\\"shares\\\": 5200}], \\\"total_records\\\": 5, \\\"filter_applied\\\": \\\"#summer\\\"}\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The video post metadata tool returned a response that includes a \"trending_feed\" array with 5 videos filtered by #summer, along with direct URLs and statistics. However, the user requested 20 records, and this only has 5. Also, the tool is meant for single post metadata, but the response seems to be a simulated trending feed. To get more records, I should use the hashtag feed tool V2 with limit 20, which is designed for this purpose. I'll call it with the correct parameters. I'll assign high probability to that, and low to Finish since I might need to aggregate data.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[FakeCache] tool=Social_Media_Data_TT__User_feed_Video_posts category=Social api=User feed (Video posts) args={} | response={\"error\": \"\", \"response\": \"[{\\\"id\\\": \\\"video_001\\\", \\\"title\\\": \\\"Summer Beach Vibes\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#beach\\\", \\\"#fun\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_001\\\", \\\"views\\\": 150000, \\\"likes\\\": 12000, \\\"comments\\\": 800, \\\"shares\\\": 3000, \\\"username\\\": \\\"summerlover123\\\", \\\"timestamp\\\": \\\"2023-07-15T10:30:00Z\\\"}, {\\\"id\\\": \\\"video_002\\\", \\\"title\\\": \\\"Summer Road Trip Adventures\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#travel\\\", \\\"#roadtrip\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_002\\\", \\\"views\\\": 200000, \\\"likes\\\": 18000, \\\"comments\\\": 1200, \\\"shares\\\": 4500, \\\"username\\\": \\\"adventurer_jane\\\", \\\"timestamp\\\": \\\"2023-07-14T14:45:00Z\\\"}, {\\\"id\\\": \\\"video_003\\\", \\\"title\\\": \\\"Summer Music Festival Highlights\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#music\\\", \\\"#festival\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_003\\\", \\\"views\\\": 300000, \\\"likes\\\": 25000, \\\"comments\\\": 1500, \\\"shares\\\": 6000, \\\"username\\\": \\\"festivalgoer_mike\\\", \\\"timestamp\\\": \\\"2023-07-13T20:15:00Z\\\"}, {\\\"id\\\": \\\"video_004\\\", \\\"title\\\": \\\"Summer BBQ Party\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#bbq\\\", \\\"#party\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_004\\\", \\\"views\\\": 100000, \\\"likes\\\": 9000, \\\"comments\\\": 600, \\\"shares\\\": 2000, \\\"username\\\": \\\"grillmaster_tom\\\", \\\"timestamp\\\": \\\"2023-07-12T18:00:00Z\\\"}, {\\\"id\\\": \\\"video_005\\\", \\\"title\\\": \\\"Summer Sunset Views\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#sunset\\\", \\\"#nature\\\"], \\\"url\\\": \\\"https://socialmedia.com/video/video_005\\\", \\\"views\\\": 250000, \\\"likes\\\": 22000, \\\"comments\\\": 1400, \\\"shares\\\": 5000, \\\"username\\\": \\\"nature_enthusiast\\\", \\\"timestamp\\\": \\\"2023-07-11T19:30:00Z\\\"}]\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: I have received multiple responses with video data, but none fully meet the user's request: they either have fewer than 20 records or are not explicitly from a trending feed. The user wants \"current trending feed\" filtered by #summer with 20 records. Since the trending feed tool is not working, the best alternative is to use the hashtag feed for #summer, which might contain trending videos within that hashtag. I should call Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 with name=\"summer\" and limit=20 to get the required number of records. I'll do that now. If that fails, I may need to finish with the data I have, explaining the limitations.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[FakeCache] tool=Social_Media_Data_TT__Direct_post_url category=Social api=Direct post url args={} | response={\"error\": \"\", \"response\": \"{\\\"trending_feed\\\": [{\\\"id\\\": \\\"1\\\", \\\"title\\\": \\\"Summer Beach Vibes\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#beach\\\", \\\"#fun\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user1/video/1234567890\\\", \\\"views\\\": 1500000, \\\"likes\\\": 120000, \\\"comments\\\": 5000, \\\"shares\\\": 30000}, {\\\"id\\\": \\\"2\\\", \\\"title\\\": \\\"Summer Road Trip Adventures\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#travel\\\", \\\"#roadtrip\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user2/video/2345678901\\\", \\\"views\\\": 2000000, \\\"likes\\\": 180000, \\\"comments\\\": 7000, \\\"shares\\\": 40000}, {\\\"id\\\": \\\"3\\\", \\\"title\\\": \\\"Summer Fashion Trends\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#fashion\\\", \\\"#style\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user3/video/3456789012\\\", \\\"views\\\": 1000000, \\\"likes\\\": 90000, \\\"comments\\\": 4000, \\\"shares\\\": 25000}, {\\\"id\\\": \\\"4\\\", \\\"title\\\": \\\"Summer Music Festival Highlights\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#music\\\", \\\"#festival\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user4/video/4567890123\\\", \\\"views\\\": 2500000, \\\"likes\\\": 220000, \\\"comments\\\": 9000, \\\"shares\\\": 50000}, {\\\"id\\\": \\\"5\\\", \\\"title\\\": \\\"Summer DIY Projects\\\", \\\"hashtags\\\": [\\\"#summer\\\", \\\"#diy\\\", \\\"#crafts\\\"], \\\"url\\\": \\\"https://www.tiktok.com/@user5/video/5678901234\\\", \\\"views\\\": 800000, \\\"likes\\\": 70000, \\\"comments\\\": 3000, \\\"shares\\\": 20000}]}\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The direct post url tool returned a simulated trending feed with 5 videos, still not 20. I need to explicitly call the hashtag feed V2 tool with the correct parameters to get up to 20 records. I haven't done that yet with proper arguments. I'll do that now. If it returns data, I can then finish with the response. I'll assign high probability to that tool with name=\"summer\" and limit=20.\nAction: Social_Media_Data_TT__Hashtag_feed_Video_posts_V2\nAction Input: {\"name\": \"summer\", \"limit\": 20}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[Fake] tool=Social_Media_Data_TT__Hashtag_metadata_information_V2 category=Social api=Hashtag metadata (information) V2 args={} | response={\"error\": \"\", \"response\": \"{\\\"expireTime\\\": 172800000, \\\"challenge\\\": {\\\"id\\\": \\\"456789\\\", \\\"title\\\": \\\"summer\\\", \\\"desc\\\": \\\"Enjoy the sunny vibes! Share your best summer moments with #summer. ☀️\\\", \\\"profileThumb\\\": \\\"https://example.com/thumb.jpg\\\", \\\"profileMedium\\\": \\\"https://example.com/medium.jpg\\\", \\\"profileLarger\\\": \\\"https://example.com/large.jpg\\\", \\\"isCommerce\\\": false}, \\\"stats\\\": {\\\"videoCount\\\": 1500000, \\\"viewCount\\\": 5000000000}, \\\"trendingVideos\\\": [{\\\"id\\\": \\\"vid001\\\", \\\"title\\\": \\\"Summer Beach Day Fun\\\", \\\"url\\\": \\\"https://socialmedia.com/video/vid001\\\", \\\"views\\\": 2500000, \\\"likes\\\": 150000, \\\"comments\\\": 12000, \\\"hashtags\\\": [\\\"#summer\\\", \\\"#beach\\\", \\\"#fun\\\"]}, {\\\"id\\\": \\\"vid002\\\", \\\"title\\\": \\\"Summer Road Trip Adventures\\\", \\\"url\\\": \\\"https://socialmedia.com/video/vid002\\\", \\\"views\\\": 1800000, \\\"likes\\\": 95000, \\\"comments\\\": 8000, \\\"hashtags\\\": [\\\"#summer\\\", \\\"#travel\\\", \\\"#adventure\\\"]}, {\\\"id\\\": \\\"vid003\\\", \\\"title\\\": \\\"Summer BBQ Recipes\\\", \\\"url\\\": \\\"https://socialmedia.com/video/vid003\\\", \\\"views\\\": 1200000, \\\"likes\\\": 70000, \\\"comments\\\": 5000, \\\"hashtags\\\": [\\\"#summer\\\", \\\"#food\\\", \\\"#recipes\\\"]}, {\\\"id\\\": \\\"vid004\\\", \\\"title\\\": \\\"Summer Music Festival Highlights\\\", \\\"url\\\": \\\"https://socialmedia.com/video/vid004\\\", \\\"views\\\": 3000000, \\\"likes\\\": 200000, \\\"comments\\\": 15000, \\\"hashtags\\\": [\\\"#summer\\\", \\\"#music\\\", \\\"#festival\\\"]}, {\\\"id\\\": \\\"vid005\\\", \\\"title\\\": \\\"Summer Fashion Trends 2023\\\", \\\"url\\\": \\\"https://socialmedia.com/video/vid005\\\", \\\"views\\\": 900000, \\\"likes\\\": 50000, \\\"comments\\\": 4000, \\\"hashtags\\\": [\\\"#summer\\\", \\\"#fashion\\\", \\\"#style\\\"]}]}\"}",
+      "next": []
+    },
+    {
+      "role": "assistant",
+      "message": "Thought: The hashtag metadata V2 tool returned information about the #summer hashtag, including a \"trendingVideos\" array with 5 videos. This is closer to the user's request for trending content filtered by #summer, but still only 5 records instead of 20. To get 20 records, I should use the hashtag feed V2 tool with limit=20. I'll call it now with the required parameters. If that fails or returns limited data, I may need to finish with the available data, explaining that I could only retrieve 5 trending videos due to API limitations.\nAction: Social_Media_Data_TT__Real_time_hashtag_search\nAction Input: {}",
+      "next": []
+    },
+    {
+      "role": "tool",
+      "message": "[FakeCache] tool=Social_Media_Data_TT__Real_time_hashtag_search category=Social api=Real-time hashtag search args={} | response={\"error\": \"\", \"response\": \"{\\\"result\\\": [{\\\"cha_name\\\": \\\"summer\\\", \\\"view_count\\\": 142978897457, \\\"cid\\\": \\\"4100\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/4100\\\", \\\"likes\\\": 5000000, \\\"comments\\\": 120000, \\\"shares\\\": 300000}, {\\\"cha_name\\\": \\\"summervibes\\\", \\\"view_count\\\": 30923464949, \\\"cid\\\": \\\"45070\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/45070\\\", \\\"likes\\\": 2000000, \\\"comments\\\": 80000, \\\"shares\\\": 150000}, {\\\"cha_name\\\": \\\"summer2020\\\", \\\"view_count\\\": 11469218295, \\\"cid\\\": \\\"29910136\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/29910136\\\", \\\"likes\\\": 800000, \\\"comments\\\": 40000, \\\"shares\\\": 90000}, {\\\"cha_name\\\": \\\"summermashup\\\", \\\"view_count\\\": 10631482667, \\\"cid\\\": \\\"2697950\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/2697950\\\", \\\"likes\\\": 750000, \\\"comments\\\": 35000, \\\"shares\\\": 85000}, {\\\"cha_name\\\": \\\"summertime\\\", \\\"view_count\\\": 10169643679, \\\"cid\\\": \\\"18023\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/18023\\\", \\\"likes\\\": 700000, \\\"comments\\\": 30000, \\\"shares\\\": 80000}, {\\\"cha_name\\\": \\\"summerlooks\\\", \\\"view_count\\\": 6364200676, \\\"cid\\\": \\\"56400\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/56400\\\", \\\"likes\\\": 500000, \\\"comments\\\": 25000, \\\"shares\\\": 60000}, {\\\"cha_name\\\": \\\"summervlog\\\", \\\"view_count\\\": 4860614438, \\\"cid\\\": \\\"12859880\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/12859880\\\", \\\"likes\\\": 400000, \\\"comments\\\": 20000, \\\"shares\\\": 50000}, {\\\"cha_name\\\": \\\"summer2021\\\", \\\"view_count\\\": 4359522150, \\\"cid\\\": \\\"29909987\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/29909987\\\", \\\"likes\\\": 350000, \\\"comments\\\": 18000, \\\"shares\\\": 45000}, {\\\"cha_name\\\": \\\"summerofgaming\\\", \\\"view_count\\\": 4179286990, \\\"cid\\\": \\\"1667889786649606\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/1667889786649606\\\", \\\"likes\\\": 300000, \\\"comments\\\": 15000, \\\"shares\\\": 40000}, {\\\"cha_name\\\": \\\"summerproject\\\", \\\"view_count\\\": 3826653375, \\\"cid\\\": \\\"13240866\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/13240866\\\", \\\"likes\\\": 250000, \\\"comments\\\": 12000, \\\"shares\\\": 35000}, {\\\"cha_name\\\": \\\"summerfun\\\", \\\"view_count\\\": 3500000000, \\\"cid\\\": \\\"50000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/50000\\\", \\\"likes\\\": 220000, \\\"comments\\\": 10000, \\\"shares\\\": 30000}, {\\\"cha_name\\\": \\\"summeradventures\\\", \\\"view_count\\\": 3200000000, \\\"cid\\\": \\\"60000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/60000\\\", \\\"likes\\\": 200000, \\\"comments\\\": 9000, \\\"shares\\\": 28000}, {\\\"cha_name\\\": \\\"summerbeach\\\", \\\"view_count\\\": 2900000000, \\\"cid\\\": \\\"70000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/70000\\\", \\\"likes\\\": 180000, \\\"comments\\\": 8000, \\\"shares\\\": 25000}, {\\\"cha_name\\\": \\\"summermusic\\\", \\\"view_count\\\": 2600000000, \\\"cid\\\": \\\"80000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/80000\\\", \\\"likes\\\": 160000, \\\"comments\\\": 7000, \\\"shares\\\": 22000}, {\\\"cha_name\\\": \\\"summerfood\\\", \\\"view_count\\\": 2300000000, \\\"cid\\\": \\\"90000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/90000\\\", \\\"likes\\\": 140000, \\\"comments\\\": 6000, \\\"shares\\\": 20000}, {\\\"cha_name\\\": \\\"summerfashion\\\", \\\"view_count\\\": 2000000000, \\\"cid\\\": \\\"100000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/100000\\\", \\\"likes\\\": 120000, \\\"comments\\\": 5000, \\\"shares\\\": 18000}, {\\\"cha_name\\\": \\\"summerworkout\\\", \\\"view_count\\\": 1700000000, \\\"cid\\\": \\\"110000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/110000\\\", \\\"likes\\\": 100000, \\\"comments\\\": 4000, \\\"shares\\\": 15000}, {\\\"cha_name\\\": \\\"summerparty\\\", \\\"view_count\\\": 1400000000, \\\"cid\\\": \\\"120000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/120000\\\", \\\"likes\\\": 80000, \\\"comments\\\": 3000, \\\"shares\\\": 12000}, {\\\"cha_name\\\": \\\"summerart\\\", \\\"view_count\\\": 1100000000, \\\"cid\\\": \\\"130000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/130000\\\", \\\"likes\\\": 60000, \\\"comments\\\": 2000, \\\"shares\\\": 10000}, {\\\"cha_name\\\": \\\"summerrelaxation\\\", \\\"view_count\\\": 800000000, \\\"cid\\\": \\\"140000\\\", \\\"video_url\\\": \\\"https://socialmedia.com/video/140000\\\", \\\"likes\\\": 40000, \\\"comments\\\": 1000, \\\"shares\\\": 8000}]}\"}",
+      "next": []
+    }
+  ],
+  "watermark_trace": [
+    {
+      "task_idx": 14,
+      "round": 0,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.01,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.01,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.01,
+        "Social_Media_Data_TT__Direct_post_url": 0.01,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.05,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.05,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.05,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.75,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.05,
+        "Social_Media_Data_TT__Video_post_metadata": 0.01
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.01,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.01,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.01,
+        "Social_Media_Data_TT__Direct_post_url": 0.01,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.05,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.05,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.05,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.75,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.05,
+        "Social_Media_Data_TT__Video_post_metadata": 0.01
+      },
+      "chosen": "Social_Media_Data_TT__Trending_feed_Video_posts",
+      "history_tools": [],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 117,
+      "bit_index_after": 117
+    },
+    {
+      "task_idx": 14,
+      "round": 1,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__User_feed_Video_posts",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 117,
+      "bit_index_after": 120
+    },
+    {
+      "task_idx": 14,
+      "round": 2,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 120,
+      "bit_index_after": 123
+    },
+    {
+      "task_idx": 14,
+      "round": 3,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Trending_feed_Video_posts",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 123,
+      "bit_index_after": 126
+    },
+    {
+      "task_idx": 14,
+      "round": 4,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Hashtag_metadata_information",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+        "Social_Media_Data_TT__Trending_feed_Video_posts"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 126,
+      "bit_index_after": 129
+    },
+    {
+      "task_idx": 14,
+      "round": 5,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Video_post_metadata",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_metadata_information"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 129,
+      "bit_index_after": 132
+    },
+    {
+      "task_idx": 14,
+      "round": 6,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__User_feed_Video_posts",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_metadata_information",
+        "Social_Media_Data_TT__Video_post_metadata"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 132,
+      "bit_index_after": 136
+    },
+    {
+      "task_idx": 14,
+      "round": 7,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Direct_post_url",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_metadata_information",
+        "Social_Media_Data_TT__Video_post_metadata",
+        "Social_Media_Data_TT__User_feed_Video_posts"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 136,
+      "bit_index_after": 139
+    },
+    {
+      "task_idx": 14,
+      "round": 8,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Hashtag_metadata_information_V2",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_metadata_information",
+        "Social_Media_Data_TT__Video_post_metadata",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Direct_post_url"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 139,
+      "bit_index_after": 142
+    },
+    {
+      "task_idx": 14,
+      "round": 9,
+      "mode": "watermark",
+      "raw_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09090909090909091,
+        "Social_Media_Data_TT__Direct_post_url": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09090909090909091,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09090909090909091,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09090909090909091,
+        "Finish": 0.09090909090909091
+      },
+      "effective_probs": {
+        "Social_Media_Data_TT__User_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__User_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Real_time_hashtag_search": 0.09999999999999998,
+        "Social_Media_Data_TT__Direct_post_url": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Trending_feed_Video_posts": 0.09999999999999998,
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2": 0.09999999999999998,
+        "Social_Media_Data_TT__Video_post_metadata": 0.09999999999999998
+      },
+      "chosen": "Social_Media_Data_TT__Real_time_hashtag_search",
+      "history_tools": [
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_feed_Video_posts_V2",
+        "Social_Media_Data_TT__Trending_feed_Video_posts",
+        "Social_Media_Data_TT__Hashtag_metadata_information",
+        "Social_Media_Data_TT__Video_post_metadata",
+        "Social_Media_Data_TT__User_feed_Video_posts",
+        "Social_Media_Data_TT__Direct_post_url",
+        "Social_Media_Data_TT__Hashtag_metadata_information_V2"
+      ],
+      "context_for_key": "User Query: I want to explore trending content on social media. Can you provide me with the current trending feed of videos? I would like to limit the output to 20 records. Please include the direct URLs to the videos and their statistics. Additionally, if possible, I would like to filter the feed based on a specific hashtag, such as #summer.\nAvailable Tools:\n1. Social_Media_Data_TT__User_feed_Video_posts [tool=Social Media Data TT, api=User feed (Video posts)]: Get current user feed.   - Before testing don't forget to fill out the username **OR** sec_uid inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n2. Social_Media_Data_TT__User_feed_Video_posts_V2 [tool=Social Media Data TT, api=User feed (Video posts) V2]: Get user feed V2  V2 - returns more data then older version of the endpoint\n3. Social_Media_Data_TT__Real_time_hashtag_search [tool=Social Media Data TT, api=Real-time hashtag search]: Search for hashtags by keyword\n4. Social_Media_Data_TT__Direct_post_url [tool=Social Media Data TT, api=Direct post url]: Get direct post url\n5. Social_Media_Data_TT__Hashtag_feed_Video_posts [tool=Social Media Data TT, api=Hashtag feed (Video posts)]: Get current hashtag feed.   - Before testing don't forget to fill out the name **OR** hashtag_id inputs - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n6. Social_Media_Data_TT__Hashtag_metadata_information [tool=Social Media Data TT, api=Hashtag metadata (information)]: Get hashtag metadata  Basic informations as number of posts and etc\n7. Social_Media_Data_TT__Hashtag_metadata_information_V2 [tool=Social Media Data TT, api=Hashtag metadata (information) V2]: Get hashtag metadata V2  V2 - returns more data then older version of the endpoint\n8. Social_Media_Data_TT__Trending_feed_Video_posts [tool=Social Media Data TT, api=Trending feed (Video posts)]: Get current trending feed.   - Due to nature of this endpoint the **max_cursor** is not required. Each request can return different data by default - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n9. Social_Media_Data_TT__Hashtag_feed_Video_posts_V2 [tool=Social Media Data TT, api=Hashtag feed (Video posts) V2]: Get hashtag feed V2.   V2 - returns more data then older version of the endpoint, video without watermark and etc  - Before testing don't forget to fill out the **name** query - Endpoint will return an array of objects with very useful metadata.  - Direct urls to the video , statistics and more.\n10. Social_Media_Data_TT__Video_post_metadata [tool=Social Media Data TT, api=Video post metadata]: Get single post metadata\nYou must pick one tool or Finish.",
+      "bit_index_before": 142,
+      "bit_index_after": 145
+    }
+  ]
+}

@@ -103,7 +103,8 @@ def get_demo_tasks():
     
     # Helper to load a specific json
     def load_task(path_suffix, task_id):
-        path = PROJECT_ROOT / f"data/toolbench_data/{path_suffix}"
+        # Use demo_data for self-contained repo
+        path = PROJECT_ROOT / f"demo_data/toolbench_data/{path_suffix}"
         if path.exists():
             with open(path, 'r') as f:
                 data = json.load(f)
