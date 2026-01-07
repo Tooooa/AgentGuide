@@ -33,177 +33,219 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, initialScenarioI
     const handleSelectScenario = (s: typeof scenarios[0]) => {
         setSelectedScenarioId(s.id);
         const title = locale === 'zh' ? s.title.zh : s.title.en;
-        // Use the scenario's user query as the prompt text, or fallback to title
         setPromptText(s.userQuery || title);
         setShowScenarioList(false);
     };
 
+    const isFlipped = selectedMode === 'tool';
+
     return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-start pt-20 pb-10 px-4 font-sans">
-            {/* Header / Branding */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-16"
-            >
-                <h1 className="text-4xl font-bold text-slate-900 mb-3">AgentMark</h1>
-                <p className="text-slate-500 text-lg">Robust Watermarking for LLM Agents</p>
-            </motion.div>
+        <div 
+            className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden"
+        >
+            {/* Click outside handler */}
+            {isFlipped && (
+                <div 
+                    className="fixed inset-0 z-40 bg-white/10 backdrop-blur-sm transition-all"
+                    onClick={() => setSelectedMode(null)}
+                />
+            )}
 
-            {/* Step 1: Mode Selection Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-12">
-                {modes.map((mode) => (
-                    <motion.div
-                        key={mode.id}
-                        whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setSelectedMode(mode.id as Mode)}
-                        className={`cursor-pointer rounded-2xl p-8 border-2 transition-all flex flex-col items-center text-center gap-4 bg-white
-                            ${selectedMode === mode.id
-                                ? 'border-indigo-600 shadow-xl shadow-indigo-100 ring-4 ring-indigo-50'
-                                : 'border-slate-100 shadow-sm hover:border-indigo-200'}`}
-                    >
-                        <div className={`p-4 rounded-full ${selectedMode === mode.id ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-600'}`}>
-                            <mode.icon size={32} />
-                        </div>
-                        <h3 className={`text-xl font-bold ${selectedMode === mode.id ? 'text-indigo-900' : 'text-slate-700'}`}>
-                            {mode.title}
-                        </h3>
-                        <p className="text-slate-400 text-sm">{mode.desc}</p>
-
-                        {selectedMode === mode.id && (
-                            <motion.div layoutId="check" className="absolute top-4 right-4 text-indigo-600">
-                                <CheckCircle2 size={24} fill="currentColor" className="text-white" />
-                            </motion.div>
-                        )}
-                    </motion.div>
-                ))}
+            {/* Background elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-200/20 rounded-full blur-3xl" />
+                <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] bg-blue-200/20 rounded-full blur-3xl" />
             </div>
 
-            {/* Step 2: Configuration Panel (Expands when mode selected) */}
-            <AnimatePresence>
-                {selectedMode && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="w-full max-w-2xl overflow-visible"
-                    >
-                        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-lg mb-10 relative z-0">
-                            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">02</span>
-                                Configuration
-                            </h2>
+            {/* Header */}
+            <motion.div
+                // Removed conditional opacity/y animation to keep header visible
+                initial={{ opacity: 1, y: 0 }}
+                className="text-center mb-12 relative z-10 pointer-events-none"
+            >
+                <h1 className="text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">AgentMark</h1>
+                <p className="text-slate-500 text-xl font-medium">Robust Watermarking for LLM Agents</p>
+            </motion.div>
 
-                            <div className="space-y-6">
-                                {/* Prompt / Scenario Selector Input */}
-                                <div className="relative z-50">
-                                    <label className="block text-sm font-semibold text-slate-600 mb-2">Prompt</label>
-                                    <div className="relative group">
-                                        <div className="absolute left-4 top-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-                                            <Search size={18} />
+            {/* Main Container - Flexbox for robust alignment */}
+            <div className="w-full max-w-7xl flex items-center justify-center gap-6 relative z-50 h-[600px] perspective-1000">
+                <AnimatePresence>
+                    {modes.map((mode) => {
+                        const isToolCard = mode.id === 'tool';
+                        const isActive = selectedMode === mode.id;
+
+                        return (
+                            <motion.div
+                                key={mode.id}
+                                layout
+                                initial={false}
+                                animate={{ 
+                                    width: isActive ? 700 : 256,
+                                    height: isActive ? 450 : 320,
+                                    opacity: 1, // Always visible
+                                    scale: 1,   // Always strictly 1
+                                }}
+                                transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                                onClick={() => !isActive && setSelectedMode(mode.id as Mode)}
+                                className={`relative rounded-3xl bg-white shadow-xl ${
+                                    isActive ? 'cursor-default' : 'cursor-pointer hover:shadow-2xl hover:-translate-y-1'
+                                } transition-shadow overflow-visible`}
+                                style={{ 
+                                    // Make sure non-active cards are still interactive if we want them to be switchable? 
+                                    // User flow: Click Tool -> It expands. Click Self -> Tool closes, Self expands? 
+                                    // For now, let's allow switching.
+                                    display: 'block',
+                                    zIndex: isActive ? 50 : 10 // Active on top
+                                }}
+                            >
+                                {/* 3D Flipper Container */}
+                                <motion.div
+                                    className="w-full h-full relative"
+                                    animate={{ rotateY: isActive && isToolCard ? 180 : 0 }} // Only flip if it is the Tool Card AND it is active
+                                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                                    style={{ transformStyle: 'preserve-3d' }}
+                                >
+                                    {/* FRONT FACE */}
+                                    <div 
+                                        className="absolute inset-0 w-full h-full bg-white rounded-3xl border border-slate-200 flex flex-col items-center justify-center text-center p-6"
+                                        style={{ 
+                                            backfaceVisibility: 'hidden', 
+                                            WebkitBackfaceVisibility: 'hidden',
+                                            zIndex: isActive ? 0 : 1 
+                                        }}
+                                    >
+                                        <div className={`p-5 rounded-2xl mb-6 ${isActive ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'}`}>
+                                            <mode.icon size={40} />
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={promptText}
-                                            onChange={(e) => setPromptText(e.target.value)}
-                                            onFocus={() => setShowScenarioList(true)}
-                                            placeholder={locale === 'zh' ? "输入您的请求或选择场景..." : "Enter your query or select a scenario..."}
-                                            className="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all shadow-sm"
-                                        />
-                                        <button
-                                            onClick={() => setShowScenarioList(!showScenarioList)}
-                                            className="absolute right-3 top-3.5 text-slate-400 hover:text-indigo-600 transition-colors bg-transparent border-none cursor-pointer"
-                                        >
-                                            <ChevronDown size={18} />
-                                        </button>
+                                        <h3 className="text-2xl font-bold text-slate-800 mb-3">{mode.title}</h3>
+                                        <p className="text-slate-400">{mode.desc}</p>
+                                        {isToolCard && (
+                                            <div className="mt-8 text-indigo-600 font-medium text-sm flex items-center gap-1 opacity-0 hover:opacity-100 transition-opacity">
+                                                Configure <ArrowRight size={16} />
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Scenario Dropdown */}
-                                    <AnimatePresence>
-                                        {showScenarioList && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                                                className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50 origin-top"
-                                            >
-                                                <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-                                                    <span>{locale === 'zh' ? '预设场景' : 'Preset Scenarios'}</span>
-                                                    <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-500">Suggested</span>
-                                                </div>
-                                                <div className="max-h-60 overflow-y-auto p-1">
-                                                    {scenarios.map(s => (
-                                                        <button
-                                                            key={s.id}
-                                                            onClick={() => handleSelectScenario(s)}
-                                                            className="w-full text-left px-4 py-3 hover:bg-indigo-50 rounded-lg text-sm text-slate-700 transition-colors flex items-center justify-between group"
-                                                        >
-                                                            <div className="flex flex-col gap-0.5">
-                                                                <span className="font-medium group-hover:text-indigo-700">{locale === 'zh' ? s.title.zh : s.title.en}</span>
-                                                                <span className="text-[10px] text-slate-400 truncate w-60">{s.userQuery}</span>
-                                                            </div>
-                                                            {selectedScenarioId === s.id && (
-                                                                <motion.div layoutId="active-scenario">
-                                                                    <CheckCircle2 size={16} className="text-indigo-600" />
+                                    {/* BACK FACE (Only for Tool Card) */}
+                                    {isToolCard && (
+                                        <div 
+                                            className="absolute inset-0 w-full h-full bg-white rounded-3xl border border-indigo-100 shadow-inner p-8 flex flex-col"
+                                            style={{ 
+                                                backfaceVisibility: 'hidden', 
+                                                WebkitBackfaceVisibility: 'hidden',
+                                                transform: 'rotateY(180deg)',
+                                                zIndex: isActive ? 1 : 0
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {/* Header */}
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold">02</span>
+                                                <h2 className="text-xl font-bold text-slate-900">Configuration</h2>
+                                            </div>
+
+                                            {/* Form */}
+                                            <div className="flex-1 space-y-6">
+                                                {/* Prompt */}
+                                                <div>
+                                                    <label className="block text-sm font-bold text-slate-700 mb-2">Prompt</label>
+                                                    <div className="relative group z-20">
+                                                        <Search className="absolute left-4 top-3.5 text-slate-400" size={18} />
+                                                        <input
+                                                            type="text"
+                                                            value={promptText}
+                                                            onChange={(e) => setPromptText(e.target.value)}
+                                                            onFocus={() => setShowScenarioList(true)}
+                                                            placeholder="输入您的请求或选择场景..."
+                                                            className="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-sm"
+                                                        />
+                                                        {/* Dropdown */}
+                                                        <AnimatePresence>
+                                                            {showScenarioList && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: 5 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    exit={{ opacity: 0, y: 5 }}
+                                                                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-100 shadow-xl overflow-hidden z-20 text-left"
+                                                                >
+                                                                    <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                                                                        {scenarios.map(s => (
+                                                                            <button
+                                                                                key={s.id}
+                                                                                onClick={() => handleSelectScenario(s)}
+                                                                                className="w-full text-left px-4 py-3 hover:bg-indigo-50 flex items-center justify-between group/item"
+                                                                            >
+                                                                                <span className="text-sm font-medium text-slate-700 group-hover/item:text-indigo-700">
+                                                                                    {locale === 'zh' ? s.title.zh : s.title.en}
+                                                                                </span>
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
                                                                 </motion.div>
                                                             )}
-                                                        </button>
-                                                    ))}
+                                                        </AnimatePresence>
+                                                        {showScenarioList && <div className="fixed inset-0 z-10" onClick={() => setShowScenarioList(false)} />}
+                                                    </div>
                                                 </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
 
-                                {/* Overlay to close dropdown when clicking outside */}
-                                {showScenarioList && (
-                                    <div className="fixed inset-0 z-40" onClick={() => setShowScenarioList(false)}></div>
-                                )}
+                                                {/* Payload & Loss Rate */}
+                                                <div className="grid grid-cols-[1fr_1.5fr] gap-8 items-start">
+                                                    <div>
+                                                        <label className="block text-sm font-bold text-slate-700 mb-2">Payload Content</label>
+                                                        <input
+                                                            type="text"
+                                                            value={payload}
+                                                            onChange={(e) => setPayload(e.target.value)}
+                                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-sm"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex justify-between mb-2">
+                                                            <label className="text-sm font-bold text-slate-700">Loss Rate: {erasureRate}%</label>
+                                                        </div>
+                                                        <div className="relative h-2 bg-slate-100 rounded-full mt-4">
+                                                            <div 
+                                                                className="absolute h-full bg-indigo-100 rounded-full" 
+                                                                style={{ width: '100%' }}
+                                                            />
+                                                            <input
+                                                                type="range"
+                                                                min="0" max="50" step="5"
+                                                                value={erasureRate}
+                                                                onChange={(e) => setErasureRate(Number(e.target.value))}
+                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                            />
+                                                            <div 
+                                                                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-indigo-600 rounded-full pointer-events-none shadow-md transition-all"
+                                                                style={{ left: `${(erasureRate / 50) * 100}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                {/* Watermark Payload & settings */}
-                                <div className="grid grid-cols-2 gap-6 relative z-0">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-600 mb-2">Payload Content</label>
-                                        <input
-                                            type="text"
-                                            value={payload}
-                                            onChange={(e) => setPayload(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-colors"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-600 mb-2">Loss Rate: {erasureRate}%</label>
-                                        <input
-                                            type="range"
-                                            min="0" max="50" step="5"
-                                            value={erasureRate}
-                                            onChange={(e) => setErasureRate(Number(e.target.value))}
-                                            className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 mt-2"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end relative z-0">
-                                <button
-                                    onClick={() => onStart({ scenarioId: selectedScenarioId || scenarios[0].id, payload, erasureRate })}
-                                    className={`px-8 py-4 rounded-xl font-bold shadow-lg transition-all transform flex items-center gap-2
-                                        ${selectedScenarioId || promptText
-                                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200 hover:-translate-y-1'
-                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-                                    disabled={!selectedScenarioId && !promptText}
-                                >
-                                    Proceed to Dashboard
-                                    <ArrowRight size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                            {/* Footer */}
+                                            <div className="flex justify-end mt-8 pt-4 border-t border-slate-50">
+                                                <button
+                                                    onClick={() => onStart({ scenarioId: selectedScenarioId || scenarios[0].id, payload, erasureRate })}
+                                                    className={`px-8 py-3 rounded-xl font-bold text-base shadow-sm flex items-center gap-2 transition-all transform hover:-translate-y-0.5
+                                                        ${selectedScenarioId || promptText
+                                                            ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-indigo-200'
+                                                            : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
+                                                    disabled={!selectedScenarioId && !promptText}
+                                                >
+                                                    Proceed to Dashboard <ArrowRight size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
-
 export default WelcomeScreen;

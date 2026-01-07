@@ -14,6 +14,18 @@
   .glass-dark {
     @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/50 text-white;
   }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }
 
 body {
