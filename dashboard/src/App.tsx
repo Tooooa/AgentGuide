@@ -87,6 +87,14 @@ function App() {
     // setHasStarted(false); // REMOVED
   }, [startNewConversation]);
 
+  // 初次进入主页面时自动弹出设置窗口
+  useEffect(() => {
+    if (hasStarted && isFirstEntry) {
+      setIsSettingsModalOpen(true);
+      setIsFirstEntry(false);
+    }
+  }, [hasStarted, isFirstEntry]);
+
   // Auto-Start Effect for Custom Queries
   useEffect(() => {
     if (hasStarted && isLiveMode && customQuery && !sessionId) {
@@ -191,7 +199,7 @@ function App() {
                     <FlowFeed
                       visibleSteps={visibleSteps}
                       erasedIndices={erasedIndices}
-                      userQuery={activeScenario.userQuery}
+                      userQuery={customQuery || activeScenario.userQuery}
                       onContinue={handleContinue}
                       isPlaying={isPlaying}
                       onTogglePlay={() => setIsPlaying(!isPlaying)}

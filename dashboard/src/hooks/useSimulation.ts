@@ -70,6 +70,17 @@ export const useSimulation = () => {
                 return liveScenario;
             }
         }
+        // 如果 activeScenarioId 为空字符串，返回一个空场景
+        if (!activeScenarioId) {
+            return {
+                id: '',
+                title: { en: '', zh: '' },
+                taskName: '',
+                userQuery: '',
+                totalSteps: 0,
+                steps: []
+            } as Trajectory;
+        }
         return allScenarios.find(s => s.id === activeScenarioId) || allScenarios[0];
     }, [activeScenarioId, isLiveMode, liveScenario, allScenarios, sessionId]);
 

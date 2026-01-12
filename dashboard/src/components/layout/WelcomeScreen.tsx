@@ -48,13 +48,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         setShowScenarioList(false);
     };
 
-    // Tool use模式直接进入主页面
+    // Tool use模式直接进入主页面，不使用任何场景
     const handleToolUseClick = () => {
         onStart({
-            scenarioId: scenarios[0].id,
+            scenarioId: '', // 空字符串表示不选择任何预设场景
             payload: payload,
             erasureRate: erasureRate,
-            query: ''
+            query: '' // 空查询
         });
     };
 

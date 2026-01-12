@@ -166,7 +166,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                 ))}
                                                 <Bar dataKey="prob" radius={[2, 2, 0, 0]}>
                                                     {sortedDistribution.map((entry, index) => (
-                                                        <Cell key={`c-${index}`} fill={entry.isSelected ? '#818cf8' : '#e2e8f0'} />
+                                                        <Cell key={`c-${index}`} fill={entry.isSelected ? '#818cf8' : '#ddd6fe'} />
                                                     ))}
                                                 </Bar>
                                             </BarChart>
@@ -182,7 +182,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                 <Tooltip cursor={{ fill: 'transparent' }} content={() => null} />
                                                 <Bar dataKey="weight" radius={[2, 2, 0, 0]}>
                                                     {bins.map((e, idx) => (
-                                                        <Cell key={`b-${idx}`} fill={e.isTarget ? (showWatermarkDetails ? '#6366f1' : '#f59e0b') : '#cbd5e1'} />
+                                                        <Cell key={`b-${idx}`} fill={e.isTarget ? (showWatermarkDetails ? '#6366f1' : '#f59e0b') : '#ddd6fe'} />
                                                     ))}
                                                 </Bar>
                                             </BarChart>
