@@ -805,7 +805,7 @@ async def step_session(req: StepRequest):
         est_tokens = len(model_output) / 4 
         
         # Decide default thought
-        default_thought = "Processing..." if not done else ""
+        default_thought = "Thinking..." if not done else ""
         
         final_data = {
             "agent": agent_state.role, # 'watermarked' or 'baseline'

@@ -197,21 +197,28 @@ export const useSimulation = () => {
         if (isLiveMode) {
             if (!sessionId || !liveScenario) return;
 
-            // Check Termination Condition
+            // Check Termination Condition - only check the LAST step
+            // We don't check all steps because historical completed steps shouldn't block new conversations
+            // After continue_session, the backend resets done state, so we should allow new steps
             const lastStep = liveScenario.steps[liveScenario.steps.length - 1];
             if (lastStep) {
-                const wmDone = lastStep.stepType === 'finish' || !!lastStep.finalAnswer;
-                const blDone = lastStep.baseline?.stepType === 'finish' || !!lastStep.baseline?.finalAnswer;
+                // Skip check if the last step is a user_input (new question was just added)
+                if (lastStep.stepType === 'user_input') {
+                    // User just added a new question, allow proceeding
+                } else {
+                    const wmDone = lastStep.stepType === 'finish' || !!lastStep.finalAnswer;
+                    const blDone = lastStep.baseline?.stepType === 'finish' || !!lastStep.baseline?.finalAnswer;
 
-                // Always wait for BOTH agents to finish, regardless of mode.
-                if (wmDone && blDone) {
-                    setIsPlaying(false);
-                    return;
+                    // Only stop if BOTH agents are done AND it's not a user input step
+                    if (wmDone && blDone) {
+                        setIsPlaying(false);
+                        return;
+                    }
+
+                    // If one is done but not the other, we proceed.
+                    // But backend might return empty for the one that is done?
+                    // That's fine, we just update the one that is running.
                 }
-
-                // If one is done but not the other, we proceed.
-                // But backend might return empty for the one that is done?
-                // That's fine, we just update the one that is running.
             }
 
             // Prevent stepping if we are already at the end of what we have fetched...
@@ -261,6 +268,10 @@ export const useSimulation = () => {
                 // Move cursor immediately
                 setCurrentStepIndex(prev => prev + 1);
 
+                // Track if we received any result data for this step
+                let receivedWatermarkedResult = false;
+                let receivedBaselineResult = false;
+
                 await api.stepStream(sessionId, (chunk) => {
                     if (chunk.type === 'thought') {
                         if (chunk.content) {
@@ -304,6 +315,13 @@ export const useSimulation = () => {
                         const stepData = chunk.data;
                         const targetAgent = stepData.agent || 'watermarked'; // default to watermarked if missing
 
+                        // Mark that we received a result
+                        if (targetAgent === 'watermarked') {
+                            receivedWatermarkedResult = true;
+                        } else if (targetAgent === 'baseline') {
+                            receivedBaselineResult = true;
+                        }
+
                         setLiveScenario(prev => {
                             if (!prev) return null;
                             const steps = [...prev.steps];
@@ -315,6 +333,7 @@ export const useSimulation = () => {
                                 // Update Main (Watermarked) Data
                                 steps[initialStepIndex] = {
                                     ...existingStep,
+                                    stepIndex: stepData.stepIndex !== undefined ? stepData.stepIndex : existingStep.stepIndex,
                                     thought: stepData.thought || existingStep.thought,
                                     action: stepData.action,
                                     distribution: stepData.distribution || [],
@@ -347,9 +366,64 @@ export const useSimulation = () => {
                             return { ...prev, steps };
                         });
 
-                        // REMOVED premature stop here. 
-                        // Termination is now handled at start of next loop.
+                        // Check if task is completed after receiving result
+                        setLiveScenario(prev => {
+                            if (!prev) return null;
+                            const updatedSteps = prev.steps;
+                            const lastStep = updatedSteps[updatedSteps.length - 1];
+                            if (lastStep) {
+                                const wmDone = lastStep.stepType === 'finish' || !!lastStep.finalAnswer;
+                                const blDone = lastStep.baseline?.stepType === 'finish' || !!lastStep.baseline?.finalAnswer;
+                                
+                                // If both agents are done, stop auto-playing
+                                if (wmDone && blDone) {
+                                    setIsPlaying(false);
+                                }
+                            }
+                            return prev;
+                        });
                     }
+                });
+
+                // After stream ends, check if placeholder step received any data
+                // Only remove it if it's truly empty (no data received from either agent)
+                // DO NOT remove steps that have received data, even if task is completed
+                setLiveScenario(prev => {
+                    if (!prev) return null;
+                    const steps = [...prev.steps];
+                    const placeholderStep = steps[initialStepIndex];
+                    
+                    if (placeholderStep) {
+                        // Check if this step received any real data
+                        // A step has data if it has action, non-placeholder thought, or distribution
+                        const hasWatermarkedData = placeholderStep.action || 
+                            (placeholderStep.thought && placeholderStep.thought !== "Thinking..." && placeholderStep.thought !== "") ||
+                            placeholderStep.distribution.length > 0 ||
+                            placeholderStep.stepType === 'finish' ||
+                            !!placeholderStep.finalAnswer;
+                        
+                        const hasBaselineData = placeholderStep.baseline?.action || 
+                            (placeholderStep.baseline?.thought && placeholderStep.baseline.thought !== "Thinking..." && placeholderStep.baseline.thought !== "") ||
+                            placeholderStep.baseline?.distribution.length > 0 ||
+                            placeholderStep.baseline?.stepType === 'finish' ||
+                            !!placeholderStep.baseline?.finalAnswer;
+                        
+                        // Only remove if we didn't receive any result AND the step has no data
+                        // This means it's a truly empty placeholder that was created but never filled
+                        const shouldRemove = !receivedWatermarkedResult && !receivedBaselineResult && 
+                            !hasWatermarkedData && !hasBaselineData;
+                        
+                        if (shouldRemove) {
+                            // Remove the invalid placeholder step (only if it's truly empty)
+                            steps.splice(initialStepIndex, 1);
+                            return {
+                                ...prev,
+                                totalSteps: steps.length,
+                                steps: steps
+                            };
+                        }
+                    }
+                    return prev;
                 });
 
                 // Auto-save after each step completes
@@ -606,6 +680,8 @@ export const useSimulation = () => {
             setIsLoading(true);
             try {
                 await api.continueSession(currentSessionId!, prompt);
+                // After continuing, the backend resets done state, so we can proceed
+                // Set isPlaying to true to enable auto-play, which will trigger handleNext
                 setIsPlaying(true);
                 
                 // Auto-save after user input

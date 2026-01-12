@@ -144,7 +144,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                     <Brain size={14} /> THOUGHT
                                 </div>
                                 <p className="text-sm text-slate-700 italic leading-relaxed font-serif pl-2 border-l-2 border-slate-100">
-                                    {step.thought || "Processing..."}
+                                    {step.thought || "Thinking..."}
                                 </p>
                             </div>
                         )}
