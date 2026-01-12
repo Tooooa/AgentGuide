@@ -9,7 +9,7 @@ type MainLayoutProps = {
     right: React.ReactNode;
     onHome: () => void;
     onSettings?: () => void;
-    settingsButtonRef?: React.RefObject<HTMLButtonElement>;
+    settingsButtonRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({ left, middle, right, onHome, onSettings, settingsButtonRef }) => {

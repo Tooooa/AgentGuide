@@ -7,7 +7,7 @@ interface TutorialTooltipProps {
     step: number;
     totalSteps: number;
     onNext: () => void;
-    targetRef?: React.RefObject<HTMLElement>;
+    targetRef?: React.RefObject<HTMLElement | null> | null;
 }
 
 const TutorialTooltip: React.FC<TutorialTooltipProps> = ({

@@ -14,7 +14,7 @@ interface DecoderPanelProps {
     targetPayload?: string;
     erasureRate: number;
     setErasureRate: (val: number) => void;
-    channelNoiseRef?: React.RefObject<HTMLDivElement>;
+    channelNoiseRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 const DecoderPanel: React.FC<DecoderPanelProps> = ({ 
