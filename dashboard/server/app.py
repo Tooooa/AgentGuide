@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI, AsyncOpenAI
 from sentence_transformers import SentenceTransformer, util
 import copy
+from agentmark.core.rlnc_codec import DeterministicRLNC
+from agentmark.core.watermark_sampler import sample_behavior_differential
 
 # --- Configuration ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -100,7 +102,9 @@ class Session:
         self.baseline_state = AgentState(task_data, 'baseline')
         
         # Payload / Watermark State (Only for watermarked agent)
-        self.bit_stream = payload if payload else "11001101" * 10
+        self.bit_stream_str_raw = payload if payload else "1101" # Keep raw for reference
+        # Initialize RLNC
+        self.rlnc = DeterministicRLNC(self.bit_stream_str_raw)
         self.bit_index = 0
         
         # LLM Client
@@ -177,45 +181,7 @@ def extract_and_normalize_probabilities(output: str, candidates: List[str]) -> D
             
     return scores
 
-def sample_behavior_differential(probabilities, bit_stream, bit_index, context_for_key, round_num):
-    # This implements the "Differential Sampling" logic
-    # 1. Sort candidates (already done implicitly by probability map nature? No, need explicit sort)
-    sorted_candidates = sorted(probabilities.keys(), key=lambda k: probabilities[k], reverse=True)
-    
-    # Check if we have bits
-    if bit_index >= len(bit_stream):
-        # Out of bits, just pick max prob
-        return sorted_candidates[0], 0, 0, 0
-    
-    # 2. Key generation for the round (Hashing context)
-    # Simple hash of context (last obs) + round
-    seed_str = f"{context_for_key}_{round_num}"
-    import hashlib
-    seed_int = int(hashlib.sha256(seed_str.encode()).hexdigest(), 16) % 100000
-    np.random.seed(seed_int)
-    
-    # 3. Simulate "Bins" (Recombination)
-    # In real differential sampling, we use g_t(u) > some threshold.
-    # For visualization/demo, we assume we use 1 bit at a time for simplicity? 
-    # Or chunks. Let's consume 1 bit.
-    
-    bit = int(bit_stream[bit_index])
-    consumed = 1
-    
-    # Ideally: Watermark selects a "Bin".
-    # If bit=0 -> Bin A (high prob items?), bit=1 -> Bin B.
-    # We'll just force the selection of the Top item if it matches the bit logic, 
-    # else swap with second? 
-    # Let's keep it simple: The watermark *biases* the distribution.
-    # If the "chosen" action by LLM was X, we check if X satisfies the watermark constraint.
-    # If not, we might pick Y.
-    
-    # Demo Logic: Always pick LLM's choice, but claim we encoded a bit :) 
-    # Unless user asks for real implementation.
-    # Real implementation requires access to the logits BEFORE sampling.
-    # We are post-hoc here.
-    
-    return sorted_candidates[0], 0, consumed, 0 # Just return top choice and consume 1 bit dummy
+    return scores
 
 @app.post("/api/init")
 async def init_session(req: InitRequest):
@@ -240,7 +206,7 @@ async def init_session(req: InitRequest):
     session = Session(session_id, req.apiKey, task, req.payload)
     sessions[session_id] = session
     
-    print(f"[INFO] Session {session_id} initialized with Payload: '{session.bit_stream}' (Length: {len(session.bit_stream)})")
+    print(f"[INFO] Session {session_id} initialized with Payload: '{task['payload_str']}'")
     
     return {
         "sessionId": session_id,
@@ -671,17 +637,37 @@ async def step_session(req: StepRequest):
         if is_watermarked:
             # Differential Sampling
             bit_before = sess.bit_index
-            chosen, _, consumed_bits, _ = sample_behavior_differential(
+            
+            # 1. Fetch chunk from RLNC
+            # We need enough bits for the sampler. The sampler typically consumes log2(N) bits, plus potentially more.
+            # Let's fetch a safe chunk of 64 bits from the infinite stream
+            # The sampler takes specific # of bits.
+            # Ideally the sampler should take the stream object or we guess.
+            # Our `sample_behavior_differential` implementation takes `bit_stream` as string.
+            # We generate a chunk of 64 bits starting at bit_index.
+            
+            chunk_length = 64
+            rlnc_chunk = sess.rlnc.get_stream(start_index=sess.bit_index, length=chunk_length)
+            
+            # 2. Call Real Sampler
+            # Note: The real sampler signature is:
+            # sample_behavior_differential(probabilities, bit_stream, bit_index, context_for_key=None, history_responses=None, seed=None, round_num=0)
+            # IMPORTANT: The `bit_index` arg in sampler acts as an offset into the passed `bit_stream`.
+            # Since we pass a fresh chunk, we should pass index 0 to the sampler, OR pass the full virtual stream?
+            # Passing full virtual stream is impossible.
+            # We pass the chunk, and tell sampler index is 0 relative to chunk.
+            
+            chosen, target_list, consumed_bits, context_used = sample_behavior_differential(
                 probabilities=effective_probs,
-                bit_stream=sess.bit_stream,
-                bit_index=sess.bit_index,
-                context_for_key=agent_state.last_observation,
+                bit_stream=rlnc_chunk,
+                bit_index=0, # relative to chunk
+                context_for_key=agent_state.last_observation, # context
                 round_num=agent_state.step_count
             )
-            # Update global session bit index only for watermarked agent?
-            # Yes, baseline doesn't consume bits.
-            # BUT we serve this concurrently. If we update sess.bit_index here, it's fine.
-            # sess.bit_index += consumed_bits (Done in outer scope or return it)
+            
+            # consumed_bits is how many bits from chunk were used.
+            # sess.bit_index += consumed_bits (Done below)
+
         else:
             # Baseline: Max Prob (Greedy) or simple Random
             # Greedy for stability
@@ -800,22 +786,17 @@ async def step_session(req: StepRequest):
         watermark_data = {}
         if is_watermarked:
             # Watermark Trace
-            embedded_bits = sess.bit_stream[bit_before : bit_before + consumed_bits]
-            matrix_rows = []
-
-
+            # Get the exact bits consumed
+            embedded_bits = sess.rlnc.get_stream(start_index=sess.bit_index, length=consumed_bits)
             
-            def generate_row(seed):
-                dimension = len(sess.bit_stream) if sess.bit_stream else 16
-                row = []
-                import math
-                for i in range(dimension):
-                    x = math.sin(seed + i) * 10000
-                    row.append(1 if (x - math.floor(x)) > 0.5 else 0)
-                return row
-
-            for i in range(len(embedded_bits)):
-                matrix_rows.append(generate_row(agent_state.step_count * 100 + i + int(sess.session_id.split('_')[1])))
+            matrix_rows = []
+            
+            # Generate real RLNC coefficients for the consumed bits
+            # The bits consumed were at absolute indices [sess.bit_index ... sess.bit_index + consumed_bits - 1]
+            for i in range(consumed_bits):
+                abs_idx = sess.bit_index + i
+                coeffs = sess.rlnc._generate_coeffs(abs_idx)
+                matrix_rows.append(coeffs)
             
             watermark_data = {
                 "bits": embedded_bits,
