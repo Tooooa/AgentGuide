@@ -48,7 +48,17 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         setShowScenarioList(false);
     };
 
-    const isFlipped = selectedMode === 'tool';
+    // Tool use模式直接进入主页面
+    const handleToolUseClick = () => {
+        onStart({
+            scenarioId: scenarios[0].id,
+            payload: payload,
+            erasureRate: erasureRate,
+            query: ''
+        });
+    };
+
+    const isFlipped = false; // 不再翻转
 
     return (
         <div
@@ -98,7 +108,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                     scale: 1,   // Always strictly 1
                                 }}
                                 transition={{ type: "spring", stiffness: 200, damping: 25 }}
-                                onClick={() => !isActive && setSelectedMode(mode.id as Mode)}
+                                onClick={() => {
+                                    if (isToolCard) {
+                                        handleToolUseClick();
+                                    } else if (!isActive) {
+                                        setSelectedMode(mode.id as Mode);
+                                    }
+                                }}
                                 className={`relative rounded-3xl bg-white shadow-xl ${isActive ? 'cursor-default' : 'cursor-pointer hover:shadow-2xl hover:-translate-y-1'
                                     } transition-shadow overflow-visible`}
                                 style={{
@@ -128,8 +144,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                         <h3 className="text-2xl font-bold text-slate-800 mb-3">{mode.title}</h3>
                                         <p className="text-slate-400">{mode.desc}</p>
                                         {isToolCard && (
-                                            <div className="mt-8 text-indigo-600 font-medium text-sm flex items-center gap-1 opacity-0 hover:opacity-100 transition-opacity">
-                                                Configure <ArrowRight size={16} />
+                                            <div className="mt-8 text-indigo-600 font-medium text-sm flex items-center gap-1 transition-opacity">
+                                                Enter Dashboard <ArrowRight size={16} />
                                             </div>
                                         )}
                                     </div>

@@ -7,6 +7,7 @@ import DecoderPanel from './components/decoder/DecoderPanel';
 import ComparisonView from './components/layout/ComparisonView';
 import WelcomeScreen from './components/layout/WelcomeScreen';
 import SaveScenarioModal from './components/modals/SaveScenarioModal';
+import SettingsModal from './components/modals/SettingsModal';
 import EvaluationModal from './components/execution/EvaluationModal';
 import { useSimulation } from './hooks/useSimulation';
 import { I18nProvider } from './i18n/I18nContext';
@@ -56,6 +57,8 @@ function App() {
   const [hasStarted, setHasStarted] = useState(false);
   // const [isComparisonMode, setIsComparisonMode] = useState(false); // Removed
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isFirstEntry, setIsFirstEntry] = useState(true);
 
 
   // NOTE: targetPayload is now redundant if we use hook's payload?
@@ -76,6 +79,14 @@ function App() {
     // Note: setHasStarted logic will trigger the effect below
     setHasStarted(true);
   };
+
+  // 初次进入主页面时自动弹出设置窗口
+  useEffect(() => {
+    if (hasStarted && isFirstEntry) {
+      setIsSettingsModalOpen(true);
+      setIsFirstEntry(false);
+    }
+  }, [hasStarted, isFirstEntry]);
 
   const handleNewConversation = async () => {
     // 1. Auto-Save & Reset via Hook
@@ -207,11 +218,26 @@ function App() {
                     setHasStarted(false);
                     handleReset();
                   }}
+                  onSettings={() => setIsSettingsModalOpen(true)}
                 />
               )}
             </motion.div>
           )}
         </AnimatePresence>
+
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          isLiveMode={isLiveMode}
+          onToggleLiveMode={() => setIsLiveMode(!isLiveMode)}
+          apiKey={apiKey}
+          setApiKey={setApiKey}
+          customQuery={customQuery}
+          setCustomQuery={setCustomQuery}
+          payload={payload}
+          setPayload={setPayload}
+          onInitSession={handleInitSession}
+        />
 
         <SaveScenarioModal
           isOpen={isSaveModalOpen}
