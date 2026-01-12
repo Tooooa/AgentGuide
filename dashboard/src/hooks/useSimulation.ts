@@ -232,10 +232,15 @@ export const useSimulation = () => {
                 let currentThought = "";
                 let currentBaselineThought = "";
 
-                // Determine if agents are already done to avoid showing "Thinking..."
+                // Determine if agents are still running by checking last non-user step
+                // After user continuation, agents should NOT be considered "done"
                 const prevSteps = liveScenario.steps;
-                const isWmPreDone = prevSteps.some(s => s.stepType === 'finish' || !!s.finalAnswer);
-                const isBlPreDone = prevSteps.some(s => s.baseline?.stepType === 'finish' || !!s.baseline?.finalAnswer);
+                const lastNonUserStep = [...prevSteps].reverse().find(s => s.stepType !== 'user_input');
+
+                // If last step was user_input, agents need to respond - not done
+                const lastWasUserInput = prevSteps.length > 0 && prevSteps[prevSteps.length - 1].stepType === 'user_input';
+                const isWmPreDone = !lastWasUserInput && lastNonUserStep && (lastNonUserStep.stepType === 'finish' || !!lastNonUserStep.finalAnswer);
+                const isBlPreDone = !lastWasUserInput && lastNonUserStep && (lastNonUserStep.baseline?.stepType === 'finish' || !!lastNonUserStep.baseline?.finalAnswer);
 
                 // Add initial empty step
                 setLiveScenario(prev => {
@@ -404,7 +409,7 @@ export const useSimulation = () => {
                         
                         const hasBaselineData = placeholderStep.baseline?.action || 
                             (placeholderStep.baseline?.thought && placeholderStep.baseline.thought !== "Thinking..." && placeholderStep.baseline.thought !== "") ||
-                            placeholderStep.baseline?.distribution.length > 0 ||
+                            (placeholderStep.baseline?.distribution?.length ?? 0) > 0 ||
                             placeholderStep.baseline?.stepType === 'finish' ||
                             !!placeholderStep.baseline?.finalAnswer;
                         
