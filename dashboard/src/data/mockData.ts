@@ -151,7 +151,7 @@ const parseToolBenchData = (jsonData: any, manualId: string, titleEn: string, ti
         steps.push({
             stepIndex,
             thought,
-            action: isFinish ? "Task Completed" : `Call: ${chosen}`,
+            action: isFinish ? "Call: Finish" : `Call: ${chosen}`,
             toolDetails: toolOutput,
             distribution,
             watermark: {
