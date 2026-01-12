@@ -1,0 +1,132 @@
+{
+  "id": "sess_1768229666_custom",
+  "title": {
+    "en": "吃饭",
+    "zh": "吃饭"
+  },
+  "taskName": "Live Execution",
+  "userQuery": "吃饭",
+  "totalSteps": 2,
+  "steps": [
+    {
+      "stepIndex": 0,
+      "thought": "用户的任务是'吃饭'，这是一个非常宽泛的请求。我需要进一步明确用户的具体需求。用户可能是在询问餐厅推荐、食谱、饮食建议，或者仅仅是表达一个意图。由于没有更多上下文，我应该先尝试获取一些通用的饮食相关信息，或者询问用户以明确需求。我可以使用Bing AI API来搜索关于'吃饭'的通用信息，或者使用Pastru工具来获取特定地点的餐厅信息。但Pastru需要指定位置参数，而用户没有提供。因此，最合理的做法是先使用Bing AI API获取一些关于健康饮食或餐厅推荐的通用信息，然后根据结果决定下一步。",
+      "action": "Call: Bing_AI_API__get_token_token_get",
+      "distribution": [
+        {
+          "name": "Bing_AI_API__get_token_token_get",
+          "prob": 0.95,
+          "isSelected": true
+        },
+        {
+          "name": "ReinSPITPOR__default",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "HoG__15",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "HoG__15__2",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "Pastru__getPastru",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "Finish",
+          "prob": 0.01,
+          "isSelected": false
+        }
+      ],
+      "watermark": {
+        "bits": "1",
+        "matrixRows": [
+          [
+            1,
+            0,
+            0,
+            0
+          ]
+        ],
+        "rankContribution": 1
+      },
+      "stepType": "tool",
+      "toolDetails": "tool=Bing_AI_API__get_token_token_get category=Search api=get_token_token_get args={} | desc=токен обязателен в любом методе",
+      "isHidden": false,
+      "baseline": {
+        "thought": "用户的任务是'吃饭'，这是一个非常宽泛的请求。我需要进一步明确用户的具体需求。用户可能是在询问餐厅推荐、食谱、饮食建议，或者仅仅是表达一个意图。由于没有更多上下文，我应该先尝试获取一些通用的饮食相关信息，或者询问用户以明确需求。我可以使用Bing AI API来搜索关于'吃饭'的通用信息，或者使用Pastru工具来获取特定地点的餐厅信息。但Pastru需要指定位置参数，而用户没有提供。因此，最合理的做法是先使用Bing AI API获取一些关于健康饮食或餐厅推荐的通用信息，然后根据结果决定下一步。",
+        "action": "Call: Bing_AI_API__get_token_token_get",
+        "toolDetails": "tool=Bing_AI_API__get_token_token_get category=Search api=get_token_token_get args={} | desc=токен обязателен в любом методе",
+        "distribution": [
+          {
+            "name": "Bing_AI_API__get_token_token_get",
+            "prob": 0.95,
+            "isSelected": true
+          },
+          {
+            "name": "ReinSPITPOR__default",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "HoG__15",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "HoG__15__2",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "Pastru__getPastru",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "Finish",
+            "prob": 0.01,
+            "isSelected": false
+          }
+        ],
+        "stepType": "tool",
+        "metrics": {
+          "latency": 7.037506580352783,
+          "tokens": 84.75
+        }
+      },
+      "metrics": {
+        "latency": 6.983961343765259,
+        "tokens": 84.75
+      }
+    },
+    {
+      "stepIndex": 1,
+      "thought": "{\n  \"thought\": \"Bing AI API返回的响应表明需要一个令牌（token）才能使用。这可能意味着我需要先获取一个访问令牌，或者这个工具本身是用于获取令牌的。但用户的任务是'吃饭'，直接获取令牌似乎不相关。我应该考虑其他工具。ReinSPITPOR工具可能用于搜索，但描述是'default endpoint'，不太明确。HoG工具用于文章内容更新和状态变更，与'吃饭'任务不直接相关。Pastru工具可以获取特定地点的信息，但需要位置参数，用户没有提供。然而，我可以尝试使用默认位置'iowa'来获取一些信息，但这可能不是用户想要的。考虑到用户的任务非常模糊，最合理的做法是询问用户以明确需求，但作为AI代理，我应该尝试提供一些有用的信息。我可以尝试使用ReinSPITPOR进行通用搜索，或者使用Pastru with default location。但Pastru的默认转发URL是'http://api.open-notify.org/astros.json'，这似乎是关于太空人的API，与'吃饭'无关。因此，我可能应该使用ReinSPITPOR来搜索关于'吃饭'的信息。\",\n  \"action\": \"ReinSPITPOR__default\",\n  \"action_args",
+      "action": "",
+      "distribution": [],
+      "watermark": {
+        "bits": "",
+        "matrixRows": [],
+        "rankContribution": 0
+      },
+      "stepType": "tool",
+      "toolDetails": "",
+      "isHidden": false,
+      "baseline": {
+        "thought": "{\n  \"thought\": \"Bing AI API返回的响应表明需要一个令牌（token）才能使用。这可能意味着我需要先获取一个访问令牌，或者这个工具本身是用于获取令牌的。但用户的任务是'吃饭'，直接获取令牌似乎不相关。我应该考虑其他工具。ReinSPITPOR工具可能用于搜索，但描述是'default endpoint'，不太明确。HoG工具用于文章内容更新和状态变更，与'吃饭'任务不直接相关。Pastru工具可以获取特定地点的信息，但需要位置参数，用户没有提供。然而，我可以尝试使用默认位置'iowa'来获取一些餐厅或饮食信息。这可能是一个合理的起点，因为Pastru工具可能返回关于爱荷华州餐厅或饮食的信息。\",\n  \"action\": \"Pastru__getPastru\",\n  \"action_args\": {\n    \"X-Forward\": \"http://api.open-notify.org/astros.json\",\n    \"location\": \"iowa\"\n  }\n}",
+        "action": "",
+        "distribution": [],
+        "toolDetails": "",
+        "stepType": "tool",
+        "isHidden": false
+      }
+    }
+  ]
+}

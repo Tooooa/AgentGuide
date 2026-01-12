@@ -157,7 +157,7 @@ const FlowFeed: React.FC<FlowFeedProps> = ({ visibleSteps, erasedIndices, userQu
                                     className={`flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-colors
                                         ${(isSending || isPlaying) ? 'opacity-70 bg-slate-100 cursor-not-allowed' : ''}`}
                                     disabled={isSending || isPlaying}
-                                    onFocus={() => hasSteps && setShowPrompts(true)}
+                                    onFocus={() => setShowPrompts(true)}
                                     // Removed onBlur to allow clicking on the popup
                                     onKeyDown={async (e) => {
                                         if (e.key === 'Enter' && !isSending && !isPlaying) {
