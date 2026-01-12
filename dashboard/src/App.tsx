@@ -7,6 +7,7 @@ import DecoderPanel from './components/decoder/DecoderPanel';
 import ComparisonView from './components/layout/ComparisonView';
 import WelcomeScreen from './components/layout/WelcomeScreen';
 import SaveScenarioModal from './components/modals/SaveScenarioModal';
+import SettingsModal from './components/modals/SettingsModal';
 import EvaluationModal from './components/execution/EvaluationModal';
 import { useSimulation } from './hooks/useSimulation';
 import { I18nProvider, useI18n } from './i18n/I18nContext';
@@ -66,6 +67,8 @@ function AppContent() {
   const [hasStarted, setHasStarted] = useState(false);
   // const [isComparisonMode, setIsComparisonMode] = useState(false); // Removed
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isFirstEntry, setIsFirstEntry] = useState(true);
 
 
   // NOTE: targetPayload is now redundant if we use hook's payload?
@@ -120,6 +123,14 @@ function AppContent() {
     // 2. Stay on Dashboard (do not reset hasStarted)
     // setHasStarted(false); // REMOVED
   }, [startNewConversation]);
+
+  // 初次进入主页面时自动弹出设置窗口
+  useEffect(() => {
+    if (hasStarted && isFirstEntry) {
+      setIsSettingsModalOpen(true);
+      setIsFirstEntry(false);
+    }
+  }, [hasStarted, isFirstEntry]);
 
   // Auto-Start Effect for Custom Queries
   useEffect(() => {
@@ -260,6 +271,92 @@ function AppContent() {
           </motion.div>
         )}
       </AnimatePresence>
+    <I18nProvider>
+      <div className="bg-slate-50 min-h-screen">
+        <AnimatePresence mode='wait'>
+          {!hasStarted ? (
+            <WelcomeScreen
+              key="welcome"
+              onStart={handleStart}
+              initialScenarioId={activeScenarioId}
+              initialErasureRate={erasureRate}
+              isLiveMode={isLiveMode}
+              onToggleLiveMode={() => setIsLiveMode(!isLiveMode)}
+              apiKey={apiKey}
+              setApiKey={setApiKey}
+            />
+          ) : (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="h-screen overflow-hidden"
+            >
+              {isComparisonMode ? (
+                // Comparison Mode Layout
+                <div className="h-full p-4 grid grid-cols-[340px_1fr] gap-6 overflow-hidden max-w-[1920px] mx-auto">
+                  <div className="h-full overflow-hidden">
+                    {commonControlPanel}
+                  </div>
+                  <div className="h-full overflow-hidden">
+                    <ComparisonView
+                      visibleSteps={visibleSteps}
+                      erasedIndices={erasedIndices}
+                      scenarioId={activeScenario.id}
+                      evaluationResult={evaluationResult}
+                    />
+                  </div>
+                </div>
+              ) : (
+                // Standard Dashboard Layout
+                <MainLayout
+                  left={commonControlPanel}
+                  middle={
+                    <FlowFeed
+                      visibleSteps={visibleSteps}
+                      erasedIndices={erasedIndices}
+                      userQuery={customQuery || activeScenario.userQuery}
+                      onContinue={handleContinue}
+                      isPlaying={isPlaying}
+                      onTogglePlay={() => setIsPlaying(!isPlaying)}
+                      scenarioId={activeScenario.id}
+                    />
+                  }
+                  right={
+                    <DecoderPanel
+                      visibleSteps={visibleSteps}
+                      erasedIndices={erasedIndices}
+                      targetPayload={payload}
+                      erasureRate={erasureRate}
+                      setErasureRate={setErasureRate}
+                    />
+                  }
+                  onHome={() => {
+                    setHasStarted(false);
+                    handleReset();
+                  }}
+                  onSettings={() => setIsSettingsModalOpen(true)}
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          isLiveMode={isLiveMode}
+          onToggleLiveMode={() => setIsLiveMode(!isLiveMode)}
+          apiKey={apiKey}
+          setApiKey={setApiKey}
+          customQuery={customQuery}
+          setCustomQuery={setCustomQuery}
+          payload={payload}
+          setPayload={setPayload}
+          onInitSession={handleInitSession}
+        />
 
       <SaveScenarioModal
         isOpen={isSaveModalOpen}

@@ -1,16 +1,17 @@
 
 import React from 'react';
 import { useI18n } from '../../i18n/I18nContext';
-import { Languages, Home } from 'lucide-react';
+import { Languages, Home, Settings } from 'lucide-react';
 
 type MainLayoutProps = {
     left: React.ReactNode;
     middle: React.ReactNode;
     right: React.ReactNode;
     onHome: () => void;
+    onSettings?: () => void;
 };
 
-const MainLayout: React.FC<MainLayoutProps> = ({ left, middle, right, onHome }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ left, middle, right, onHome, onSettings }) => {
     const { locale, setLocale, t } = useI18n();
 
     return (
@@ -25,6 +26,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ left, middle, right, onHome }) 
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {onSettings && (
+                        <button
+                            onClick={onSettings}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-sm font-medium text-slate-600"
+                            title={locale === 'en' ? 'Settings' : '设置'}
+                        >
+                            <Settings size={14} />
+                            {locale === 'en' ? 'Settings' : '设置'}
+                        </button>
+                    )}
+                    
                     <button
                         onClick={onHome}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-sm font-medium text-slate-600"

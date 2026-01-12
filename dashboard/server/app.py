@@ -797,8 +797,8 @@ async def step_session(req: StepRequest):
                     pass
             
             # If thought is empty but we have final answer, use final answer as thought for display if needed
-            if not thought and final_answer_text:
-                thought = "Task Completed." 
+            # if not thought and final_answer_text:
+            #     thought = "Task Completed." 
 
         # Execute Tool
         step_result_obs = await asyncio.to_thread(agent_state.adapter.step, action_obj, agent_state.episode["tool_summaries"], state=agent_state.task)
@@ -819,7 +819,7 @@ async def step_session(req: StepRequest):
         est_tokens = len(model_output) / 4 
         
         # Decide default thought
-        default_thought = "Processing..." if not done else "Task Completed"
+        default_thought = "Processing..." if not done else ""
         
         final_data = {
             "agent": agent_state.role, # 'watermarked' or 'baseline'
