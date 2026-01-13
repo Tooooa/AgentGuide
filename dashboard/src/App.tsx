@@ -264,6 +264,7 @@ function AppContent() {
                       erasedIndices={erasedIndices}
                       scenarioId={activeScenario.id}
                       evaluationResult={evaluationResult}
+                      userQuery={customQuery || activeScenario.userQuery}
                     />
                   </div>
                 </div>

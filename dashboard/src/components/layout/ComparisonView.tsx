@@ -3,16 +3,17 @@ import React, { useRef, useEffect } from 'react';
 import StepCard from '../execution/StepCard';
 import type { Step } from '../../data/mockData';
 
-import { Columns, Eye, EyeOff } from 'lucide-react';
+import { Columns, Eye, EyeOff, User } from 'lucide-react';
 
 interface ComparisonViewProps {
     visibleSteps: Step[];
     erasedIndices: Set<number>;
     scenarioId?: string;
     evaluationResult?: { model_a_score: number, model_b_score: number, reason: string } | null;
+    userQuery?: string;
 }
 
-const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedIndices, scenarioId, evaluationResult }) => {
+const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedIndices, scenarioId, evaluationResult, userQuery }) => {
 
     const scrollRefA = useRef<HTMLDivElement>(null);
     const scrollRefB = useRef<HTMLDivElement>(null);
@@ -82,6 +83,24 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                         ref={scrollRefA}
                         onScroll={() => handleScroll('A')}
                     >
+                        {/* Initial User Query */}
+                        {userQuery && (
+                            <div className="flex justify-end pr-2 mb-4">
+                                <div className="flex gap-3 flex-row-reverse max-w-[85%]">
+                                    <div className="flex-shrink-0 mt-1">
+                                        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                            <User size={14} />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 text-right">
+                                        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl rounded-tr-none p-3 text-white text-xs shadow-md inline-block text-left">
+                                            <p className="font-bold text-[9px] text-indigo-100 mb-1 uppercase tracking-wide">User Prompt</p>
+                                            {userQuery}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {visibleSteps.map((step) => {
                             // Construct Baseline Step Object if available
                             const baselineStep: Step = step.baseline ? {
@@ -130,6 +149,24 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                         ref={scrollRefB}
                         onScroll={() => handleScroll('B')}
                     >
+                        {/* Initial User Query */}
+                        {userQuery && (
+                            <div className="flex justify-end pr-2 mb-4">
+                                <div className="flex gap-3 flex-row-reverse max-w-[85%]">
+                                    <div className="flex-shrink-0 mt-1">
+                                        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                            <User size={14} />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 text-right">
+                                        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl rounded-tr-none p-3 text-white text-xs shadow-md inline-block text-left">
+                                            <p className="font-bold text-[9px] text-indigo-100 mb-1 uppercase tracking-wide">User Prompt</p>
+                                            {userQuery}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {visibleSteps.map((step) => {
                             if (step.isHidden) return null;
                             return (
