@@ -243,21 +243,22 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                 )}
 
                 {/* 4. FINISH RESPONSE Block */}
-                {step.stepType === 'finish' && step.finalAnswer !== "Task Completed" && (
+                {step.stepType === 'finish' && (
                     <div className="space-y-1 pl-4 border-l-2 border-emerald-200 ml-5">
                         <div className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase tracking-wider mb-2">
                             <Bot size={14} /> FINAL RESPONSE
                         </div>
                         <div className="bg-emerald-50/50 rounded-xl p-5 font-serif text-sm text-slate-800 shadow-sm border border-emerald-100 leading-relaxed">
                             {/* Use ReactMarkdown to render the final answer */}
-                            <div className="prose prose-sm prose-emerald max-w-none text-slate-800">
-                                <ReactMarkdown
-                                    components={{
-                                        // Custom components to ensure styling matches the dashboard
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        strong: ({ node, ...props }: any) => <span className="font-bold text-slate-900" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        ul: ({ node, ...props }: any) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
+                            {step.finalAnswer && step.finalAnswer !== "Task Completed" ? (
+                                <div className="prose prose-sm prose-emerald max-w-none text-slate-800">
+                                    <ReactMarkdown
+                                        components={{
+                                            // Custom components to ensure styling matches the dashboard
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            strong: ({ node, ...props }: any) => <span className="font-bold text-slate-900" {...props} />,
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            ul: ({ node, ...props }: any) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         ol: ({ node, ...props }: any) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -275,6 +276,11 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                     {(step.finalAnswer || step.toolDetails || "").replace(/^\[Finish\]\s*/, "")}
                                 </ReactMarkdown>
                             </div>
+                            ) : (
+                                <div className="text-slate-500 italic">
+                                    {step.thought || "Task completed"}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
