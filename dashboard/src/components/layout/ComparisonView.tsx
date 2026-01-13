@@ -169,20 +169,26 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                     {userQuery && renderUserQuery(userQuery, 'initial-query')}
 
                     {/* Render segments */}
-                    {segments.map((segment, segIndex) => (
+                    {segments.map((segment, segIndex) => {
+                        // 计算当前 segment 之前的累计步骤数
+                        const prevBaselineCount = segments.slice(0, segIndex).reduce((acc, s) => acc + s.baselineSteps.length, 0);
+                        const prevWatermarkedCount = segments.slice(0, segIndex).reduce((acc, s) => acc + s.watermarkedSteps.length, 0);
+                        
+                        return (
                         <React.Fragment key={`segment-${segIndex}`}>
                             {/* Two columns for agent steps */}
                             <div className="grid grid-cols-2 gap-6 mb-4">
                                 {/* Left: Baseline steps */}
                                 <div className="space-y-4 p-2 bg-white rounded-xl border border-slate-100">
                                     {segment.baselineSteps.length > 0 ? (
-                                        segment.baselineSteps.map((step) => (
+                                        segment.baselineSteps.map((step, stepIdx) => (
                                             <StepCard
-                                                key={`nw-${step.stepIndex}`}
+                                                key={`nw-${segIndex}-${stepIdx}`}
                                                 step={step}
                                                 isErased={false}
                                                 showWatermarkDetails={false}
                                                 showDistribution={true}
+                                                displayIndex={prevBaselineCount + stepIdx + 1}
                                             />
                                         ))
                                     ) : (
@@ -195,12 +201,13 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                                 {/* Right: Watermarked steps */}
                                 <div className="space-y-4 p-2 bg-white rounded-xl border border-indigo-100">
                                     {segment.watermarkedSteps.length > 0 ? (
-                                        segment.watermarkedSteps.map((step) => (
+                                        segment.watermarkedSteps.map((step, stepIdx) => (
                                             <StepCard
-                                                key={`wm-${step.stepIndex}`}
+                                                key={`wm-${segIndex}-${stepIdx}`}
                                                 step={step}
                                                 isErased={erasedIndices.has(step.stepIndex)}
                                                 showWatermarkDetails={true}
+                                                displayIndex={prevWatermarkedCount + stepIdx + 1}
                                             />
                                         ))
                                     ) : (
@@ -214,7 +221,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                             {/* User Input - Centered and aligned */}
                             {segment.userInput && renderUserQuery(segment.userInput.thought, `user-input-${segIndex}`)}
                         </React.Fragment>
-                    ))}
+                    )})}
 
                     <div ref={bottomRef} className="h-4" />
                 </div>

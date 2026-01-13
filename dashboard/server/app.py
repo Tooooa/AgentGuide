@@ -214,6 +214,14 @@ def extract_and_normalize_probabilities(output: str, candidates: List[str]) -> D
             return uniform_prob(candidates)
         return {c: (ratio**i) / denom for i, c in enumerate(candidates)}
 
+    def _mix_distributions(a: Dict[str, float], b: Dict[str, float], alpha: float) -> Dict[str, float]:
+        alpha = max(0.0, min(1.0, alpha))
+        mixed = {c: alpha * float(a.get(c, 0.0)) + (1.0 - alpha) * float(b.get(c, 0.0)) for c in candidates}
+        total = sum(mixed.values())
+        if total <= 0.0:
+            return uniform_prob(candidates)
+        return {k: v / total for k, v in mixed.items()}
+
     data = _parse_json_payload(output) or {}
     chosen = data.get("action", "Finish")
 
@@ -244,7 +252,12 @@ def extract_and_normalize_probabilities(output: str, candidates: List[str]) -> D
         if valid:
             total = sum(weights.values())
             if total > 0.0:
-                return {k: v / total for k, v in weights.items()}
+                normalized = {k: v / total for k, v in weights.items()}
+                top_action = max(normalized.items(), key=lambda x: x[1])[0]
+                max_prob = normalized.get(top_action, 0.0)
+                if max_prob > 0.9:
+                    return _mix_distributions(normalized, _geometric_fallback(top_action), 0.6)
+                return normalized
 
     return _geometric_fallback(chosen if chosen in candidates else None)
 

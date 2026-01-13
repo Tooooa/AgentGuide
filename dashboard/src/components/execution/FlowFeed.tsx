@@ -105,15 +105,21 @@ const FlowFeed: React.FC<FlowFeedProps> = ({ visibleSteps, erasedIndices, userQu
                     </div>
                 )}
 
-                {visibleSteps.map((step) => (
-                    step.isHidden ? null : (
+                {visibleSteps.map((step, index) => {
+                    // 计算显示索引：跳过 user_input 类型的步骤
+                    // 只计算非 user_input 步骤的序号
+                    const nonUserSteps = visibleSteps.slice(0, index + 1).filter(s => s.stepType !== 'user_input' && !s.isHidden);
+                    const displayIndex = nonUserSteps.length;
+                    
+                    return step.isHidden ? null : (
                         <StepCard
-                            key={step.stepIndex}
+                            key={`step-${index}-${step.stepIndex}`}
                             step={step}
                             isErased={erasedIndices.has(step.stepIndex)}
+                            displayIndex={step.stepType === 'user_input' ? undefined : displayIndex}
                         />
-                    )
-                ))}
+                    );
+                })}
 
                 <div ref={bottomRef} className="h-4" />
             </div>

@@ -12,6 +12,7 @@ interface StepCardProps {
     isErased: boolean;
     showWatermarkDetails?: boolean;
     showDistribution?: boolean;
+    displayIndex?: number; // 用于显示的步骤序号，如果不提供则使用 step.stepIndex
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,9 +28,12 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null;
 };
 
-const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetails = true, showDistribution = false }) => {
+const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetails = true, showDistribution = false, displayIndex }) => {
     const { t } = useI18n();
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    
+    // 使用 displayIndex 如果提供了，否则使用 step.stepIndex
+    const stepNumber = displayIndex !== undefined ? displayIndex : step.stepIndex;
 
     const { sortedDistribution, bins } = React.useMemo(() => {
         const sorted = [...step.distribution].sort((a, b) => b.prob - a.prob);
@@ -62,7 +66,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                     {/* Glitch Effect Elements */}
                     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mixed-blend-overlay"></div>
                     <span className="font-mono font-bold text-rose-500 tracking-[0.2em] text-xs">{t('logDestroyed')}</span>
-                    <span className="font-mono text-[10px] text-rose-400">ID: #{step.stepIndex} :: ERASURE</span>
+                    <span className="font-mono text-[10px] text-rose-400">ID: #{stepNumber} :: ERASURE</span>
                 </div>
             </motion.div>
         );
@@ -106,7 +110,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
 
                     {/* Step Badge */}
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shadow-sm">
-                        {step.stepIndex}
+                        {stepNumber}
                     </div>
                 </div>
             </div>
@@ -127,9 +131,9 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                     <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-2">
                         <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-mono text-xs font-bold">
-                                {step.stepIndex}
+                                {stepNumber}
                             </div>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">{t('step')} #{step.stepIndex}</span>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">{t('step')} #{stepNumber}</span>
                         </div>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${step.stepType === 'finish' ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-50 text-indigo-500'}`}>
                             {step.stepType}
@@ -306,6 +310,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                     onClose={() => setIsDetailOpen(false)}
                     step={step}
                     mode={showWatermarkDetails ? 'watermarked' : 'baseline'}
+                    displayIndex={stepNumber}
                 />
             </div>
         </motion.div>

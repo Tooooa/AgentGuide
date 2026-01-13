@@ -8,10 +8,11 @@ interface RLNCDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     step: Step | null;
+    displayIndex: number;
     isErased: boolean;
 }
 
-const RLNCDetailModal: React.FC<RLNCDetailModalProps> = ({ isOpen, onClose, step, isErased }) => {
+const RLNCDetailModal: React.FC<RLNCDetailModalProps> = ({ isOpen, onClose, step, displayIndex, isErased }) => {
     const { locale } = useI18n();
 
     if (!step) return null;
@@ -74,7 +75,7 @@ const RLNCDetailModal: React.FC<RLNCDetailModalProps> = ({ isOpen, onClose, step
                                 </div>
                                 <div>
                                     <h2 className={`text-xl font-bold ${isErased ? 'text-rose-600' : 'text-slate-800'}`}>
-                                        Dataset #{step.stepIndex}
+                                        Dataset #{displayIndex}
                                     </h2>
                                     <div className="flex items-center gap-2 mt-1">
                                         {isErased ? (

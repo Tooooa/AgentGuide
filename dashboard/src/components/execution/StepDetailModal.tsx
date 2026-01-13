@@ -25,10 +25,14 @@ interface StepDetailModalProps {
     onClose: () => void;
     step: Step;
     mode?: 'watermarked' | 'baseline';
+    displayIndex?: number;
 }
 
-const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step, mode = 'watermarked' }) => {
+const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step, mode = 'watermarked', displayIndex }) => {
     const { t } = useI18n();
+    
+    // 使用 displayIndex 如果提供了，否则使用 step.stepIndex
+    const stepNumber = displayIndex !== undefined ? displayIndex : step.stepIndex;
 
     if (!isOpen) return null;
 
@@ -211,7 +215,7 @@ const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step
                             <h2 className="text-xl font-bold text-slate-800">
                                 {mode === 'watermarked' ? t('diffSamplingViz') : t('randomSamplingViz')}
                             </h2>
-                            <p className="text-sm text-slate-500">{t('step')} #{step.stepIndex}: {step.thought.substring(0, 80)}...</p>
+                            <p className="text-sm text-slate-500">{t('step')} #{stepNumber}: {step.thought.substring(0, 80)}...</p>
                         </div>
                         <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                             <X size={24} className="text-slate-500" />

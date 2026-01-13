@@ -28,16 +28,19 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
     const { locale } = useI18n();
     const bottomRef = useRef<HTMLDivElement>(null);
 
+    // 过滤掉 user_input 和 hidden 步骤，只显示有水印数据的步骤
+    const datasetSteps = visibleSteps.filter(s => s.stepType !== 'user_input' && !s.isHidden);
+
     // Auto-scroll
     useEffect(() => {
-        if (visibleSteps.length > 0) {
+        if (datasetSteps.length > 0) {
             bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [visibleSteps]);
+    }, [datasetSteps]);
 
     const requiredRank = targetPayload ? targetPayload.length : 16;
 
-    const validSteps = visibleSteps.filter(s => !erasedIndices.has(s.stepIndex));
+    const validSteps = datasetSteps.filter(s => !erasedIndices.has(s.stepIndex));
     // Calculate current rank based on actual matrix rows received
     // Assuming each non-erased step contributes 1 to rank (linear independence assumed for visualization simplicity)
     const currentRank = Math.min(
@@ -54,6 +57,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
 
     // State for RLNC details modal
     const [selectedStep, setSelectedStep] = React.useState<Step | null>(null);
+    const [selectedDisplayIndex, setSelectedDisplayIndex] = React.useState<number>(0);
 
 
 
@@ -65,6 +69,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                 isOpen={!!selectedStep}
                 onClose={() => setSelectedStep(null)}
                 step={selectedStep}
+                displayIndex={selectedDisplayIndex}
                 isErased={selectedStep ? erasedIndices.has(selectedStep.stepIndex) : false}
             />
 
@@ -156,20 +161,23 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                         {locale === 'zh' ? '接收到的数据集' : 'Received Datasets'}
                     </h3>
                     <span className="ml-auto bg-slate-200 text-slate-600 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
-                        {visibleSteps.length}
+                        {datasetSteps.length}
                     </span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-hide">
                     <AnimatePresence>
-                        {visibleSteps.map((step) => {
+                        {datasetSteps.map((step, displayIndex) => {
                             const isErased = erasedIndices.has(step.stepIndex);
                             return (
                                 <motion.div
-                                    key={step.stepIndex}
+                                    key={`${displayIndex}-${step.stepIndex}`}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    onClick={() => setSelectedStep(step)}
+                                    onClick={() => {
+                                        setSelectedStep(step);
+                                        setSelectedDisplayIndex(displayIndex + 1);
+                                    }}
                                     className={`relative p-3 rounded-xl border transition-all group cursor-pointer ${isErased
                                         ? 'bg-rose-50 border-rose-100 opacity-70 grayscale-[0.5] hover:opacity-100'
                                         : 'bg-white border-slate-100 hover:border-indigo-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]'}`}
@@ -183,7 +191,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center mb-1">
                                                 <span className={`text-xs font-bold ${isErased ? 'text-rose-400' : 'text-slate-700'}`}>
-                                                    Dataset #{step.stepIndex}
+                                                    Dataset #{displayIndex + 1}
                                                 </span>
                                                 <span className="text-[10px] font-mono text-slate-400">
                                                     {"14:02:23"}

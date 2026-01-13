@@ -359,9 +359,11 @@ export const useSimulation = () => {
 
                             if (targetAgent === 'watermarked') {
                                 // Update Main (Watermarked) Data
+                                // Note: Keep using initialStepIndex as stepIndex to ensure sequential numbering
+                                // Backend's stepIndex may not be sequential due to various reasons
                                 steps[initialStepIndex] = {
                                     ...existingStep,
-                                    stepIndex: stepData.stepIndex !== undefined ? stepData.stepIndex : existingStep.stepIndex,
+                                    stepIndex: initialStepIndex,
                                     thought: stepData.thought || existingStep.thought,
                                     action: stepData.action,
                                     distribution: stepData.distribution || [],
