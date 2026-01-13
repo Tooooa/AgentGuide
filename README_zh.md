@@ -1,7 +1,8 @@
 <div align="center">
   
-  # AgentMark
-
+  <img src="assets/logo.svg" width="120" alt="AgentMark Logo" style="display: inline-block; vertical-align: middle; margin-right: 20px;"/>
+  <img src="assets/logo-text.svg" width="300" alt="AgentMark" style="display: inline-block; vertical-align: middle;"/>
+  
   **LLM Agent 行为水印实验框架**
 
   [简体中文](README_zh.md) | [English](README.md)
@@ -38,17 +39,23 @@
 ---
 
 ## 📖 目录
-- [目录结构](#-目录结构)
+- [项目结构](#-项目结构)
 - [快速开始](#-快速开始)
-  - [1. 环境配置](#1-️-环境配置-agentmark)
-  - [2. 启动 Dashboard 可视化界面](#2-启动-dashboard-可视化界面)
-  - [3. 数据集配置](#3-数据集配置)
-  - [4. 配置环境变量](#4-配置环境变量)
-- [一次运行流程（插件形态）](#-一次运行流程插件形态)
+  - [1. 环境配置](#1-️-环境配置)
+  - [2. Dashboard 可视化界面](#2-dashboard-可视化界面)
+  - [3. 数据集准备](#3-数据集准备)
+  - [4. 环境变量配置](#4-环境变量配置)
+- [使用我们的插件](#-使用我们的插件)
+- [实验指南](#-实验指南)
+  - [1. ToolBench 工具调用实验](#1-toolbench-工具调用实验)
+  - [2. ALFWorld 具身智能实验](#2-alfworld-具身智能实验)
+  - [3. Oasis 社交媒体实验](#3-oasis-社交媒体实验)
+  - [4. RLNC 鲁棒性评测](#4-rlnc-鲁棒性评测)
+  - [5. 语义重写鲁棒性评测](#5-语义重写鲁棒性评测)
 - [License](#license)
 ---
 
-## 📂 目录结构
+## 📂 项目结构
 
 ```text
 AgentMark/
@@ -86,7 +93,7 @@ AgentMark/
 
 ## 🚀 快速开始
 
-### 1. ⚙️ 环境配置 (AgentMark)
+### 1. ⚙️ 环境配置
 
 **适用于 ToolBench 和 ALFWorld 实验 (Python 3.9)**
 
@@ -101,7 +108,7 @@ conda activate AgentMark
 pip install -r requirements.txt
 ```
 
-### 2. 启动 Dashboard 可视化界面
+### 2. Dashboard 可视化界面
 
 Dashboard 提供了交互式的水印实验界面，包含实时对比、解码分析等功能。
 
@@ -147,7 +154,7 @@ npm run dev
 - **端口被占用**: 如果 8000 或 5173 端口被占用，请检查是否有其他服务正在运行，或修改配置文件（前端: `dashboard/vite.config.ts`，后端: `dashboard/server/app.py`）。
 - **依赖缺失**: 如果启动后端时报错 `ModuleNotFoundError`，请使用 `pip install <缺少包名>` 安装。
 
-### 3. 数据集配置
+### 3. 数据集准备
 
 #### ToolBench
 
@@ -199,7 +206,7 @@ alfworld-download
 > Oasis (社交媒体) 实验需要独立的运行环境 (Python 3.10+)，请参考下方的 [Oasis 社交媒体实验](#3-oasis-社交媒体实验) 章节。
 
 
-### 4. 配置环境变量
+### 4. 环境变量配置
 
 复制并修改环境变量模板：
 
@@ -213,7 +220,7 @@ export $(grep -v '^#' .env | xargs)
 
 ---
 
-## ✅ 使用我们的插件
+## 🔌 使用我们的插件
 
 该流程用于验证：**用户输入请求 → Swarm 生成 tools → 网关做水印采样 → Swarm 执行 tool_calls**。
 
@@ -264,6 +271,115 @@ python -m pytest -q examples/weather_agent/evals.py -k test_calls_weather_when_a
 在 **前端** 可查看会话与水印分布可视化。
 
 > 说明：Swarm 的工具候选来自 `agent.functions`，用户输入只是消息内容。网关从 `tools` 抽候选进行水印采样。
+
+---
+
+## 📚 实验指南
+
+详细的实验运行指南如下：
+
+### 1. ToolBench 工具调用实验
+- **简介**: 模拟真实世界 API 调用场景，评估水印对工具使用能力和鲁棒性的影响。
+- **目录**: `experiments/toolbench/`
+- **两种运行模式**:
+  | 模式 | 配置项 (`use_local_model`) | 说明 |
+  |------|---------------------------|------|
+  | **API 模式** | `false` (默认) | 调用远程 LLM API (如 DeepSeek, OpenAI)，水印通过行为采样嵌入 |
+  | **本地模式** | `true` | 加载本地模型 (如 Llama-3)，结合 SynthID 文本水印算法 |
+- **运行流水线**:
+  ```bash
+  conda activate AgentMark
+  # 运行完整流水线 (包含 baseline/watermark/评测)
+  python experiments/toolbench/scripts/run_pipeline.py
+  ```
+- **关键配置**: `experiments/toolbench/configs/pipeline_config.json`
+  - 切换模式: 修改 `common_config.use_local_model` 为 `true` 或 `false`
+  - 本地模式需额外配置 `local_model_path` 指向模型权重路径
+
+### 2. ALFWorld 具身智能实验
+- **简介**: 基于文本的交互式家庭环境决策任务，评估水印对 Agent 规划与执行能力的影响。
+- **目录**: `experiments/alfworld/`
+- **环境安装**:
+  ```bash
+  pip install alfworld  # 需在 AgentMark 环境基础上安装
+  ```
+- **运行流水线**:
+  ```bash
+  conda activate AgentMark
+  # 运行完整流水线 (包含 baseline/watermark/评测)
+  python experiments/alfworld/scripts/run_experiment.py --config experiments/alfworld/configs/config.json
+  ```
+- **关键配置**: `experiments/alfworld/configs/config.json`
+
+### 3. Oasis 社交媒体实验
+> [!NOTE]
+> 1. 本目录下的 `oasis/` 是 **修改后的子依赖库** (Modified Submodule)，包含定制化的水印逻辑。
+> 2. 请使用独立的 `oasis` (Python 3.10+) 环境运行。
+
+- **环境安装**:
+  ```bash
+  # 1. 创建环境 (建议 Python 3.10+)
+  conda create -n oasis python=3.10 -y
+  conda activate oasis
+  
+  # 2. 安装 Oasis 包
+  pip install camel-oasis
+  ```
+  详细说明请参考 [Oasis README](experiments/oasis_watermark/oasis/README.md)。
+
+- **简介**: 模拟 Twitter 和 Reddit 上的用户行为与水印注入。
+- **目录**: `experiments/oasis_watermark/`
+- **Twitter 实验**:
+  - 目录: `experiments/oasis_watermark/twitter_watermark_experiment/`
+  - **运行**:
+    ```bash
+    cd experiments/oasis_watermark/twitter_watermark_experiment
+    # 需配置 config.py 或设置环境变量 DEEPSEEK_API_KEY
+    python run_experiment.py
+    # 运行评测
+    python evaluate_metrics_llm.py
+    ```
+- **Reddit 实验**:
+  - 目录: `experiments/oasis_watermark/reddit_watermark_experiment/`
+  - **运行**:
+    ```bash
+    cd experiments/oasis_watermark/reddit_watermark_experiment
+    python run_experiment.py
+    # 运行评测
+    python evaluate_metrics_llm.py
+    ```
+  - **说明**: 模拟 `r/TechFuture` 社区中关于 AI 话题的讨论。
+
+### 4. RLNC 鲁棒性评测
+- **简介**: 测试基于 RLNC (Random Linear Network Coding) 的水印方案在丢包/擦除场景下的恢复能力。
+- **目录**: `experiments/rlnc_trajectory/`
+- **核心脚本**:
+  | 脚本 | 功能 |
+  |------|------|
+  | `scripts/rlnc_step_erasure_eval.py` | 擦除鲁棒性评测 (模拟不同丢包率) |
+  | `scripts/analyze_fpr.py` | **误报率 (FPR) 分析** - 模拟"未加水印"和"错误密钥"攻击场景 |
+- **运行鲁棒性评测**:
+  ```bash
+  cd experiments/rlnc_trajectory
+  python scripts/rlnc_step_erasure_eval.py --config rlnc_eval_config.json
+  ```
+- **运行 FPR 分析**:
+  ```bash
+  python scripts/analyze_fpr.py --config rlnc_fpr_config.json
+  ```
+- **关键配置**: `rlnc_eval_config.json`， `rlnc_fpr_config.json`
+
+### 5. 语义重写鲁棒性评测
+- **简介**: 测试差分水印在面对语义重写攻击 (Semantic Rewriting Attack) 时的鲁棒性。
+- **目录**: `experiments/semantic_rewriting/`
+- **运行**:
+  ```bash
+  cd experiments/semantic_rewriting
+  python scripts/robustness_test.py \
+      --task data/001_task_0.json \
+      --bits data/decoded_bits.json \
+      --steps 5
+  ```
 
 ---
 

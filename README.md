@@ -1,7 +1,8 @@
 <div align="center">
   
-  # AgentMark
-
+  <img src="assets/logo.svg" width="120" alt="AgentMark Logo" style="display: inline-block; vertical-align: middle; margin-right: 20px;"/>
+  <img src="assets/logo-text.svg" width="300" alt="AgentMark" style="display: inline-block; vertical-align: middle;"/>
+  
   **Behavioral Watermarking Framework for LLM Agents**
 
   [简体中文](README_zh.md) | [English](README.md)
@@ -38,17 +39,23 @@ The project provides a reproducible, modular, and extensible codebase to evaluat
 ---
 
 ## 📖 Table of Contents
-- [Directory Structure](#-directory-structure)
+- [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
-  - [1. Environment Setup](#1-️-environment-setup-agentmark)
-  - [2. Start Dashboard UI](#2-start-dashboard-ui)
-  - [3. Dataset Setup](#3-dataset-setup)
-  - [4. Configure Environment Variables](#4-configure-environment-variables)
-- [One-run Flow (Plugin Mode)](#-one-run-flow-plugin-mode)
+  - [1. Environment Setup](#1-️-environment-setup)
+  - [2. Dashboard Visualization](#2-dashboard-visualization)
+  - [3. Dataset Preparation](#3-dataset-preparation)
+  - [4. Environment Variables](#4-environment-variables)
+- [Using Our Plugin](#-using-our-plugin)
+- [Experiment Guide](#-experiment-guide)
+  - [1. ToolBench Tool Calling Experiment](#1-toolbench-tool-calling-experiment)
+  - [2. ALFWorld Embodied Intelligence Experiment](#2-alfworld-embodied-intelligence-experiment)
+  - [3. Oasis Social Media Experiment](#3-oasis-social-media-experiment)
+  - [4. RLNC Robustness Evaluation](#4-rlnc-robustness-evaluation)
+  - [5. Semantic Rewriting Robustness Evaluation](#5-semantic-rewriting-robustness-evaluation)
 - [License](#license)
 ---
 
-## 📂 Directory Structure
+## 📂 Project Structure
 
 ```text
 AgentMark/
@@ -86,7 +93,7 @@ AgentMark/
 
 ## 🚀 Quick Start
 
-### 1. ⚙️ Environment Setup (AgentMark)
+### 1. ⚙️ Environment Setup
 
 **For ToolBench and ALFWorld experiments (Python 3.9)**
 
@@ -101,7 +108,7 @@ conda activate AgentMark
 pip install -r requirements.txt
 ```
 
-### 2. Start Dashboard UI
+### 2. Dashboard Visualization
 
 The dashboard provides interactive watermark experiments with real-time comparison and decoding analysis.
 
@@ -143,7 +150,7 @@ Visit `http://localhost:5173` or `http://127.0.0.1:5173` in your browser.
 - **Port in use**: if 8000 or 5173 is occupied, stop the conflicting process or change config (frontend: `dashboard/vite.config.ts`, backend: `dashboard/server/app.py`).
 - **Missing dependency**: if you see `ModuleNotFoundError`, install the missing package with `pip install <package>`.
 
-### 3. Dataset Setup
+### 3. Dataset Preparation
 
 #### ToolBench
 
@@ -198,7 +205,7 @@ alfworld-download
 > [!NOTE]
 > Oasis (social media) experiments require a separate environment (Python 3.10+). Please refer to the [Oasis Social Media Experiments](#3-oasis-social-media-experiments) section below.
 
-### 4. Configure Environment Variables
+### 4. Environment Variables
 
 Copy and edit the environment template:
 
@@ -212,38 +219,63 @@ export $(grep -v '^#' .env | xargs)
 
 ---
 
-## ✅ Plugin Mode
+## ✅ Using Our Plugin
 
-This flow validates: **free-form user input → Swarm produces tools → proxy runs watermark sampling → Swarm executes tool_calls**.
+This flow validates the "tool calling + watermark sampling" plugin route: external agents don't modify business code, only change the endpoint address (OPENAI_BASE_URL).
 
-### Step 1: Start AgentMark Proxy
+**Workflow**: **User input request → Swarm generates tools → Gateway performs watermark sampling → Swarm executes tool_calls**.
 
+### Step 1: Start Gateway Proxy (AgentMark Proxy)
+
+Open Terminal 1:
+
+**Linux/macOS:**
 ```bash
-cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+cd /path/to/AgentMarkWeb
 source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
 
 export DEEPSEEK_API_KEY=sk-your-key
 export TARGET_LLM_MODEL=deepseek-chat
 export AGENTMARK_DEBUG=1
-export AGENTMARK_TWO_PASS=0   # build tool_calls in proxy
+export AGENTMARK_TWO_PASS=0   # Use "proxy constructs tool_calls" plugin mode
 
 uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8001
 ```
 
-### Step 2: Start Frontend (Visualization)
+**Windows PowerShell:**
+```powershell
+cd D:\path\to\AgentMarkWeb
+conda activate AgentMark
+
+$env:DEEPSEEK_API_KEY="sk-your-key"
+$env:TARGET_LLM_MODEL="deepseek-chat"
+$env:AGENTMARK_DEBUG="1"
+$env:AGENTMARK_TWO_PASS="0"
+
+uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8001
+```
+
+### Step 2: Start Frontend (Visualization Dashboard)
+
+Open Terminal 2:
 
 ```bash
-cd /mnt/c/Users/25336/Desktop/AgentMarkWeb/dashboard
-npm install
+cd dashboard
+npm install  # Only needed first time
 npm run dev
 ```
 
-Open: `http://localhost:5173`
+Browser access: `http://localhost:5173`
 
-### Step 3: Run Swarm (External Agent)
+You can view sessions and watermark visualizations on the frontend.
 
+### Step 3: Run Your Agent (Using Swarm as Example)
+
+Open Terminal 3:
+
+**Linux/macOS:**
 ```bash
-cd /mnt/c/Users/25336/Desktop/AgentMarkWeb/swarm
+cd swarm
 pip install -e .
 
 export OPENAI_BASE_URL=http://localhost:8001/v1
@@ -252,17 +284,140 @@ export OPENAI_API_KEY=anything
 python -m pytest -q examples/weather_agent/evals.py -k test_calls_weather_when_asked --disable-warnings -s
 ```
 
-### Step 4: Verify Logs
+**Windows PowerShell:**
+```powershell
+cd swarm
+pip install -e .
 
-In the **proxy terminal**, you should see:
+$env:OPENAI_BASE_URL="http://localhost:8001/v1"
+$env:OPENAI_API_KEY="anything"
 
-- `[agentmark:scoring_request]`: scoring instruction injection
-- `[agentmark:tool_calls_proxy]`: proxy-built tool_calls with args
-- `[watermark]`: watermark result and visualization data
+python -m pytest -q examples/weather_agent/evals.py -k test_calls_weather_when_asked --disable-warnings -s
+```
 
-In the **frontend**, you can view the session and watermark distribution plots.
+### Step 4: Verify Watermark Injection
 
-> Note: Swarm candidate tools come from `agent.functions`. User input is just message content. The proxy extracts candidates from `tools` and performs watermark sampling.
+In the **gateway proxy terminal** you should see:
+
+- `[agentmark:scoring_request]`: Scoring instruction injection
+- `[agentmark:tool_calls_proxy]`: Gateway-constructed tool calls (with parameters)
+- `[watermark]`: Watermark results and visualization data
+
+In the **frontend dashboard** you can:
+- View current session and conversation history
+- Visualize watermark distribution and statistics
+- Analyze watermark decoding results
+
+> **Note**: Swarm's candidate tools come from `agent.functions`, and user input is just message content. The gateway extracts candidate tools from the request's `tools` parameter and performs watermark sampling selection.
+
+---
+
+## 📚 Experiment Guide
+
+Detailed experimental guides are as follows:
+
+### 1. ToolBench Tool Calling Experiment
+- **Overview**: Simulates real-world API calling scenarios to evaluate watermark impact on tool usage and robustness.
+- **Directory**: `experiments/toolbench/`
+- **Two Running Modes**:
+  | Mode | Config (`use_local_model`) | Description |
+  |------|---------------------------|-------------|
+  | **API Mode** | `false` (default) | Calls remote LLM APIs (e.g., DeepSeek, OpenAI), watermark embedded via behavioral sampling |
+  | **Local Mode** | `true` | Loads local models (e.g., Llama-3), combines with SynthID text watermarking |
+- **Run Pipeline**:
+  ```bash
+  conda activate AgentMark
+  # Run full pipeline (baseline/watermark/evaluation)
+  python experiments/toolbench/scripts/run_pipeline.py
+  ```
+- **Key Config**: `experiments/toolbench/configs/pipeline_config.json`
+  - Switch mode: modify `common_config.use_local_model` to `true` or `false`
+  - Local mode requires `local_model_path` pointing to model weights
+
+### 2. ALFWorld Embodied Intelligence Experiment
+- **Overview**: Text-based interactive household decision tasks, evaluating watermark impact on agent planning and execution.
+- **Directory**: `experiments/alfworld/`
+- **Environment Install**:
+  ```bash
+  pip install alfworld  # Install on top of AgentMark environment
+  ```
+- **Run Pipeline**:
+  ```bash
+  conda activate AgentMark
+  # Run full pipeline (baseline/watermark/evaluation)
+  python experiments/alfworld/scripts/run_experiment.py --config experiments/alfworld/configs/config.json
+  ```
+- **Key Config**: `experiments/alfworld/configs/config.json`
+
+### 3. Oasis Social Media Experiment
+> [!NOTE]
+> 1. The `oasis/` directory is a **modified submodule** containing customized watermark logic.
+> 2. Use a separate `oasis` environment (Python 3.10+).
+
+- **Environment Install**:
+  ```bash
+  # 1. Create environment (Python 3.10+ recommended)
+  conda create -n oasis python=3.10 -y
+  conda activate oasis
+  
+  # 2. Install Oasis package
+  pip install camel-oasis
+  ```
+  See [Oasis README](experiments/oasis_watermark/oasis/README.md) for details.
+
+- **Overview**: Simulates user behavior and watermark injection on Twitter and Reddit.
+- **Directory**: `experiments/oasis_watermark/`
+- **Twitter Experiment**:
+  - Directory: `experiments/oasis_watermark/twitter_watermark_experiment/`
+  - **Run**:
+    ```bash
+    cd experiments/oasis_watermark/twitter_watermark_experiment
+    # Configure config.py or set DEEPSEEK_API_KEY environment variable
+    python run_experiment.py
+    # Run evaluation
+    python evaluate_metrics_llm.py
+    ```
+- **Reddit Experiment**:
+  - Directory: `experiments/oasis_watermark/reddit_watermark_experiment/`
+  - **Run**:
+    ```bash
+    cd experiments/oasis_watermark/reddit_watermark_experiment
+    python run_experiment.py
+    # Run evaluation
+    python evaluate_metrics_llm.py
+    ```
+  - **Note**: Simulates AI-related discussions in the `r/TechFuture` community.
+
+### 4. RLNC Robustness Evaluation
+- **Overview**: Tests RLNC (Random Linear Network Coding) watermark scheme recovery under packet loss/erasure scenarios.
+- **Directory**: `experiments/rlnc_trajectory/`
+- **Core Scripts**:
+  | Script | Function |
+  |--------|----------|
+  | `scripts/rlnc_step_erasure_eval.py` | Erasure robustness evaluation (simulates various packet loss rates) |
+  | `scripts/analyze_fpr.py` | **False Positive Rate (FPR) analysis** - simulates "no watermark" and "wrong key" attack scenarios |
+- **Run Robustness Evaluation**:
+  ```bash
+  cd experiments/rlnc_trajectory
+  python scripts/rlnc_step_erasure_eval.py --config rlnc_eval_config.json
+  ```
+- **Run FPR Analysis**:
+  ```bash
+  python scripts/analyze_fpr.py --config rlnc_fpr_config.json
+  ```
+- **Key Configs**: `rlnc_eval_config.json`, `rlnc_fpr_config.json`
+
+### 5. Semantic Rewriting Robustness Evaluation
+- **Overview**: Tests differential watermark robustness against semantic rewriting attacks.
+- **Directory**: `experiments/semantic_rewriting/`
+- **Run**:
+  ```bash
+  cd experiments/semantic_rewriting
+  python scripts/robustness_test.py \
+      --task data/001_task_0.json \
+      --bits data/decoded_bits.json \
+      --steps 5
+  ```
 
 ---
 
