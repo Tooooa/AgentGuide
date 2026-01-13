@@ -81,6 +81,7 @@ function AppContent() {
   const channelNoiseRef = useRef<HTMLDivElement>(null);
   const modeToggleRef = useRef<HTMLDivElement>(null);
   const promptInputRef = useRef<HTMLInputElement>(null);
+  const decoderProgressRef = useRef<HTMLDivElement>(null);
 
   // Filter scenarios based on search query
   const filteredScenarios = useMemo(() => {
@@ -132,6 +133,13 @@ function AppContent() {
       setTutorialStep(1);
       setHasCompletedTutorial(true);
     }
+  };
+
+  // 处理新手引导跳过
+  const handleTutorialSkip = () => {
+    setShowTutorial(false);
+    setTutorialStep(1);
+    setHasCompletedTutorial(true);
   };
 
   // 获取当前步骤的目标ref
@@ -292,6 +300,8 @@ function AppContent() {
                       erasureRate={erasureRate}
                       setErasureRate={setErasureRate}
                       channelNoiseRef={channelNoiseRef}
+                      decoderProgressRef={decoderProgressRef}
+                      promptInputRef={promptInputRef}
                     />
                   }
                   onHome={() => {
@@ -344,6 +354,7 @@ function AppContent() {
           step={tutorialStep}
           totalSteps={4}
           onNext={handleTutorialNext}
+          onSkip={handleTutorialSkip}
           targetRef={getCurrentTutorialRef()}
         />
 

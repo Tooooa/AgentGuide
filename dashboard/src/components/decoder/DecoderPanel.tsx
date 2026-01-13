@@ -15,6 +15,8 @@ interface DecoderPanelProps {
     erasureRate: number;
     setErasureRate: (val: number) => void;
     channelNoiseRef?: React.RefObject<HTMLDivElement | null>;
+    decoderProgressRef?: React.RefObject<HTMLDivElement | null>;
+    promptInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 const DecoderPanel: React.FC<DecoderPanelProps> = ({ 
@@ -23,10 +25,16 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
     targetPayload,
     erasureRate,
     setErasureRate,
-    channelNoiseRef
+    channelNoiseRef,
+    decoderProgressRef,
+    promptInputRef
 }) => {
     const { locale } = useI18n();
     const bottomRef = useRef<HTMLDivElement>(null);
+
+    // State for incomplete decoding warning
+    const [showIncompleteWarning, setShowIncompleteWarning] = React.useState(false);
+    const [hasSeenIncompleteWarning, setHasSeenIncompleteWarning] = React.useState(false);
 
     // Auto-scroll
     useEffect(() => {
@@ -46,6 +54,18 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
     );
     const progress = (currentRank / requiredRank) * 100;
     const isSuccess = currentRank >= requiredRank;
+
+    // Check if there's a finish step
+    const hasFinishStep = visibleSteps.some(step => step.stepType === 'finish');
+
+    // Show warning if task finished but decoding incomplete (only once)
+    useEffect(() => {
+        console.log('Decoding check:', { hasFinishStep, isSuccess, hasSeenIncompleteWarning, currentRank, requiredRank });
+        if (hasFinishStep && !isSuccess && !hasSeenIncompleteWarning) {
+            console.log('Showing incomplete warning!');
+            setShowIncompleteWarning(true);
+        }
+    }, [hasFinishStep, isSuccess, hasSeenIncompleteWarning, currentRank, requiredRank]);
 
 
     // State for the success modal
@@ -67,6 +87,113 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                 step={selectedStep}
                 isErased={selectedStep ? erasedIndices.has(selectedStep.stepIndex) : false}
             />
+
+            {/* Incomplete Decoding Warning */}
+            <AnimatePresence>
+                {showIncompleteWarning && (
+                    <>
+                        {/* 遮罩层 */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[200] bg-black/30"
+                        />
+
+                        {/* 箭头指引：从解码进度（右上方）指向提示框 */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed z-[201]"
+                            style={{
+                                top: '280px',
+                                right: '400px',
+                                width: '600px',
+                                height: '500px',
+                                pointerEvents: 'none'
+                            }}
+                        >
+                            <svg width="600" height="500" className="absolute inset-0" style={{ overflow: 'visible' }}>
+                                {/* 直线路径 */}
+                                <path
+                                    d="M 560 20 L 70 290"
+                                    stroke="#6366f1"
+                                    strokeWidth="3"
+                                    fill="none"
+                                    markerEnd="url(#arrowhead)"
+                                />
+                                {/* 箭头定义 */}
+                                <defs>
+                                    <marker
+                                        id="arrowhead"
+                                        markerWidth="10"
+                                        markerHeight="10"
+                                        refX="9"
+                                        refY="3"
+                                        orient="auto"
+                                    >
+                                        <polygon points="0 0, 10 3, 0 6" fill="#6366f1" />
+                                    </marker>
+                                </defs>
+                            </svg>
+                        </motion.div>
+
+                        {/* 提示框 */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="fixed z-[201] bg-white rounded-2xl shadow-2xl p-5 w-[320px]"
+                            style={{
+                                bottom: '160px',
+                                left: '390px'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* 箭头在下方指向输入框 */}
+                            <div
+                                className="absolute w-0 h-0"
+                                style={{
+                                    bottom: '-10px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    borderLeft: '10px solid transparent',
+                                    borderRight: '10px solid transparent',
+                                    borderTop: '10px solid white',
+                                }}
+                            />
+
+                            {/* 标题 */}
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-base font-bold text-slate-800">
+                                    {locale === 'zh' ? '解码提示' : 'Decoding Notice'}
+                                </span>
+                            </div>
+
+                            {/* 内容 */}
+                            <p className="text-sm text-slate-700 leading-relaxed mb-4">
+                                {locale === 'zh' 
+                                    ? `当前解码进度为${currentRank}/${requiredRank}，继续输入prompt可继续收集数据集，解码进度满才能解码出水印载荷。`
+                                    : `Current decoding progress is ${currentRank}/${requiredRank}. Continue inputting prompts to collect more datasets. Decoding progress must be full to decode the watermark payload.`}
+                            </p>
+
+                            {/* 按钮 */}
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => {
+                                        setShowIncompleteWarning(false);
+                                        setHasSeenIncompleteWarning(true);
+                                    }}
+                                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                                >
+                                    {locale === 'zh' ? '明白了' : 'Got it'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             {/* 0. Channel Noise Control */}
             <div 
@@ -109,7 +236,10 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
             </div>
 
             {/* 1. Decoding Status / Progress */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col gap-3">
+            <div 
+                ref={decoderProgressRef}
+                className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col gap-3"
+            >
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="font-bold text-slate-800 text-sm">{locale === 'zh' ? '解码进度' : 'Decoding Progress'}</h2>

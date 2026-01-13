@@ -7,6 +7,7 @@ interface TutorialTooltipProps {
     step: number;
     totalSteps: number;
     onNext: () => void;
+    onSkip: () => void;
     targetRef?: React.RefObject<HTMLElement | null> | null;
 }
 
@@ -15,6 +16,7 @@ const TutorialTooltip: React.FC<TutorialTooltipProps> = ({
     step,
     totalSteps,
     onNext,
+    onSkip,
     targetRef
 }) => {
     const [position, setPosition] = React.useState({ top: 0, left: 0 });
@@ -152,8 +154,14 @@ const TutorialTooltip: React.FC<TutorialTooltipProps> = ({
                             {getTooltipContent()}
                         </p>
 
-                        {/* 明白了按钮 */}
-                        <div className="flex justify-end">
+                        {/* 按钮组 */}
+                        <div className="flex justify-between items-center gap-3">
+                            <button
+                                onClick={onSkip}
+                                className="px-4 py-2 text-slate-500 text-sm font-medium rounded-lg hover:bg-slate-100 transition-colors"
+                            >
+                                {locale === 'zh' ? '跳过' : 'Skip'}
+                            </button>
                             <button
                                 onClick={onNext}
                                 className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
