@@ -384,6 +384,25 @@ async def clear_all_history():
         print(f"[ERROR] Clear all failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/scenarios/batch_delete")
+async def batch_delete_scenarios(req: dict):
+    """Batch delete multiple scenarios"""
+    try:
+        scenario_ids = req.get("ids", [])
+        if not scenario_ids:
+            return {"status": "success", "deleted_count": 0}
+        
+        deleted_count = 0
+        for scenario_id in scenario_ids:
+            if db.delete_conversation(scenario_id):
+                deleted_count += 1
+        
+        print(f"[INFO] Batch deleted {deleted_count} scenarios")
+        return {"status": "success", "deleted_count": deleted_count}
+    except Exception as e:
+        print(f"[ERROR] Batch delete failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/scenarios/{scenario_id}/toggle_pin")
 async def toggle_pin_scenario(scenario_id: str):
     """Toggle pin status of a conversation"""

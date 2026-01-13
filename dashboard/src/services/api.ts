@@ -123,6 +123,11 @@ export const api = {
         return response.data;
     },
 
+    batchDeleteScenarios: async (ids: string[]) => {
+        const response = await axios.post(`${API_BASE}/api/scenarios/batch_delete`, { ids });
+        return response.data;
+    },
+
     togglePin: async (scenarioId: string) => {
         const response = await axios.post(`${API_BASE}/api/scenarios/${scenarioId}/toggle_pin`);
         return response.data;

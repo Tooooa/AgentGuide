@@ -1035,14 +1035,41 @@ export const useSimulation = () => {
                 console.log("[DEBUG] Refreshing scenarios...");
                 await refreshScenarios();
                 console.log("[DEBUG] clearAllHistory completed successfully");
-                
-                // Show success message
-                alert("历史记录已清空");
             } catch (e: any) {
                 console.error("Clear all failed", e);
                 const errorMsg = e.response?.data?.detail || e.message || "未知错误";
-                alert(`清空失败: ${errorMsg}`);
-                throw e; // Re-throw to let caller know it failed
+                throw new Error(`清空失败: ${errorMsg}`);
+            }
+        },
+
+        batchDeleteScenarios: async (ids: string[]) => {
+            try {
+                const result = await api.batchDeleteScenarios(ids);
+                console.log(`[INFO] Batch deleted ${result.deleted_count} scenarios`);
+                
+                // If current scenario was deleted, switch to a new one
+                if (ids.includes(activeScenarioId)) {
+                    const newChatId = `new_${Date.now()}`;
+                    const newEmptyScenario: Trajectory = {
+                        id: newChatId,
+                        title: { en: "New Chat", zh: "新对话" },
+                        taskName: "New Chat",
+                        userQuery: "",
+                        totalSteps: 0,
+                        steps: []
+                    };
+                    setLiveScenario(newEmptyScenario);
+                    setActiveScenarioId(newChatId);
+                    setIsLiveMode(true);
+                    setSessionId(null);
+                }
+                
+                // Refresh scenarios list
+                await refreshScenarios();
+                return result;
+            } catch (e: any) {
+                console.error("Batch delete failed", e);
+                throw e;
             }
         },
 
