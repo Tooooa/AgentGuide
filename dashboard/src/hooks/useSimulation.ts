@@ -8,7 +8,7 @@ import { api } from '../services/api';
 export const useSimulation = () => {
     // Static State
     const [savedScenarios, setSavedScenarios] = useState<Trajectory[]>([]);
-    const [activeScenarioId, setActiveScenarioId] = useState<string>('default');
+    const [activeScenarioId, setActiveScenarioId] = useState<string>('empty-initial'); // 使用一个不存在的ID，确保初始为空
     const [customQuery, setCustomQuery] = useState<string>("");
     const [payload, setPayload] = useState<string>("1101"); // Default binary string
 
@@ -86,12 +86,12 @@ export const useSimulation = () => {
             return liveScenario;
         }
         
-        // Fallback: First scenario or default
-        return allScenarios[0] || {
-            id: 'default',
-            title: { en: 'Default', zh: '默认' },
-            taskName: 'Default',
-            userQuery: '',
+        // Fallback: Empty scenario (not first from list)
+        return {
+            id: 'empty-initial',
+            title: { en: 'New Session', zh: '新会话' },
+            taskName: 'New Session',
+            userQuery: '', // 空的userQuery
             totalSteps: 0,
             steps: []
         };
