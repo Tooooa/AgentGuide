@@ -132,7 +132,7 @@ class AgentWatermarker:
         self._round_num = round_used + 1
 
         distribution_diff = self._build_distribution_diff(
-            probs_norm, context_used, round_used, target_list
+            probs_norm, context_used, round_used, target_list, selected_action
         )
 
         return WatermarkSampleResult(
@@ -174,6 +174,14 @@ class AgentWatermarker:
         """Reset internal bit index and round counter."""
         self._bit_index = 0
         self._round_num = 0
+
+    @property
+    def current_round(self) -> int:
+        return self._round_num
+
+    @property
+    def current_bit_index(self) -> int:
+        return self._bit_index
 
     # ------------------------------------------------------------------ #
     # Internal helpers
@@ -220,6 +228,7 @@ class AgentWatermarker:
         context_used: str,
         round_used: int,
         target_list: List[str],
+        selected_action: str,
     ):
         """
         Reconstruct the bin selection and approximate watermarked distribution
@@ -246,7 +255,7 @@ class AgentWatermarker:
                     "original_prob": float(probs_norm[b]),
                     "watermarked_prob": float(probs_norm[b]),
                     "is_target_bin": True,
-                    "is_selected": b in target_list,
+                    "is_selected": b == selected_action,
                 }
                 for b in behaviors
             ]
@@ -282,7 +291,7 @@ class AgentWatermarker:
                     "original_prob": float(probs_norm[b]),
                     "watermarked_prob": float(watermarked[b]),
                     "is_target_bin": b in target_set,
-                    "is_selected": False,
+                    "is_selected": b == selected_action,
                 }
             )
         return diff

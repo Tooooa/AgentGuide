@@ -133,27 +133,198 @@ result = wrapper.process(
 ## 8. 真实 LLM 测试（DeepSeek 示例）
 脚本：`tests/fake_agent_llm.py`
 
-运行（需网络与 API Key，勿硬编码 Key）：
+1) 激活环境并配置 DeepSeek Key  
 ```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
 export DEEPSEEK_API_KEY=sk-你的key
-PYTHONPATH=. python3 tests/fake_agent_llm.py \
+```
+2) 启动水印网关（代理 DeepSeek）  
+```bash
+uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8000
+```
+可选环境变量（推荐至少配置 `AGENTMARK_TWO_PASS=1`）：
+```bash
+export AGENTMARK_TWO_PASS=1                 # tools 场景下启用两阶段，保证 tool_calls 产出
+export AGENTMARK_PAYLOAD_BITS=1101          # 固定水印 payload（可选）
+export AGENTMARK_SESSION_DEFAULT=demo       # 无 session 时使用的默认会话 key
+export AGENTMARK_PROB_TEMPERATURE=2.0       # 概率温度(>1 更平坦)，提高嵌入命中率
+export AGENTMARK_FORCE_UNIFORM=1            # 强制均匀分布（演示用）
+```
+3) 在另一个终端，运行真实 LLM 集成脚本  
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+PYTHONPATH=. DEEPSEEK_API_KEY=$DEEPSEEK_API_KEY \
+python3 tests/fake_agent_llm.py \
   --payload 1101 \
   --rounds 1 \
   --task "今天晚上吃什么？"
 ```
-说明：
-- 脚本会在 system prompt 中自动拼接严格的 JSON 概率指令，调用 DeepSeek，解析 `action_weights`，跑水印采样并解码。
-- 输出包含 `[raw LLM output]`、`frontend distribution diff`、`decoded bits (this step)`；解码比特应匹配 payload 前缀（默认 1101）。
-- 可通过 `--rounds` 多跑几轮，累积解码比特，检查前缀一致性。
+脚本会自动构造 Prompt（附加 JSON 概率指令）、调用 DeepSeek、解析概率→水印采样→解码。输出包含：
+- `[raw LLM output]`：模型原始 JSON 响应
+- `frontend distribution diff`：原始 vs 水印重组的分布
+- `decoded bits (this step)`：应匹配 payload 前缀（默认 1101，可逐步解出前几位）
 
-## 9. 网关模式（对方只改地址）
-- 启动代理（基于 FastAPI）：`uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8000`
-  - 环境变量：`DEEPSEEK_API_KEY`（必需），可选 `TARGET_LLM_BASE`（默认 https://api.deepseek.com）
-- 对方只需把 LLM BASE_URL 指向 `http://localhost:8000/v1`（或你的部署地址），请求体保持 OpenAI 风格：
-  - `messages` 照常传，`candidates` 可选（显式提供候选优先，未提供则网关提示 LLM 自行生成+打分，可靠性较低）。
-  - 可传 `context` 供水印解码用。
-- 网关自动：
-  1) 注入 JSON 评分指令到 system prompt。
-  2) 转发到 DeepSeek，拿到输出。
-  3) 解析自报概率，跑水印采样/解码，返回原响应并附加 `watermark` 字段（action、probabilities_used、frontend_data、decoded_bits、raw_llm_output）。
-- 对方代码/业务逻辑无需改动，只改调用地址；候选如有请显式提供，可提高水印可靠性。
+4) 用户/外部 Agent 只需改调用地址（无需改代码）  
+示例最小调用（放在用户侧，如 liteLLM/Swarm 的调用环境）：
+```bash
+export OPENAI_BASE_URL=http://localhost:8000/v1
+export OPENAI_API_KEY=any-string
+```
+然后正常用 openai 兼容客户端调用即可，示例：
+```python
+import openai
+client = openai.OpenAI(api_key="anything", base_url="http://localhost:8000/v1")
+resp = client.chat.completions.create(
+    model="deepseek-chat",
+    messages=[
+        {"role": "system", "content": "你是帮忙决定晚饭的助手"},
+        {"role": "user", "content": "今晚吃什么？"}
+    ],
+    candidates=["点外卖", "做炒饭", "煮面", "不吃"],  # 推荐显式提供
+)
+print(resp.watermark)  # 包含 action/probabilities_used/frontend_data/decoded_bits/raw_llm_output
+```
+- 不提供 `candidates` 时，网关会让 LLM 自举候选+概率（降级模式，可靠性较低）。
+- 网关响应保留原结构，并附加 `watermark` 字段用于校验。
+- 若需要跨请求累积嵌入，请设置同一会话标识（优先用 header）：
+  - `X-AgentMark-Session: your-session-id`
+  - 或 `extra_body.agentmark.session_id`
+- Swarm/天气示例只有 2 个工具，嵌入概率偏低；可设置 `AGENTMARK_PROB_TEMPERATURE=2.0`
+  并连续请求多轮，通常会出现 `bits_embedded>0` 与 `decoded_bits`。
+
+5) 其他本地自测（无需网络）：  
+```bash
+PYTHONPATH=. python tests/smoke_sdk.py
+PYTHONPATH=. python tests/batch_consistency.py
+PYTHONPATH=. python tests/prompt_dinner.py
+```
+
+## 10. 前端柱状图验证（完整流程）
+这个流程会把网关返回的水印结果转换成前端需要的 `distribution` 数据，并保存为一个可在前端选择的场景。
+
+### 10.1 启动 Dashboard 后端（端口 8000）
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
+python dashboard/server/app.py
+```
+
+### 10.2 启动网关（端口 8001，避免与 Dashboard 冲突）
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
+export DEEPSEEK_API_KEY=sk-你的key
+export TARGET_LLM_MODEL=deepseek-chat
+export AGENTMARK_TWO_PASS=1
+export AGENTMARK_PROB_TEMPERATURE=2.0
+uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8001
+```
+
+### 10.3 生成前端场景（自动写入数据库）
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
+python tests/frontend_bar_demo.py \
+  --proxy-base http://localhost:8001/v1 \
+  --dashboard-base http://localhost:8000 \
+  --rounds 5 \
+  --session demo
+```
+输出会显示保存的 `scenario_id`，并在 `tests/frontend_demo_scenario.json` 写入完整步骤数据。
+
+### 10.4 启动前端并查看柱状图
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb/dashboard
+npm install
+npm run dev
+```
+浏览器打开 `http://localhost:5173/`，在场景列表中选择 “AgentMark Watermark Demo”，即可看到柱状图和 `isSelected` 标记。
+
+## 11. 多动作追踪与打印请求/原始输出
+用于观察**多工具候选**下的完整链路，并打印每次请求和 LLM 原始返回文本。
+
+1) 启动网关并打开调试日志：
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
+export DEEPSEEK_API_KEY=sk-你的key
+export TARGET_LLM_MODEL=deepseek-chat
+export AGENTMARK_TWO_PASS=1
+export AGENTMARK_DEBUG=1
+uvicorn agentmark.proxy.server:app --host 0.0.0.0 --port 8001
+```
+
+2) 运行多动作追踪脚本：
+```bash
+cd /mnt/c/Users/25336/Desktop/AgentMarkWeb
+source ~/miniconda3/etc/profile.d/conda.sh && conda activate AgentMark
+python tests/multi_action_trace.py --proxy-base http://localhost:8001/v1 --session demo
+```
+
+输出包括：
+- `[request]`：发送到网关的原始请求
+- `[llm_raw_output]`：第一阶段 LLM 的 JSON 原文
+- `[watermark]`：网关返回的完整水印结构
+- 网关控制台同时会打印 `[agentmark:inbound_request] / [agentmark:scoring_request] / [agentmark:tool_request]` 等调试日志
+
+## 9. 插件（网关代理）规范与字段
+- 接口：OpenAI 兼容 `/v1/chat/completions`，保持原 response 结构，新增 `watermark` 字段。
+- 请求体：
+  - 标准字段：`model/messages/temperature/max_tokens/...`
+- 可选字段（由 Agent 代码自动填充，非终端用户输入）：
+    - `tools/functions`：优先提取为候选（推荐）。
+    - `system`：可在 system message 中放置 agentmark JSON 元数据（见下方示例）。
+    - `extra_body.agentmark.candidates`：Agent 可在此传入候选列表。
+    - 顶层 `candidates`：仅供 Agent 端调用时使用（非终端用户手输）。
+    - `context` / `extra_body.agentmark.context` / `extra_body.context`：用于水印解码。
+    - `extra_body.agentmark.session_id`：用于跨请求维持水印状态（推荐）。
+  - 网关注入：新增一条 system message 写入 JSON 评分指令；不修改用户原 prompt。
+- 候选提取优先级：`tools/functions` > `system(agentmark.candidates)` > `extra_body.agentmark.candidates`/顶层 `candidates`（由 Agent 端提供）> 无候选则 bootstrap（显式标记）。
+- system 元数据示例（放在 system message 的 content 中）：
+  ```json
+  {
+    "agentmark": {
+      "candidates": ["候选1", "候选2", "候选3"],
+      "context": "task123||step1"
+    }
+  }
+  ```
+- 响应附加字段 `watermark`（原结构保留），示例：
+  ```json
+  {
+    "watermark": {
+      "mode": "tools|system|extra_body|bootstrap",
+      "candidates_used": ["候选1","候选2"],
+      "probabilities_used": {"候选1":0.4, "候选2":0.6},
+      "action": "候选2",
+      "action_args": {},
+      "frontend_data": {...},      // 含 bits_embedded/bit_index 等
+      "decoded_bits": "11",
+      "context_used": "proxy||step1",
+      "round_num": 0,
+      "raw_llm_output": "原始 LLM 文本"
+    }
+  }
+  ```
+- two-pass 模式暂未开启，如需更高稳定性可扩展；当前为单次取概率+采样。
+
+## 10. Swarm / 其他 Agent 调用提示
+- 无需改业务代码，只需在启动/运行环境设置 BASE_URL 指向网关，例如：
+  ```bash
+  export OPENAI_BASE_URL=http://localhost:8000/v1    # 对应 openai sdk
+  export OPENAI_API_BASE=http://localhost:8000/v1   # 一些框架使用此名
+  export OPENAI_API_KEY=anything
+  ```
+- 自定义字段统一由 Agent 端放到 `extra_body`，示例：
+  ```python
+  resp = client.chat.completions.create(
+      model="deepseek-chat",
+      messages=[...],
+      extra_body={
+          "candidates": ["候选1","候选2"],
+          "context": "task||step1"
+      }
+  )
+  ```
+  网关会解析 tools/system/extra_body/candidates，注入评分指令，返回带 `watermark` 的响应。
