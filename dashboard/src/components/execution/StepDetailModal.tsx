@@ -222,10 +222,12 @@ const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step
                       <div className="flex-1 overflow-y-scroll p-6 bg-slate-50/50" ref={containerRef}>
                           <div className="flex gap-4 h-[500px]">
                               {/* Left Chart: Decomposition or Single Distribution */}
-                                <div className={`flex-1 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col ${mode === 'baseline' ? 'max-w-3xl mx-auto w-full' : ''}`} ref={leftChartRef}>
-                                    <h3 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider text-center">
+                            <div className={`bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col ${mode === 'baseline' ? 'max-w-4xl mx-auto w-full' : 'flex-1 max-w-2xl'}`} ref={leftChartRef}>
+                                <div className="h-12 flex items-center justify-center mb-1">
+                                    <h3 className="text-base font-bold text-slate-600 uppercase tracking-wider text-center">
                                         {mode === 'watermarked' ? t('probDecomp') : t('probDist')}
                                     </h3>
+                                </div>
                                     <div className="flex-1 relative">
                                         {!chartsReady ? (
                                             <div className="w-full h-full bg-slate-50 rounded-lg animate-pulse" />
@@ -279,9 +281,11 @@ const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step
                                     </div>
 
                                       {/* Right Chart: Recombination */}
-                                      <div className="flex-1 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col" ref={rightChartRef}>
-                                          <h3 className="text-sm font-bold text-slate-600 mb-4 uppercase tracking-wider text-center">
-                                              {t('recombination')}
+                                    <div className="flex-1 max-w-2xl bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col" ref={rightChartRef}>
+                                        <div className="h-12 flex items-center justify-center mb-1">
+                                            <h3 className="text-base font-bold text-slate-600 uppercase tracking-wider text-center">
+                                                {t('recombination')}
+                                            </h3>
                                               {!isAnimating && visibleLayers >= sortedDist.length && (
                                                 <button
                                                     onClick={handleReplay}
@@ -291,15 +295,15 @@ const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step
                                                     <Play size={10} fill="currentColor" /> {t('replay')}
                                                 </button>
                                             )}
-                                          </h3>
-                                          <div className="flex-1 relative">
-                                              {!chartsReady ? (
-                                                  <div className="w-full h-full bg-slate-50 rounded-lg animate-pulse" />
-                                              ) : (
-                                              <ResponsiveContainer width="100%" height="100%" debounce={100}>
-                                                  <BarChart data={binsData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                                                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                                      <XAxis dataKey="name" />
+                                        </div>
+                                        <div className="flex-1 relative">
+                                            {!chartsReady ? (
+                                                <div className="w-full h-full bg-slate-50 rounded-lg animate-pulse" />
+                                            ) : (
+                                            <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                                                <BarChart data={binsData} margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                    <XAxis dataKey="name" tick={{ fontSize: 10 }} height={60} />
                                                       <YAxis />
                                                       <Tooltip cursor={{ fill: 'transparent' }} content={({ active, payload, label }) => {
                                                         if (active && payload && payload.length) {
@@ -336,14 +340,7 @@ const StepDetailModal: React.FC<StepDetailModalProps> = ({ isOpen, onClose, step
                                                               fill={getRankColor(i)}
                                                               stroke="white"
                                                               strokeWidth={1}
-                                                              isAnimationActive={false}
-                                                          />
-                                                      ))}
-
-                                                  </BarChart>
-                                              </ResponsiveContainer>
-                                              )}
-                                          </div>
+                                                            maxBarSize={80}
                                       </div>
                                   </>
                               )}

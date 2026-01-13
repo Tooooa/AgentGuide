@@ -154,11 +154,17 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                             <div className="space-y-2 relative">
                                 <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                                     <span>{showWatermarkDetails ? 'Differential Decoding' : 'Probability Distribution'}</span>
-                                    <span>{showWatermarkDetails ? 'Bins' : 'Sampling'}</span>
+                                    {showWatermarkDetails && <span>Bins</span>}
                                 </div>
-                                <div className="h-28 flex gap-3 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100">
+                                <div 
+                                    className={`h-28 flex gap-3 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100 ${!showWatermarkDetails ? 'justify-center' : 'cursor-pointer hover:bg-white/50 transition-colors'}`}
+                                    onClick={showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
+                                >
                                     {/* Chart 1 */}
-                                    <div className="flex-1 h-full relative">
+                                    <div 
+                                        className={`h-full relative ${showWatermarkDetails ? 'flex-1' : 'w-1/2 cursor-pointer hover:bg-white/50 transition-colors rounded-lg'}`}
+                                        onClick={!showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
+                                    >
                                         <ResponsiveContainer width="99%" height="100%">
                                             <BarChart data={sortedDistribution}>
                                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
@@ -166,33 +172,43 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                 {sortedDistribution.map((d, i) => (
                                                     <ReferenceLine key={`line-${i}`} y={d.prob} stroke="#cbd5e1" strokeDasharray="3 3" />
                                                 ))}
-                                                <Bar dataKey="prob" radius={[2, 2, 0, 0]}>
+                                                <Bar dataKey="prob" radius={[2, 2, 0, 0]} maxBarSize={60}>
                                                     {sortedDistribution.map((entry, index) => (
                                                         <Cell key={`c-${index}`} fill={entry.isSelected ? '#818cf8' : '#ddd6fe'} />
                                                     ))}
                                                 </Bar>
                                             </BarChart>
                                         </ResponsiveContainer>
+                                        {/* 为 baseline 模式也添加放大按钮 */}
+                                        {!showWatermarkDetails && (
+                                            <button onClick={(e) => { e.stopPropagation(); setIsDetailOpen(true); }} className="absolute top-0 right-0 p-1 hover:bg-white rounded shadow-sm transition-colors text-indigo-500 z-10">
+                                                <RotateCcw size={10} />
+                                            </button>
+                                        )}
                                     </div>
 
-                                    <ArrowRight size={12} className="text-slate-300" />
+                                    {showWatermarkDetails && (
+                                        <>
+                                            <ArrowRight size={12} className="text-slate-300" />
 
-                                    {/* Chart 2: Bins */}
-                                    <div className="flex-1 h-full relative">
-                                        <ResponsiveContainer width="99%" height="100%">
-                                            <BarChart data={bins}>
-                                                <Tooltip cursor={{ fill: 'transparent' }} content={() => null} />
-                                                <Bar dataKey="weight" radius={[2, 2, 0, 0]}>
-                                                    {bins.map((e, idx) => (
-                                                        <Cell key={`b-${idx}`} fill={e.isTarget ? (showWatermarkDetails ? '#6366f1' : '#f59e0b') : '#ddd6fe'} />
-                                                    ))}
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                        <button onClick={() => setIsDetailOpen(true)} className="absolute top-0 right-0 p-1 hover:bg-white rounded shadow-sm transition-colors text-indigo-500">
-                                            <RotateCcw size={10} />
-                                        </button>
-                                    </div>
+                                            {/* Chart 2: Bins */}
+                                            <div className="flex-1 h-full relative">
+                                                <ResponsiveContainer width="99%" height="100%">
+                                                    <BarChart data={bins}>
+                                                        <Tooltip cursor={{ fill: 'transparent' }} content={() => null} />
+                                                        <Bar dataKey="weight" radius={[2, 2, 0, 0]} maxBarSize={60}>
+                                                            {bins.map((e, idx) => (
+                                                                <Cell key={`b-${idx}`} fill={e.isTarget ? '#6366f1' : '#ddd6fe'} />
+                                                            ))}
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                                <button onClick={(e) => { e.stopPropagation(); setIsDetailOpen(true); }} className="absolute top-0 right-0 p-1 hover:bg-white rounded shadow-sm transition-colors text-indigo-500 z-10">
+                                                    <RotateCcw size={10} />
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Pipeline Footer */}
