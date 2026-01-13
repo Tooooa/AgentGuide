@@ -8,7 +8,7 @@ import { api } from '../services/api';
 export const useSimulation = () => {
     // Static State
     const [savedScenarios, setSavedScenarios] = useState<Trajectory[]>([]);
-    const [activeScenarioId, setActiveScenarioId] = useState<string>('default');
+    const [activeScenarioId, setActiveScenarioId] = useState<string>(''); // 初始为空，不选择任何对话
     const [customQuery, setCustomQuery] = useState<string>("");
     const [payload, setPayload] = useState<string>("1101"); // Default binary string
 
@@ -70,6 +70,18 @@ export const useSimulation = () => {
 
     // Derived Active Scenario
     const activeScenario = useMemo(() => {
+        // If no scenario is selected (empty ID), return empty scenario
+        if (!activeScenarioId) {
+            return {
+                id: '',
+                title: { en: 'No Conversation', zh: '无对话' },
+                taskName: '',
+                userQuery: '',
+                totalSteps: 0,
+                steps: []
+            };
+        }
+        
         // Priority 1: If we have a liveScenario and it matches activeScenarioId, use it
         if (isLiveMode && liveScenario && liveScenario.id === activeScenarioId) {
             return liveScenario;
@@ -86,11 +98,11 @@ export const useSimulation = () => {
             return liveScenario;
         }
         
-        // Fallback: First scenario or default
-        return allScenarios[0] || {
-            id: 'default',
-            title: { en: 'Default', zh: '默认' },
-            taskName: 'Default',
+        // Fallback: Empty scenario (no conversation selected)
+        return {
+            id: '',
+            title: { en: 'No Conversation', zh: '无对话' },
+            taskName: '',
             userQuery: '',
             totalSteps: 0,
             steps: []
@@ -432,32 +444,42 @@ export const useSimulation = () => {
                 });
 
                 // Auto-save after each step completes
-                if (liveScenario && sessionId) {
-                    try {
-                        // Get the updated scenario with the new step
-                        const updatedScenario = {
-                            ...liveScenario,
-                            id: sessionId,
-                            totalSteps: liveScenario.steps.length + 1
-                        };
-                        
-                        // Generate title if needed
-                        let titleToSave = updatedScenario.title;
-                        if ((!titleToSave.en || titleToSave.en === "Live Session" || titleToSave.en === "New Session" || titleToSave.en === "New Chat") && updatedScenario.steps.length > 0) {
-                            // Use first user message as title preview
-                            const firstMessage = updatedScenario.userQuery || updatedScenario.steps[0]?.thought || "";
-                            const titlePreview = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
-                            titleToSave = { en: titlePreview, zh: titlePreview };
+                // Wait a bit for state to update, then save
+                setTimeout(async () => {
+                    if (sessionId) {
+                        try {
+                            // Re-fetch the latest liveScenario from state
+                            setLiveScenario(currentScenario => {
+                                if (!currentScenario) return null;
+                                
+                                // Save the current state
+                                const updatedScenario = {
+                                    ...currentScenario,
+                                    id: sessionId
+                                };
+                                
+                                // Generate title if needed
+                                let titleToSave = updatedScenario.title;
+                                if ((!titleToSave.en || titleToSave.en === "Live Session" || titleToSave.en === "New Session" || titleToSave.en === "New Chat") && updatedScenario.steps.length > 0) {
+                                    const firstMessage = updatedScenario.userQuery || updatedScenario.steps[0]?.thought || "";
+                                    const titlePreview = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
+                                    titleToSave = { en: titlePreview, zh: titlePreview };
+                                }
+                                
+                                // Save to database (fire and forget)
+                                api.saveScenario(titleToSave, updatedScenario, sessionId).then(() => {
+                                    console.log('[Auto-save] Saved after step completion');
+                                }).catch(err => {
+                                    console.error('[Auto-save] Failed to save scenario:', err);
+                                });
+                                
+                                return currentScenario; // Return unchanged
+                            });
+                        } catch (err) {
+                            console.error('[Auto-save] Error during save:', err);
                         }
-                        
-                        // Save to database (fire and forget, don't block UI)
-                        api.saveScenario(titleToSave, updatedScenario, sessionId).catch(err => {
-                            console.error('[Auto-save] Failed to save scenario:', err);
-                        });
-                    } catch (err) {
-                        console.error('[Auto-save] Error during save:', err);
                     }
-                }
+                }, 500); // Wait 500ms for state updates to complete
 
             } catch (e) {
                 console.error(e);

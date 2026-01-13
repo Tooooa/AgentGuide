@@ -221,7 +221,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                         <Terminal size={14} /> ACTION
                     </div>
-                    <div className="bg-slate-100 rounded-xl p-4 font-mono text-sm text-slate-800 shadow-sm border border-slate-200">
+                    <div className="bg-slate-100 rounded-xl p-4 font-mono text-sm text-slate-800 shadow-sm border border-slate-200 break-words overflow-wrap-anywhere">
                         {step.action}
                     </div>
                 </div>
