@@ -115,7 +115,7 @@ def choose_action_from_prompt_output(
     wm: AgentWatermarker,
     *,
     raw_output: str,
-    fallback_actions: List[str],
+    fallback_actions: Optional[List[str]] = None,
     context: str = "",
     history: Optional[List[str]] = None,
     round_num: Optional[int] = None,
@@ -136,11 +136,12 @@ def choose_action_from_prompt_output(
     probs = normalize_probabilities(weights)
 
     if not probs:
-        # Fallback: uniform over provided candidates
-        if not fallback_actions:
-            raise ValueError("fallback_actions is required when parsed probabilities are empty.")
-        uniform = 1.0 / len(fallback_actions)
-        probs = {a: uniform for a in fallback_actions}
+        # Fallback: uniform over provided candidates (if any)
+        if fallback_actions:
+            uniform = 1.0 / len(fallback_actions)
+            probs = {a: uniform for a in fallback_actions}
+        else:
+            raise ValueError("No probabilities parsed and no fallback_actions provided.")
 
     res = wm.sample(probabilities=probs, context=context, history=history, round_num=round_num)
     return res.action, probs
@@ -162,7 +163,7 @@ class PromptWatermarkWrapper:
         self,
         raw_output: str,
         *,
-        fallback_actions: List[str],
+        fallback_actions: Optional[List[str]] = None,
         context: str = "",
         history: Optional[List[str]] = None,
         round_num: Optional[int] = None,
@@ -179,10 +180,11 @@ class PromptWatermarkWrapper:
         probs = normalize_probabilities(weights) if weights else {}
 
         if not probs:
-            if not fallback_actions:
-                raise ValueError("fallback_actions is required when parsed probabilities are empty.")
-            uniform = 1.0 / len(fallback_actions)
-            probs = {a: uniform for a in fallback_actions}
+            if fallback_actions:
+                uniform = 1.0 / len(fallback_actions)
+                probs = {a: uniform for a in fallback_actions}
+            else:
+                raise ValueError("No probabilities parsed and no fallback_actions provided.")
 
         res = self.wm.sample(probabilities=probs, context=context, history=history, round_num=round_num)
 

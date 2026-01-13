@@ -90,11 +90,11 @@ from agentmark.sdk.prompt_adapter import (
 
 wm = AgentWatermarker(payload_text="team123")
 
-# raw_output 为 LLM 返回的文本（包含 JSON），fallback_actions 为候选列表
+# raw_output 为 LLM 返回的文本（包含 JSON），如果你有候选列表则传入（推荐），否则置 None
 selected, probs_used = choose_action_from_prompt_output(
     wm,
     raw_output=llm_response_text,
-    fallback_actions=["Search", "Reply", "Finish"],
+    fallback_actions=["Search", "Reply", "Finish"],  # 若无候选可传 None；解析不到概率且无候选会抛错
     context="task123||step1",
     history=["last observation"],
 )
@@ -104,7 +104,7 @@ wrapper = PromptWatermarkWrapper(wm)
 system_prompt = base_system_prompt + "\n" + wrapper.get_instruction()
 result = wrapper.process(
     raw_output=llm_response_text,
-    fallback_actions=["Search", "Reply", "Finish"],
+    fallback_actions=["Search", "Reply", "Finish"],  # 可选；无候选且无概率时会抛错
     context="task123||step1",
     history=["last observation"],
 )
@@ -129,3 +129,19 @@ result = wrapper.process(
   ```python
   from agentmark.sdk import AgentWatermarker, PromptWatermarkWrapper
   ```
+
+## 8. 真实 LLM 测试（DeepSeek 示例）
+脚本：`tests/fake_agent_llm.py`
+
+运行（需网络与 API Key，勿硬编码 Key）：
+```bash
+export DEEPSEEK_API_KEY=sk-你的key
+PYTHONPATH=. python3 tests/fake_agent_llm.py \
+  --payload 1101 \
+  --rounds 1 \
+  --task "今天晚上吃什么？"
+```
+说明：
+- 脚本会在 system prompt 中自动拼接严格的 JSON 概率指令，调用 DeepSeek，解析 `action_weights`，跑水印采样并解码。
+- 输出包含 `[raw LLM output]`、`frontend distribution diff`、`decoded bits (this step)`；解码比特应匹配 payload 前缀（默认 1101）。
+- 可通过 `--rounds` 多跑几轮，累积解码比特，检查前缀一致性。
