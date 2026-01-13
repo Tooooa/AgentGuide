@@ -212,24 +212,35 @@ export const useSimulation = () => {
             // Check Termination Condition - only check the LAST step
             // We don't check all steps because historical completed steps shouldn't block new conversations
             // After continue_session, the backend resets done state, so we should allow new steps
-            const lastStep = liveScenario.steps[liveScenario.steps.length - 1];
-            if (lastStep) {
-                // Skip check if the last step is a user_input (new question was just added)
-                if (lastStep.stepType === 'user_input') {
-                    // User just added a new question, allow proceeding
-                } else {
-                    const wmDone = lastStep.stepType === 'finish' || !!lastStep.finalAnswer;
-                    const blDone = lastStep.baseline?.stepType === 'finish' || !!lastStep.baseline?.finalAnswer;
+            const stepsForStatus = liveScenario.steps;
+            const getWmDone = () => {
+                for (let i = stepsForStatus.length - 1; i >= 0; i--) {
+                    const s = stepsForStatus[i];
+                    if (s.stepType === 'user_input') continue;
+                    if (s.isHidden) continue;
+                    return s.stepType === 'finish' || !!s.finalAnswer;
+                }
+                return false;
+            };
+            const getBlDone = () => {
+                for (let i = stepsForStatus.length - 1; i >= 0; i--) {
+                    const s = stepsForStatus[i];
+                    if (s.stepType === 'user_input') continue;
+                    const b = s.baseline;
+                    if (!b) continue;
+                    if (b.isHidden) continue;
+                    return b.stepType === 'finish' || !!b.finalAnswer;
+                }
+                return false;
+            };
 
-                    // Only stop if BOTH agents are done AND it's not a user input step
-                    if (wmDone && blDone) {
-                        setIsPlaying(false);
-                        return;
-                    }
-
-                    // If one is done but not the other, we proceed.
-                    // But backend might return empty for the one that is done?
-                    // That's fine, we just update the one that is running.
+            const lastStep = stepsForStatus[stepsForStatus.length - 1];
+            if (lastStep && lastStep.stepType !== 'user_input') {
+                const wmDone = getWmDone();
+                const blDone = getBlDone();
+                if (wmDone && blDone) {
+                    setIsPlaying(false);
+                    return;
                 }
             }
 
@@ -300,7 +311,7 @@ export const useSimulation = () => {
                                     if (steps[initialStepIndex]) {
                                         // Ensure baseline object exists
                                         const baseline = steps[initialStepIndex].baseline || {
-                                            thought: "", action: "", distribution: [], toolDetails: "", stepType: 'tool'
+                                            thought: "", action: "", distribution: [], toolDetails: "", stepType: 'tool', isHidden: false
                                         };
                                         steps[initialStepIndex] = {
                                             ...steps[initialStepIndex],
@@ -365,11 +376,20 @@ export const useSimulation = () => {
                                     finalAnswer: stepData.done ? (stepData.final_answer || stepData.thought || "") : undefined
                                 };
                             } else if (targetAgent === 'baseline') {
+                                const baselineExisting = existingStep.baseline || {
+                                    thought: "",
+                                    action: "",
+                                    distribution: [],
+                                    toolDetails: "",
+                                    stepType: 'tool' as const,
+                                    isHidden: false
+                                };
                                 // Update Baseline Data
                                 steps[initialStepIndex] = {
                                     ...existingStep,
                                     baseline: {
-                                        thought: stepData.thought || "",
+                                        ...baselineExisting,
+                                        thought: stepData.thought || baselineExisting.thought || "",
                                         action: stepData.action,
                                         toolDetails: stepData.observation,
                                         distribution: stepData.distribution || [],
@@ -387,15 +407,30 @@ export const useSimulation = () => {
                         setLiveScenario(prev => {
                             if (!prev) return null;
                             const updatedSteps = prev.steps;
-                            const lastStep = updatedSteps[updatedSteps.length - 1];
-                            if (lastStep) {
-                                const wmDone = lastStep.stepType === 'finish' || !!lastStep.finalAnswer;
-                                const blDone = lastStep.baseline?.stepType === 'finish' || !!lastStep.baseline?.finalAnswer;
-                                
-                                // If both agents are done, stop auto-playing
-                                if (wmDone && blDone) {
-                                    setIsPlaying(false);
+                            const getWmDone = () => {
+                                for (let i = updatedSteps.length - 1; i >= 0; i--) {
+                                    const s = updatedSteps[i];
+                                    if (s.stepType === 'user_input') continue;
+                                    if (s.isHidden) continue;
+                                    return s.stepType === 'finish' || !!s.finalAnswer;
                                 }
+                                return false;
+                            };
+                            const getBlDone = () => {
+                                for (let i = updatedSteps.length - 1; i >= 0; i--) {
+                                    const s = updatedSteps[i];
+                                    if (s.stepType === 'user_input') continue;
+                                    const b = s.baseline;
+                                    if (!b) continue;
+                                    if (b.isHidden) continue;
+                                    return b.stepType === 'finish' || !!b.finalAnswer;
+                                }
+                                return false;
+                            };
+                            const wmDone = getWmDone();
+                            const blDone = getBlDone();
+                            if (wmDone && blDone) {
+                                setIsPlaying(false);
                             }
                             return prev;
                         });

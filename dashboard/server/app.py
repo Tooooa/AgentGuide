@@ -661,7 +661,32 @@ async def step_session(req: StepRequest):
     if sess.watermarked_state.step_count >= sess.max_steps:
         # Return immediate JSON for consistency if done
         def immediate_done():
-            yield json.dumps({"type": "result", "data": {"done": True, "thought": "Max steps reached", "action": "Finish", "observation": ""}}) + "\n"
+            yield json.dumps({
+                "type": "result",
+                "data": {
+                    "agent": "watermarked",
+                    "done": True,
+                    "thought": "Max steps reached",
+                    "action": "Finish",
+                    "observation": "",
+                    "final_answer": "",
+                    "distribution": [],
+                    "metrics": {"latency": 0.0, "tokens": 0.0},
+                },
+            }) + "\n"
+            yield json.dumps({
+                "type": "result",
+                "data": {
+                    "agent": "baseline",
+                    "done": True,
+                    "thought": "Max steps reached",
+                    "action": "Finish",
+                    "observation": "",
+                    "final_answer": "",
+                    "distribution": [],
+                    "metrics": {"latency": 0.0, "tokens": 0.0},
+                },
+            }) + "\n"
         return StreamingResponse(immediate_done(), media_type="application/x-ndjson")
 
     # --- Generic Single Agent Step Function ---
@@ -669,8 +694,30 @@ async def step_session(req: StepRequest):
         step_start_time = time.time()
         
         # Check done state
-        if agent_state.done: 
-             return None # Already done
+        if agent_state.done:
+            final_data = {
+                "agent": agent_state.role,
+                "thought": "",
+                "action": "Finish",
+                "observation": "",
+                "done": True,
+                "final_answer": "",
+                "distribution": [],
+                "metrics": {
+                    "latency": 0.0,
+                    "tokens": 0.0,
+                },
+            }
+
+            if is_watermarked:
+                watermark_data = {
+                    "bits": "",
+                    "matrixRows": [],
+                    "rankContribution": 0,
+                }
+                return final_data, watermark_data, 0
+
+            return final_data, None, 0
 
         # 1. Build Messages
         messages = build_messages(

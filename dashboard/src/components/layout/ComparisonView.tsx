@@ -68,13 +68,14 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                     distribution: step.baseline.distribution,
                     stepType: step.baseline.stepType,
                     finalAnswer: step.baseline.finalAnswer,
+                    isHidden: step.baseline.isHidden,
                     watermark: { bits: "", matrixRows: [], rankContribution: 0 },
                     metrics: undefined
                 } : step;
 
                 // 1221: Check if has content (no hiding, just skip empty)
-                const hasBaselineContent = baselineStep.thought || baselineStep.action || baselineStep.stepType === 'finish';
-                const hasWatermarkedContent = step.thought || step.action || step.stepType === 'finish';
+                const hasBaselineContent = !baselineStep.isHidden && (baselineStep.thought || baselineStep.action || baselineStep.stepType === 'finish');
+                const hasWatermarkedContent = !step.isHidden && (step.thought || step.action || step.stepType === 'finish');
 
                 if (hasBaselineContent) {
                     currentSegment.baselineSteps.push(baselineStep);

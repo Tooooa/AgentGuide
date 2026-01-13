@@ -106,11 +106,13 @@ const FlowFeed: React.FC<FlowFeedProps> = ({ visibleSteps, erasedIndices, userQu
                 )}
 
                 {visibleSteps.map((step) => (
-                    <StepCard
-                        key={step.stepIndex}
-                        step={step}
-                        isErased={erasedIndices.has(step.stepIndex)}
-                    />
+                    step.isHidden ? null : (
+                        <StepCard
+                            key={step.stepIndex}
+                            step={step}
+                            isErased={erasedIndices.has(step.stepIndex)}
+                        />
+                    )
                 ))}
 
                 <div ref={bottomRef} className="h-4" />
