@@ -686,16 +686,24 @@ export const useSimulation = () => {
             }
 
             // Inject User Step locally for display (Optimistic UI)
-            // User input doesn't get a real stepIndex to avoid disrupting agent step numbering
+            // 1221: Add baseline data for alignment in ComparisonView
             setLiveScenario(prev => {
                 if (!prev) return null; // Should not happen if restored above
                 const userStep: Step = {
-                    stepIndex: -1, // Special index for user input, won't be displayed
+                    stepIndex: prev.steps.length,
                     thought: prompt,
                     action: "",
                     distribution: [],
                     watermark: { bits: "", matrixRows: [], rankContribution: 0 },
-                    stepType: 'user_input'
+                    stepType: 'user_input',
+                    // 1221: Ensure user_input has baseline data for alignment
+                    baseline: {
+                        thought: prompt,
+                        action: "",
+                        distribution: [],
+                        toolDetails: "",
+                        stepType: 'user_input'
+                    }
                 };
                 return {
                     ...prev,

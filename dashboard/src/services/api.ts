@@ -72,6 +72,11 @@ export const api = {
             body: JSON.stringify({ sessionId })
         });
 
+        // 1221: Throw error on HTTP failures (e.g., 404 session not found)
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
         if (!response.body) return;
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
