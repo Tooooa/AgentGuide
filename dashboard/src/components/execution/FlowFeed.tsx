@@ -80,12 +80,28 @@ const FlowFeed: React.FC<FlowFeedProps> = ({ visibleSteps, erasedIndices, userQu
                     </div>
                 )}
 
-                {visibleSteps.length === 0 && (
+                {visibleSteps.length === 0 && userQuery && (
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-2 py-10">
                         <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center animate-pulse">
                             <Bot size={20} className="text-slate-300" />
                         </div>
                         <p className="text-sm">{t('waiting')}</p>
+                    </div>
+                )}
+
+                {visibleSteps.length === 0 && !userQuery && (
+                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-4 py-20">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center">
+                            <Bot size={32} className="text-indigo-300" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-lg font-medium text-slate-600 mb-1">
+                                {locale === 'zh' ? '开始新对话' : 'Start a New Conversation'}
+                            </p>
+                            <p className="text-sm text-slate-400">
+                                {locale === 'zh' ? '在下方输入框中输入您的问题' : 'Enter your question in the input box below'}
+                            </p>
+                        </div>
                     </div>
                 )}
 

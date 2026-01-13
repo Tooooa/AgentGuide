@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Zap } from 'lucide-react';
-import { scenarios } from '../../data/mockData';
+import { X, Zap } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
 
 interface SettingsModalProps {
@@ -34,15 +33,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     hasActiveConversation = false
 }) => {
     const { locale } = useI18n();
-    const [showScenarioList, setShowScenarioList] = useState(false);
     const [showPayloadWarning, setShowPayloadWarning] = useState(false);
     const [showPayloadFormatError, setShowPayloadFormatError] = useState(false);
-
-    const handleSelectScenario = (s: typeof scenarios[0]) => {
-        const title = locale === 'zh' ? s.title.zh : s.title.en;
-        setCustomQuery(s.userQuery || title);
-        setShowScenarioList(false);
-    };
 
     const handlePayloadChange = (newPayload: string) => {
         // 验证载荷内容只包含0和1
@@ -133,19 +125,35 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                 </div>
                             </div>
 
-                            {/* API Key */}
-                            {isLiveMode && (
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">DeepSeek API Key</label>
-                                    <input
-                                        type="password"
-                                        value={apiKey}
-                                        onChange={(e) => setApiKey(e.target.value)}
-                                        placeholder="sk-..."
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-sm font-mono"
-                                    />
-                                </div>
-                            )}
+                              {/* API Key */}
+                              {isLiveMode && (
+                                  <div>
+                                      <label className="block text-sm font-bold text-slate-700 mb-2">DeepSeek API Key</label>
+                                      <input
+                                          type="password"
+                                          value={apiKey}
+                                          onChange={(e) => setApiKey(e.target.value)}
+                                          placeholder="sk-..."
+                                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-sm font-mono"
+                                      />
+                                  </div>
+                              )}
+
+                              {/* Custom Query */}
+                              {isLiveMode && (
+                                  <div>
+                                      <label className="block text-sm font-bold text-slate-700 mb-2">
+                                          {locale === 'zh' ? '自定义问题' : 'Custom Query'}
+                                      </label>
+                                      <textarea
+                                          value={customQuery}
+                                          onChange={(e) => setCustomQuery(e.target.value)}
+                                          placeholder={locale === 'zh' ? '输入你的问题…' : 'Enter your query…'}
+                                          rows={4}
+                                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-sm"
+                                      />
+                                  </div>
+                              )}
 
                             {/* Payload */}
                             <div>

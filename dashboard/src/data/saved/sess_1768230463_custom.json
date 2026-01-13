@@ -1,0 +1,110 @@
+{
+  "id": "sess_1768230463_custom",
+  "title": {
+    "en": "I want to find movies with hig...",
+    "zh": "I want to find movies with hig..."
+  },
+  "taskName": "Live Execution",
+  "userQuery": "I want to find movies with high ratings. Can you provide me with a list of top-rated movies along with their IMDb ratings and summaries? Please sort the results by their IMDb ratings in descending order.",
+  "totalSteps": 1,
+  "steps": [
+    {
+      "stepIndex": 0,
+      "thought": "The user wants a list of top-rated movies with IMDb ratings and summaries, sorted by IMDb rating descending. I need to gather this data. I have several tools that can provide top-rated movies. I'll start by using the 'IMDb top 100 movies' tool to get a comprehensive list of top movies, as it directly provides top 100 movies from IMDb. Then, I can use other tools to get more details like summaries if needed. However, the 'IMDb top 100 movies' tool might already include ratings and summaries. Let's try it first.",
+      "action": "Call: IMDb_top_100_movies__Get_Top_100_Movies_according_to_IMDb",
+      "distribution": [
+        {
+          "name": "Hollywood_Movies__Top_n_Movies_By_IMDB_Rating",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "MovieHut_Random_Movie__Get_List_of_Movies_Sorted_by_IMDb_Rating_With_Parameters",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "List_Movies__Minimum_Rating",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "IMDb_top_100_movies__Get_Top_100_Movies_according_to_IMDb",
+          "prob": 0.95,
+          "isSelected": true
+        },
+        {
+          "name": "TMS__Top_Rated_Movies",
+          "prob": 0.01,
+          "isSelected": false
+        },
+        {
+          "name": "Finish",
+          "prob": 0.01,
+          "isSelected": false
+        }
+      ],
+      "watermark": {
+        "bits": "1",
+        "matrixRows": [
+          [
+            1,
+            1,
+            0,
+            0
+          ]
+        ],
+        "rankContribution": 1
+      },
+      "stepType": "tool",
+      "toolDetails": "tool=IMDb_top_100_movies__Get_Top_100_Movies_according_to_IMDb category=Movies api=Get Top 100 Movies according to IMDb args={} | desc=Get Top 100 Movies according to IMDb",
+      "isHidden": false,
+      "baseline": {
+        "thought": "The user wants a list of top-rated movies with IMDb ratings and summaries, sorted by IMDb rating descending. I need to gather this data. I have several tools that can provide top-rated movies. I'll start by using the 'IMDb top 100 movies' tool to get a comprehensive list of top movies, as it directly provides top 100 movies from IMDb. Then, I can use other tools to get more details like summaries if needed. However, the 'IMDb top 100 movies' tool might already include ratings and summaries. Let's try it first.",
+        "action": "Call: IMDb_top_100_movies__Get_Top_100_Movies_according_to_IMDb",
+        "toolDetails": "tool=IMDb_top_100_movies__Get_Top_100_Movies_according_to_IMDb category=Movies api=Get Top 100 Movies according to IMDb args={} | desc=Get Top 100 Movies according to IMDb",
+        "distribution": [
+          {
+            "name": "Hollywood_Movies__Top_n_Movies_By_IMDB_Rating",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "MovieHut_Random_Movie__Get_List_of_Movies_Sorted_by_IMDb_Rating_With_Parameters",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "List_Movies__Minimum_Rating",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "IMDb_top_100_movies__Get_Top_100_Movies_according_to_IMDb",
+            "prob": 0.95,
+            "isSelected": true
+          },
+          {
+            "name": "TMS__Top_Rated_Movies",
+            "prob": 0.01,
+            "isSelected": false
+          },
+          {
+            "name": "Finish",
+            "prob": 0.01,
+            "isSelected": false
+          }
+        ],
+        "stepType": "tool",
+        "metrics": {
+          "latency": 5.770454406738281,
+          "tokens": 157
+        }
+      },
+      "metrics": {
+        "latency": 5.813682556152344,
+        "tokens": 157
+      }
+    }
+  ]
+}

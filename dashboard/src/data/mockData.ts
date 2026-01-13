@@ -60,16 +60,6 @@ export type Trajectory = {
 
 // --- Helper Functions ---
 
-const generateRandomMatrixRow = (seed: number, length: number = 16): number[] => {
-    const row = [];
-    for (let i = 0; i < length; i++) {
-        // Simple deterministic random based on seed
-        const x = Math.sin(seed + i) * 10000;
-        row.push((x - Math.floor(x)) > 0.5 ? 1 : 0);
-    }
-    return row;
-};
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // --- Exports ---
 
