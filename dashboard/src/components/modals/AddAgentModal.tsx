@@ -6,10 +6,9 @@ import { useI18n } from '../../i18n/I18nContext';
 interface AddAgentModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onApply: (data: { repoUrl: string; apiKey: string; userInput: string }) => void;
+    onApply: (data: { repoUrl: string; apiKey: string }) => void;
     apiKey: string;
     repoUrl: string;
-    userInput: string;
 }
 
 const AddAgentModal: React.FC<AddAgentModalProps> = ({
@@ -17,13 +16,11 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({
     onClose,
     onApply,
     apiKey,
-    repoUrl,
-    userInput
+    repoUrl
 }) => {
     const { locale } = useI18n();
     const [localRepoUrl, setLocalRepoUrl] = React.useState(repoUrl);
     const [localApiKey, setLocalApiKey] = React.useState(apiKey);
-    const [localUserInput, setLocalUserInput] = React.useState(userInput);
 
     useEffect(() => {
         if (!isOpen) {
@@ -31,14 +28,12 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({
         }
         setLocalRepoUrl(repoUrl);
         setLocalApiKey(apiKey);
-        setLocalUserInput(userInput);
-    }, [isOpen, repoUrl, apiKey, userInput]);
+    }, [isOpen, repoUrl, apiKey]);
 
     const handleApply = () => {
         onApply({
             repoUrl: localRepoUrl.trim(),
-            apiKey: localApiKey.trim(),
-            userInput: localUserInput
+            apiKey: localApiKey.trim()
         });
     };
 
@@ -109,19 +104,6 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                                        {locale === 'zh' ? '用户输入' : 'User Input'}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={localUserInput}
-                                        onChange={(e) => setLocalUserInput(e.target.value)}
-                                        placeholder={locale === 'zh' ? 'e.g. What should I eat tonight?' : 'e.g. What should I eat tonight?'}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-sm"
-                                    />
-                                </div>
-
                             </div>
 
                             <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50 border-t border-slate-200">
@@ -134,7 +116,7 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({
                                 <button
                                     onClick={handleApply}
                                     className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium hover:shadow-lg transition-all"
-                                    disabled={!localApiKey.trim() || !localUserInput.trim()}
+                                    disabled={!localApiKey.trim()}
                                 >
                                     {locale === 'zh' ? '应用' : 'Apply'}
                                 </button>

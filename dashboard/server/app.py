@@ -16,13 +16,17 @@ from sentence_transformers import SentenceTransformer, util
 import copy
 # --- Configuration ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+SWARM_ROOT = PROJECT_ROOT / "swarm"
 TOOL_DATA_ROOT = PROJECT_ROOT / "experiments/toolbench/data/data/toolenv/tools"
 
 import sys
 sys.path.append(str(PROJECT_ROOT))
+if SWARM_ROOT.exists():
+    sys.path.append(str(SWARM_ROOT))
 
 from agentmark.core.rlnc_codec import DeterministicRLNC
 from agentmark.core.watermark_sampler import sample_behavior_differential
+from agentmark.sdk.prompt_adapter import extract_json_payload
 
 # --- Database Setup ---
 from dashboard.server.database import ConversationDB
@@ -125,6 +129,205 @@ class Session:
 
 sessions: Dict[str, Session] = {}
 
+# --- Swarm Plugin Mode ---
+
+def get_weather(location: str, time: str = "now") -> str:
+    """Get the current weather in a given location. Location MUST be a city."""
+    return json.dumps({"location": location, "temperature": "65", "time": time})
+
+
+def get_weather_forecast(location: str, days: int = 3) -> str:
+    """Get a short weather forecast for a given location and number of days."""
+    return json.dumps(
+        {"location": location, "days": days, "forecast": ["sunny", "cloudy", "rain"]}
+    )
+
+
+def get_air_quality(location: str) -> str:
+    """Get a simple air quality report for a given location."""
+    return json.dumps({"location": location, "aqi": 42, "status": "good"})
+
+
+def send_email(recipient: str, subject: str, body: str) -> str:
+    """Send a short email."""
+    print("Sending email...")
+    print(f"To: {recipient}")
+    print(f"Subject: {subject}")
+    print(f"Body: {body}")
+    return "Sent!"
+
+
+def send_sms(phone_number: str, message: str) -> str:
+    """Send a short SMS message to a phone number."""
+    print("Sending sms...")
+    print(f"To: {phone_number}")
+    print(f"Message: {message}")
+    return "Sent!"
+
+
+ADD_AGENT_SYSTEM_PROMPT = "You are a helpful agent."
+
+ADD_AGENT_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get the current weather in a given location. Location MUST be a city.",
+            "parameters": {
+                "type": "object",
+                "properties": {"location": {"type": "string"}, "time": {"type": "string"}},
+                "required": ["location"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather_forecast",
+            "description": "Get a short weather forecast for a given location and number of days.",
+            "parameters": {
+                "type": "object",
+                "properties": {"location": {"type": "string"}, "days": {"type": "string"}},
+                "required": ["location"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_air_quality",
+            "description": "Get a simple air quality report for a given location.",
+            "parameters": {
+                "type": "object",
+                "properties": {"location": {"type": "string"}},
+                "required": ["location"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_email",
+            "description": "",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "recipient": {"type": "string"},
+                    "subject": {"type": "string"},
+                    "body": {"type": "string"},
+                },
+                "required": ["recipient", "subject", "body"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_sms",
+            "description": "Send a short SMS message to a phone number.",
+            "parameters": {
+                "type": "object",
+                "properties": {"phone_number": {"type": "string"}, "message": {"type": "string"}},
+                "required": ["phone_number", "message"],
+            },
+        },
+    },
+]
+
+
+class AddAgentSession:
+    def __init__(self, session_id: str, api_key: str, repo_url: str):
+        self.session_id = session_id
+        self.api_key = api_key
+        self.repo_url = repo_url
+        self.step_count = 0
+
+
+add_agent_sessions: Dict[str, AddAgentSession] = {}
+
+
+def _get_proxy_base() -> str:
+    return (
+        os.getenv("AGENTMARK_PROXY_BASE")
+        or os.getenv("OPENAI_BASE_URL")
+        or "http://localhost:8001/v1"
+    )
+
+
+def _build_proxy_client(api_key: Optional[str]) -> OpenAI:
+    return OpenAI(
+        api_key=api_key or os.getenv("OPENAI_API_KEY") or "anything",
+        base_url=_get_proxy_base(),
+    )
+
+
+def _extract_watermark(completion: Any) -> Optional[Dict[str, Any]]:
+    try:
+        extra = getattr(completion, "model_extra", None)
+        if extra and isinstance(extra, dict) and extra.get("watermark"):
+            return extra.get("watermark")
+        extra = getattr(completion, "__pydantic_extra__", None)
+        if extra and isinstance(extra, dict) and extra.get("watermark"):
+            return extra.get("watermark")
+        payload = completion.model_dump()
+        return payload.get("watermark")
+    except Exception:
+        return None
+
+
+def _build_add_agent_step(
+    watermark: Dict[str, Any],
+    step_index: int,
+    completion_content: Optional[str],
+    completion_tool_calls: Optional[List[Dict[str, Any]]],
+) -> Dict[str, Any]:
+    frontend = watermark.get("frontend_data") or {}
+    diff = frontend.get("distribution_diff") or []
+    distribution = []
+    for item in diff:
+        prob = item.get("watermarked_prob")
+        if prob is None:
+            prob = item.get("original_prob", 0)
+        distribution.append(
+            {
+                "name": item.get("action") or "",
+                "prob": float(prob),
+                "isSelected": bool(item.get("is_selected")),
+            }
+        )
+    action = watermark.get("action") or ""
+    action_args = watermark.get("action_args") or {}
+    thought = ""
+    raw_text = watermark.get("raw_llm_output") or ""
+    try:
+        payload = extract_json_payload(raw_text)
+        thought = payload.get("thought") or ""
+    except Exception:
+        thought = ""
+
+    bits_embedded = frontend.get("watermark_meta", {}).get("bits_embedded") or 0
+    matrix_rows = [[1] for _ in range(int(bits_embedded))]
+    final_answer = (completion_content or "").strip()
+    has_tool_calls = bool(completion_tool_calls)
+    step_type = "tool" if action else "other"
+    if final_answer and not has_tool_calls:
+        step_type = "finish"
+    return {
+        "stepIndex": step_index,
+        "thought": thought,
+        "action": f"Call: {action}" if action else "",
+        "toolDetails": json.dumps(action_args, ensure_ascii=False),
+        "distribution": distribution,
+        "watermark": {
+            "bits": watermark.get("decoded_bits") or "",
+            "matrixRows": matrix_rows,
+            "rankContribution": len(matrix_rows),
+        },
+        "stepType": step_type,
+        "metrics": {"latency": 0.0, "tokens": 0.0},
+        "finalAnswer": final_answer or None,
+    }
+
 class InitRequest(BaseModel):
     apiKey: str
     scenarioId: str
@@ -141,6 +344,17 @@ class StepRequest(BaseModel):
 class ContinueRequest(BaseModel):
     sessionId: str
     prompt: str
+
+
+class AddAgentInitRequest(BaseModel):
+    apiKey: str
+    repoUrl: Optional[str] = ""
+
+
+class AddAgentTurnRequest(BaseModel):
+    sessionId: str
+    message: str
+    apiKey: Optional[str] = None
 
 # --- Helpers ---
 def build_messages(query: str, tool_summaries: List[str], admissible_commands: List[str]) -> List[Dict]:
@@ -330,6 +544,97 @@ async def init_custom_session(req: CustomInitRequest):
         },
         "totalSteps": 0,
         "payloadLength": len(task.get("payload_str", req.payload)) if req.payload else 16 
+    }
+
+
+@app.post("/api/add_agent/start")
+async def start_add_agent_session(req: AddAgentInitRequest):
+    session_id = f"agent_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+    add_agent_sessions[session_id] = AddAgentSession(
+        session_id=session_id,
+        api_key=req.apiKey,
+        repo_url=req.repoUrl or "",
+    )
+    return {
+        "sessionId": session_id,
+        "proxyBase": _get_proxy_base(),
+    }
+
+
+@app.post("/api/add_agent/turn")
+async def add_agent_turn(req: AddAgentTurnRequest):
+    if req.sessionId not in add_agent_sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message is empty")
+    session = add_agent_sessions[req.sessionId]
+    model_name = os.getenv("AGENTMARK_TARGET_MODEL", "gpt-4o")
+    completion = None
+    use_swarm = (os.getenv("AGENTMARK_USE_SWARM") or "1").strip().lower() not in {"0", "false", "no"}
+
+    if use_swarm:
+        try:
+            from swarm import Swarm
+            from examples.weather_agent.agents import weather_agent
+
+            swarm_client = Swarm(client=_build_proxy_client(req.apiKey or session.api_key))
+            completion = swarm_client.get_chat_completion(
+                agent=weather_agent,
+                history=[{"role": "user", "content": req.message.strip()}],
+                context_variables={},
+                model_override=model_name,
+                stream=False,
+                debug=False,
+            )
+        except Exception as exc:
+            print(f"[WARN] Swarm bridge failed, falling back to direct call: {exc}")
+
+    if completion is None:
+        client = _build_proxy_client(req.apiKey or session.api_key)
+        messages = [
+            {"role": "system", "content": ADD_AGENT_SYSTEM_PROMPT},
+            {"role": "user", "content": req.message.strip()},
+        ]
+        completion = client.chat.completions.create(
+            model=model_name,
+            messages=messages,
+            tools=ADD_AGENT_TOOLS,
+        )
+    watermark = _extract_watermark(completion)
+    if not watermark:
+        raise HTTPException(status_code=500, detail="Missing watermark in response")
+    completion_message = None
+    try:
+        if completion and completion.choices:
+            completion_message = completion.choices[0].message
+    except Exception:
+        completion_message = None
+    completion_content = ""
+    completion_tool_calls: Optional[List[Dict[str, Any]]] = None
+    if completion_message is not None:
+        completion_content = completion_message.content or ""
+        raw_tool_calls = getattr(completion_message, "tool_calls", None)
+        if raw_tool_calls:
+            completion_tool_calls = []
+            for call in raw_tool_calls:
+                if hasattr(call, "model_dump"):
+                    completion_tool_calls.append(call.model_dump())
+                elif isinstance(call, dict):
+                    completion_tool_calls.append(call)
+                else:
+                    completion_tool_calls.append(getattr(call, "__dict__", {}))
+    step = _build_add_agent_step(
+        watermark,
+        session.step_count,
+        completion_content,
+        completion_tool_calls,
+    )
+    session.step_count += 1
+    return {
+        "sessionId": req.sessionId,
+        "step": step,
+        "promptTrace": watermark.get("prompt_trace"),
+        "watermark": watermark,
     }
 
 # --- Scenario Persistence ---

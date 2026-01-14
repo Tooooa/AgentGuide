@@ -6,13 +6,17 @@ in JSON form (black-box API scenario).
 from __future__ import annotations
 
 import json
+import os
 import re
 from typing import Dict, List, Optional, Tuple, Any
 
 from agentmark.sdk import AgentWatermarker
 
+DEFAULT_PROB_TEMPERATURE = 1.5
 
-PROMPT_INSTRUCTION = """You MUST return ONLY JSON with your probability over all candidate actions.
+
+PROMPT_INSTRUCTION = """You are an action-selection assistant.
+Return ONLY JSON with your probability over all candidate actions.
 Example:
 {
   "action_weights": {"Action1": 0.5, "Action2": 0.3, "Action3": 0.2},
@@ -21,6 +25,13 @@ Example:
 }
 Requirements:
 - action_weights MUST include every candidate (or top-K if instructed).
+<<<<<<< Updated upstream
+- action_args MUST include every candidate. For each candidate, provide a JSON object of arguments.
+  Fill any arguments you can infer from the user request and tool schema. If unsure, still include
+  keys with placeholder values (empty string, 0, or null) instead of omitting the candidate.
+=======
+- action_args MUST include every candidate; use {} if arguments are unknown.
+>>>>>>> Stashed changes
 - Sum does not need to be exact; we will normalize.
 - Do NOT output any extra text or code fences."""
 
@@ -111,6 +122,43 @@ def normalize_probabilities(probs: Dict[str, float]) -> Dict[str, float]:
     return {k: float(v) / total for k, v in probs.items()}
 
 
+def apply_temperature(probs: Dict[str, float], temperature: float) -> Dict[str, float]:
+    """
+    Apply temperature scaling to soften or sharpen probabilities.
+    temperature > 1.0 -> flatter; temperature < 1.0 -> sharper.
+    """
+    if not probs:
+        return probs
+    if temperature <= 0:
+        return probs
+    if abs(temperature - 1.0) < 1e-6:
+        return probs
+    scaled = {k: float(v) ** (1.0 / temperature) for k, v in probs.items()}
+    return normalize_probabilities(scaled)
+
+
+def _force_uniform(probs: Dict[str, float], fallback_actions: Optional[List[str]]) -> Dict[str, float]:
+    keys = list(probs.keys()) if probs else list(fallback_actions or [])
+    if not keys:
+        return probs
+    uniform = 1.0 / len(keys)
+    return {k: uniform for k in keys}
+
+
+def _getenv(name: str) -> Optional[str]:
+    # Local import for safety in reloaded contexts.
+    import os as _os
+
+    return _os.getenv(name)
+
+
+def _env_flag(name: str) -> bool:
+    value = _getenv(name)
+    if value is None:
+        return False
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def choose_action_from_prompt_output(
     wm: AgentWatermarker,
     *,
@@ -142,6 +190,18 @@ def choose_action_from_prompt_output(
             probs = {a: uniform for a in fallback_actions}
         else:
             raise ValueError("No probabilities parsed and no fallback_actions provided.")
+
+    if _env_flag("AGENTMARK_FORCE_UNIFORM"):
+        probs = _force_uniform(probs, fallback_actions)
+
+    temp_env = _getenv("AGENTMARK_PROB_TEMPERATURE")
+    if temp_env is None:
+        probs = apply_temperature(probs, DEFAULT_PROB_TEMPERATURE)
+    elif temp_env.strip():
+        try:
+            probs = apply_temperature(probs, float(temp_env))
+        except ValueError:
+            pass
 
     res = wm.sample(probabilities=probs, context=context, history=history, round_num=round_num)
     return res.action, probs
@@ -185,6 +245,18 @@ class PromptWatermarkWrapper:
                 probs = {a: uniform for a in fallback_actions}
             else:
                 raise ValueError("No probabilities parsed and no fallback_actions provided.")
+
+        if _env_flag("AGENTMARK_FORCE_UNIFORM"):
+            probs = _force_uniform(probs, fallback_actions)
+
+        temp_env = _getenv("AGENTMARK_PROB_TEMPERATURE")
+        if temp_env is None:
+            probs = apply_temperature(probs, DEFAULT_PROB_TEMPERATURE)
+        elif temp_env.strip():
+            try:
+                probs = apply_temperature(probs, float(temp_env))
+            except ValueError:
+                pass
 
         res = self.wm.sample(probabilities=probs, context=context, history=history, round_num=round_num)
 

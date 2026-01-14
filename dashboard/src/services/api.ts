@@ -26,6 +26,18 @@ export interface StepResponse {
     stepIndex: number;
 }
 
+export interface AddAgentStartResponse {
+    sessionId: string;
+    proxyBase?: string;
+}
+
+export interface AddAgentTurnResponse {
+    sessionId: string;
+    step: any;
+    promptTrace?: any;
+    watermark?: any;
+}
+
 export const api = {
     async restoreSession(apiKey: string, scenarioId: string) {
         const res = await axios.post(`${API_BASE}/api/restore_session`, {
@@ -130,6 +142,20 @@ export const api = {
 
     togglePin: async (scenarioId: string) => {
         const response = await axios.post(`${API_BASE}/api/scenarios/${scenarioId}/toggle_pin`);
+        return response.data;
+    },
+
+    addAgentStart: async (apiKey: string, repoUrl: string): Promise<AddAgentStartResponse> => {
+        const response = await axios.post(`${API_BASE}/api/add_agent/start`, { apiKey, repoUrl });
+        return response.data;
+    },
+
+    addAgentTurn: async (
+        sessionId: string,
+        message: string,
+        apiKey: string
+    ): Promise<AddAgentTurnResponse> => {
+        const response = await axios.post(`${API_BASE}/api/add_agent/turn`, { sessionId, message, apiKey });
         return response.data;
     }
 };
