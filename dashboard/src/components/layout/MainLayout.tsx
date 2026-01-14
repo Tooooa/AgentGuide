@@ -6,11 +6,12 @@ import { Languages, Home, Settings } from 'lucide-react';
 type MainLayoutProps = {
     left: React.ReactNode;
     middle: React.ReactNode;
-    right: React.ReactNode;
+    right?: React.ReactNode;
     onHome: () => void;
     onSettings?: () => void;
     settingsButtonRef?: React.RefObject<HTMLButtonElement | null>;
     variant?: 'default' | 'add_agent';
+    layout?: 'standard' | 'compare';
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({
@@ -20,21 +21,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     onHome,
     onSettings,
     settingsButtonRef,
-    variant = 'default'
+    variant = 'default',
+    layout = 'standard'
 }) => {
     const { locale, setLocale, t } = useI18n();
     const isAddAgent = variant === 'add_agent';
+    const isCompareLayout = layout === 'compare';
     const rootClass = isAddAgent
-        ? 'h-screen bg-gradient-to-br from-sky-100 via-white to-indigo-100 flex flex-col font-sans overflow-hidden'
+        ? 'relative h-screen bg-transparent flex flex-col font-sans overflow-hidden'
         : 'h-screen bg-slate-50 flex flex-col font-sans overflow-hidden';
     const headerClass = isAddAgent
-        ? 'flex-none px-6 py-4 bg-sky-50/80 backdrop-blur border-b border-sky-200 flex justify-between items-center z-10'
+        ? 'flex-none px-6 py-4 bg-white/80 backdrop-blur border-b border-indigo-100 flex justify-between items-center z-10'
         : 'flex-none px-6 py-4 bg-white/80 backdrop-blur border-b border-indigo-100 flex justify-between items-center z-10';
     const titleClass = isAddAgent
-        ? 'text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-indigo-600'
+        ? 'text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600'
         : 'text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600';
     const buttonClass = isAddAgent
-        ? 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-sky-200 shadow-sm hover:bg-sky-100 transition-colors text-sm font-medium text-slate-600'
+        ? 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-sm font-medium text-slate-600'
         : 'flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-sm font-medium text-slate-600';
 
     return (
@@ -81,7 +84,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             </header>
 
             {/* Main Content - Flex-1 (Takes remaining height) */}
-            <main className="flex-1 min-h-0 w-full max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)_380px] gap-6">
+            <main
+                className={
+                    isCompareLayout
+                        ? 'relative z-10 flex-1 min-h-0 w-full max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-6'
+                        : 'relative z-10 flex-1 min-h-0 w-full max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)_380px] gap-6'
+                }
+            >
 
                 {/* Left: Control Panel (Independent Scroll) */}
                 <div className="h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
@@ -93,10 +102,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                     {middle}
                 </div>
 
-                {/* Right: Decoder Panel (Independent Scroll) */}
-                <div className="h-full overflow-y-auto pl-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-                    {right}
-                </div>
+                {!isCompareLayout && (
+                    <div className="h-full overflow-y-auto pl-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                        {right}
+                    </div>
+                )}
 
             </main>
         </div>

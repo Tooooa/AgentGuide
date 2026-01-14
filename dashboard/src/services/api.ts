@@ -38,6 +38,12 @@ export interface AddAgentTurnResponse {
     watermark?: any;
 }
 
+export interface AddAgentEvaluateResponse {
+    model_a_score: number;
+    model_b_score: number;
+    reason: string;
+}
+
 export const api = {
     async restoreSession(apiKey: string, scenarioId: string) {
         const res = await axios.post(`${API_BASE}/api/restore_session`, {
@@ -156,6 +162,14 @@ export const api = {
         apiKey: string
     ): Promise<AddAgentTurnResponse> => {
         const response = await axios.post(`${API_BASE}/api/add_agent/turn`, { sessionId, message, apiKey });
+        return response.data;
+    },
+
+    addAgentEvaluate: async (
+        sessionId: string,
+        language: string = 'en'
+    ): Promise<AddAgentEvaluateResponse> => {
+        const response = await axios.post(`${API_BASE}/api/add_agent/evaluate`, { sessionId, language });
         return response.data;
     }
 };

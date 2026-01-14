@@ -92,6 +92,7 @@ def _debug_enabled() -> bool:
 def _debug_print(label: str, payload: Any) -> None:
     if _debug_enabled():
         print(f"[agentmark:{label}] {json.dumps(payload, ensure_ascii=False, default=str)}")
+<<<<<<< Updated upstream
 
 
 def _env_flag(name: str) -> bool:
@@ -174,6 +175,8 @@ def _extract_tool_call_arguments(message: Any) -> Optional[Dict[str, Any]]:
     if isinstance(fn, dict):
         return fn
     return None
+=======
+>>>>>>> Stashed changes
 
 
 def _extract_system_prompt_text(messages: List[Message]) -> str:
@@ -340,6 +343,7 @@ def _build_tool_calls(action: str, action_args: Any) -> List[Dict[str, Any]]:
             "function": {"name": action, "arguments": json.dumps(args)},
         }
     ]
+<<<<<<< Updated upstream
 
 
 def _build_tool_calls(action: str, action_args: Any) -> List[Dict[str, Any]]:
@@ -353,6 +357,8 @@ def _build_tool_calls(action: str, action_args: Any) -> List[Dict[str, Any]]:
             "function": {"name": action, "arguments": json.dumps(args)},
         }
     ]
+=======
+>>>>>>> Stashed changes
 
 
 def _normalize_candidates(cands: List[str]) -> List[str]:
@@ -626,9 +632,14 @@ def proxy_completion(req: CompletionRequest, request: Request):
 
         final_resp = scoring_resp
         tool_mode = _tool_mode(req)
+<<<<<<< Updated upstream
         execution_messages: Optional[List[Dict[str, Any]]] = None
         if tool_mode == "two_pass":
             base_messages = _sanitize_messages([_message_to_dict(m) for m in req.messages])
+=======
+        if tool_mode == "two_pass":
+            base_messages = [m.dict() for m in req.messages]
+>>>>>>> Stashed changes
             tool_choice = None
             if req.tools and result["action"] in candidates:
                 tool_choice = {"type": "function", "function": {"name": result["action"]}}

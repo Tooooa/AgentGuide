@@ -31,6 +31,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetails = true, showDistribution = false, displayIndex }) => {
     const { t } = useI18n();
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const displayThought = step.thought?.trim() ? step.thought : "no thought";
     
     // 使用 displayIndex 如果提供了，否则使用 step.stepIndex
     const stepNumber = displayIndex !== undefined ? displayIndex : step.stepIndex;
@@ -148,7 +149,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                     <Brain size={14} /> THOUGHT
                                 </div>
                                 <p className="text-sm text-slate-700 italic leading-relaxed font-serif pl-2 border-l-2 border-slate-100">
-                                    {step.thought || "Thinking..."}
+                                    {displayThought}
                                 </p>
                             </div>
                         )}

@@ -10,11 +10,15 @@ interface FlowFeedProps {
     erasedIndices: Set<number>;
     userQuery: string;
     userQueryLabel?: string;
+    userQueryFormat?: 'plain' | 'json';
+    userInputHighlight?: string;
+    userInputLabel?: string;
     onContinue?: (prompt: string) => void;
     isPlaying?: boolean;
     onTogglePlay?: () => void;
     scenarioId?: string;
     promptInputRef?: React.RefObject<HTMLInputElement | null>;
+    variant?: 'default' | 'add_agent';
 }
 
 const FlowFeed: React.FC<FlowFeedProps> = ({
@@ -22,12 +26,17 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
     erasedIndices,
     userQuery,
     userQueryLabel,
+    userQueryFormat = 'plain',
+    userInputHighlight,
+    userInputLabel,
     onContinue,
     isPlaying,
     onTogglePlay,
     scenarioId,
-    promptInputRef
+    promptInputRef,
+    variant = 'default'
 }) => {
+    const isAddAgent = variant === 'add_agent';
     const bottomRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const isAtBottomRef = useRef(true);
@@ -65,12 +74,33 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
     // Always show control bar if we have steps (to allow pausing), or if finished, OR if we can continue (allows starting new)
     const showControls = hasSteps || !!onContinue;
 
+    const scrollContainerClass = isAddAgent
+        ? 'flex-1 overflow-y-auto px-5 py-4 space-y-6 scrollbar-hide'
+        : 'flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-hide';
+    const userBubbleClass = isAddAgent
+        ? 'bg-gradient-to-br from-emerald-500 via-amber-500 to-rose-500'
+        : 'bg-gradient-to-br from-indigo-500 to-indigo-600';
+    const userBubbleLabelClass = isAddAgent ? 'text-amber-100' : 'text-indigo-100';
+    const userAvatarClass = isAddAgent
+        ? 'bg-emerald-100 text-emerald-600'
+        : 'bg-indigo-100 text-indigo-600';
+    const continueCardClass = isAddAgent
+        ? 'bg-white/85 rounded-2xl p-4 shadow-[0_25px_60px_-40px_rgba(15,23,42,0.35)] border border-amber-100/70 ring-1 ring-amber-100/60 backdrop-blur-xl'
+        : 'bg-white rounded-2xl p-4 shadow-xl border border-indigo-100 ring-1 ring-indigo-50/50 backdrop-blur-sm';
+    const continueTitleClass = isAddAgent ? 'text-amber-600' : 'text-indigo-500';
+    const continueInputClass = isAddAgent
+        ? 'bg-white/90 border border-amber-200 focus:border-emerald-400'
+        : 'bg-slate-50 border border-slate-200 focus:border-indigo-500';
+    const continueButtonClass = isAddAgent
+        ? 'bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-400 hover:to-amber-400 text-white shadow-md shadow-amber-400/30'
+        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg';
+
     return (
         <div className="flex flex-col h-full relative">
             <div
                 ref={scrollContainerRef}
                 onScroll={handleScroll}
-                className={`flex-1 overflow-y-auto px-4 py-6 space-y-8 scrollbar-hide`}
+                className={scrollContainerClass}
             >
                 {/* User Query Bubble */}
                 {userQuery && (
@@ -82,12 +112,28 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                 </div>
                             </div>
                             <div className="flex-1 text-right">
-                                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
+                                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
                                     <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">
                                         {userQueryLabel || "User Prompt"}
                                     </p>
-                                    {userQuery || "No query provided."}
+                                    {userQueryFormat === 'json' ? (
+                                        <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed">
+                                            {userQuery}
+                                        </pre>
+                                    ) : (
+                                        <span>{userQuery || "No query provided."}</span>
+                                    )}
                                 </div>
+                                {userInputHighlight && (
+                                    <div className="mt-3 bg-white/95 border border-indigo-100 rounded-xl p-3 text-left text-slate-700 shadow-sm">
+                                        <p className="font-bold text-[10px] text-indigo-500 mb-1 uppercase tracking-wide">
+                                            {userInputLabel || "User Input"}
+                                        </p>
+                                        <div className="text-xs font-mono whitespace-pre-wrap break-words">
+                                            {userInputHighlight}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -180,11 +226,16 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                             </>
                         )}
 
-                        <div className="bg-white rounded-2xl p-4 shadow-xl border border-indigo-100 ring-1 ring-indigo-50/50 backdrop-blur-sm">
-                            <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <div className="relative overflow-hidden bg-white/70 rounded-[28px] p-4 shadow-[0_18px_40px_rgba(15,23,42,0.12)] border border-indigo-100/70 ring-1 ring-white/70 backdrop-blur-2xl">
+                            <div className="pointer-events-none absolute inset-0">
+                                <div className="absolute -top-12 -right-6 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl" />
+                                <div className="absolute -bottom-14 left-12 h-48 w-48 rounded-full bg-indigo-200/45 blur-3xl" />
+                                <div className="absolute top-4 left-1/2 h-24 w-32 -translate-x-1/2 rounded-full bg-cyan-200/40 blur-2xl" />
+                            </div>
+                            <p className="relative z-10 text-xs font-semibold text-indigo-600 uppercase tracking-[0.18em] mb-3 flex items-center gap-2">
                                 <Bot size={14} /> Continue Task
                             </p>
-                            <div className="flex gap-2">
+                            <div className="relative z-10 flex gap-3 items-center">
                                 <input
                                     ref={promptInputRef}
                                     id="continue-input"
@@ -192,7 +243,7 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                     value={continueInput}
                                     onChange={(e) => setContinueInput(e.target.value)}
                                     placeholder={locale === 'zh' ? "输入新指令继续..." : "Input new prompt to continue..."}
-                                    className={`flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-colors
+                                    className={`flex-1 bg-white/80 border border-indigo-100/80 rounded-2xl px-5 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200/70 transition-all shadow-inner
                                         ${(isSending || isPlaying) ? 'opacity-70 bg-slate-100 cursor-not-allowed' : ''}`}
                                     disabled={isSending || isPlaying}
                                     onFocus={() => setShowPrompts(true)}
@@ -214,10 +265,10 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                     }}
                                 />
                                 <button
-                                    className={`rounded-xl px-6 py-2 text-sm font-bold transition-all flex items-center gap-2
+                                    className={`rounded-2xl px-6 py-2.5 text-sm font-semibold transition-all flex items-center gap-2
                                         ${isSending || isPlaying
                                             ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                                            : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'}`}
+                                            : 'bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 text-white shadow-[0_10px_24px_rgba(59,130,246,0.35)] hover:from-sky-400 hover:via-blue-500 hover:to-indigo-500 hover:shadow-[0_16px_30px_rgba(59,130,246,0.45)]'}`}
                                     disabled={isSending || isPlaying}
                                     onClick={async () => {
                                         const val = continueInput.trim();

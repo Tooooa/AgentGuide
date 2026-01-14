@@ -1,5 +1,6 @@
 
 import json
+import re
 import uuid
 import time
 import os
@@ -362,12 +363,35 @@ def _get_swarm_add_agent():
     return _SWARM_ADD_AGENT
 
 
+def _get_add_agent_candidates() -> List[str]:
+    candidates: List[str] = []
+    for tool in ADD_AGENT_TOOLS:
+        if not isinstance(tool, dict):
+            continue
+        fn = tool.get("function", {})
+        if not isinstance(fn, dict):
+            continue
+        name = fn.get("name")
+        if name and name not in candidates:
+            candidates.append(name)
+    return candidates
+
+
 class AddAgentSession:
     def __init__(self, session_id: str, api_key: str, repo_url: str):
         self.session_id = session_id
         self.api_key = api_key
         self.repo_url = repo_url
         self.step_count = 0
+        self.task_query = ""
+        self.last_user_message = ""
+        self.watermarked_trajectory: List[Dict[str, str]] = []
+        self.baseline_trajectory: List[Dict[str, str]] = []
+        self.model = _resolve_base_model(os.getenv("AGENTMARK_TARGET_MODEL", "gpt-4o"))
+        self.async_client = AsyncOpenAI(
+            api_key=api_key or os.getenv("OPENAI_API_KEY") or "anything",
+            base_url=_get_base_llm_base(),
+        )
 
 
 add_agent_sessions: Dict[str, AddAgentSession] = {}
@@ -485,6 +509,7 @@ def _build_baseline_step(
     latency: float,
     *,
     fallback_content: str = "",
+    candidates: Optional[List[str]] = None,
 ) -> Optional[Dict[str, Any]]:
     try:
         message = completion.choices[0].message if completion and completion.choices else None
@@ -495,6 +520,7 @@ def _build_baseline_step(
     content = (getattr(message, "content", None) or fallback_content or "").strip()
     tool_calls = _extract_tool_calls(message)
     action = ""
+    action_name = ""
     tool_details = ""
     step_type = "other"
     final_answer = content or None
@@ -502,7 +528,8 @@ def _build_baseline_step(
         first = tool_calls[0]
         fn = first.get("function", {}) if isinstance(first.get("function"), dict) else {}
         name = fn.get("name") or first.get("name") or ""
-        action = f"Call: {name}" if name else ""
+        action_name = name or ""
+        action = f"Call: {action_name}" if action_name else ""
         args = fn.get("arguments")
         if args is None:
             args = first.get("arguments")
@@ -514,7 +541,37 @@ def _build_baseline_step(
         final_answer = None
     elif final_answer:
         step_type = "finish"
-        action = "Finish"
+        action_name = "Finish"
+        action = action_name
+
+    distribution: List[Dict[str, Any]] = []
+    if candidates:
+        ordered = list(dict.fromkeys(candidates))
+        if action_name and action_name not in ordered:
+            ordered.append(action_name)
+        prob_output = content
+        if action_name:
+            use_fallback = False
+            if prob_output:
+                try:
+                    payload = extract_json_payload(prob_output)
+                    if not isinstance(payload, dict) or ("action_weights" not in payload and "action" not in payload):
+                        use_fallback = True
+                except Exception:
+                    use_fallback = True
+            else:
+                use_fallback = True
+            if use_fallback:
+                prob_output = json.dumps({"action": action_name})
+        prob_map = extract_and_normalize_probabilities(prob_output or "", ordered)
+        distribution = [
+            {
+                "name": name,
+                "prob": float(prob_map.get(name, 0.0)),
+                "isSelected": name == action_name,
+            }
+            for name in ordered
+        ]
 
     tokens_used = _extract_tokens_used(completion)
     if latency <= 0:
@@ -524,11 +581,83 @@ def _build_baseline_step(
         "thought": "",
         "action": action,
         "toolDetails": tool_details,
-        "distribution": [],
+        "distribution": distribution,
         "stepType": step_type,
         "finalAnswer": final_answer,
         "metrics": {"latency": float(latency), "tokens": float(tokens_used)},
     }
+
+
+def _extract_thought_from_raw_output(raw_text: str) -> str:
+    if not raw_text:
+        return ""
+
+    sanitized = raw_text
+    for token in ('"prompt_trace"', '"scoring_messages"', '"execution_messages"'):
+        cut = sanitized.find(token)
+        if cut != -1:
+            sanitized = sanitized[:cut]
+            break
+
+    try:
+        payload = extract_json_payload(sanitized)
+        if isinstance(payload, dict):
+            thought_val = payload.get("thought")
+            if isinstance(thought_val, str) and thought_val.strip():
+                return thought_val.strip()
+    except Exception:
+        pass
+
+    matches = re.findall(r'"thought"\s*:\s*"((?:\\.|[^"\\])*)"', sanitized, flags=re.DOTALL)
+    if matches:
+        candidate = matches[-1]
+        try:
+            return json.loads(f"\"{candidate}\"").strip()
+        except Exception:
+            return candidate.replace("\\n", "\n").strip()
+
+    lowered = sanitized.lower()
+    idx = lowered.rfind('"thought"')
+    quote_char = '"'
+    if idx == -1:
+        idx = lowered.rfind("'thought'")
+        quote_char = "'"
+    if idx != -1:
+        after = sanitized[idx + len(quote_char + "thought" + quote_char):]
+        colon = after.find(":")
+        if colon != -1:
+            rest = after[colon + 1:].lstrip()
+            if rest.startswith(("\"", "'")):
+                q = rest[0]
+                rest = rest[1:]
+                buf = []
+                escaped = False
+                for ch in rest:
+                    if escaped:
+                        buf.append(ch)
+                        escaped = False
+                        continue
+                    if ch == "\\":
+                        buf.append(ch)
+                        escaped = True
+                        continue
+                    if ch == q:
+                        break
+                    buf.append(ch)
+                candidate = "".join(buf)
+                try:
+                    return json.loads(f"\"{candidate}\"").strip()
+                except Exception:
+                    return candidate.replace("\\n", "\n").strip()
+            else:
+                end = len(rest)
+                for sep in (",", "\n", "\r", "}"):
+                    pos = rest.find(sep)
+                    if pos != -1:
+                        end = min(end, pos)
+                return rest[:end].strip()
+
+    return ""
 
 
 def _build_add_agent_step(
@@ -556,13 +685,10 @@ def _build_add_agent_step(
         )
     action = watermark.get("action") or ""
     action_args = watermark.get("action_args") or {}
-    thought = ""
     raw_text = watermark.get("raw_llm_output") or ""
-    try:
-        payload = extract_json_payload(raw_text)
-        thought = payload.get("thought") or ""
-    except Exception:
-        thought = ""
+    thought = _extract_thought_from_raw_output(raw_text)
+    if not thought:
+        thought = "no thought"
 
     bits_embedded = frontend.get("watermark_meta", {}).get("bits_embedded") or 0
     matrix_rows = [[1] for _ in range(int(bits_embedded))]
@@ -614,6 +740,11 @@ class AddAgentTurnRequest(BaseModel):
     sessionId: str
     message: str
     apiKey: Optional[str] = None
+
+
+class AddAgentEvaluateRequest(BaseModel):
+    sessionId: str
+    language: Optional[str] = "en"
 
 # --- Helpers ---
 def build_messages(query: str, tool_summaries: List[str], admissible_commands: List[str]) -> List[Dict]:
@@ -885,7 +1016,11 @@ async def add_agent_turn(req: AddAgentTurnRequest):
                 tools=ADD_AGENT_TOOLS,
             )
             base_latency = time.time() - base_started
-            baseline_step = _build_baseline_step(base_completion, base_latency)
+            baseline_step = _build_baseline_step(
+                base_completion,
+                base_latency,
+                candidates=_get_add_agent_candidates(),
+            )
         except Exception as exc:
             print(f"[WARN] Baseline call failed: {exc}")
     watermark = _extract_watermark(completion)
@@ -927,6 +1062,36 @@ async def add_agent_turn(req: AddAgentTurnRequest):
     )
     if baseline_step:
         step["baseline"] = baseline_step
+    user_msg = req.message.strip()
+    session.last_user_message = user_msg
+    if not session.task_query:
+        session.task_query = user_msg
+
+    session.watermarked_trajectory.append({"role": "user", "message": user_msg})
+    session.baseline_trajectory.append({"role": "user", "message": user_msg})
+
+    wm_action = watermark.get("action") or ""
+    wm_args = watermark.get("action_args") or {}
+    wm_thought = step.get("thought") or ""
+    wm_payload: Dict[str, Any] = {"action": wm_action, "thought": wm_thought}
+    if wm_args:
+        wm_payload["action_args"] = wm_args
+    session.watermarked_trajectory.append(
+        {"role": "assistant", "message": json.dumps(wm_payload, ensure_ascii=False)}
+    )
+
+    base_payload: Dict[str, Any] = {}
+    if baseline_step:
+        base_action = (baseline_step.get("action") or "").strip()
+        base_action_name = base_action.replace("Call: ", "").strip() if base_action.startswith("Call: ") else base_action
+        base_payload = {"action": base_action_name, "thought": baseline_step.get("thought") or ""}
+        if base_action_name == "Finish" and baseline_step.get("finalAnswer"):
+            base_payload["action_args"] = {"final_answer": baseline_step.get("finalAnswer")}
+    else:
+        base_payload = wm_payload
+    session.baseline_trajectory.append(
+        {"role": "assistant", "message": json.dumps(base_payload, ensure_ascii=False)}
+    )
     session.step_count += 1
     return {
         "sessionId": req.sessionId,
@@ -934,6 +1099,104 @@ async def add_agent_turn(req: AddAgentTurnRequest):
         "promptTrace": prompt_trace,
         "watermark": watermark,
     }
+
+
+@app.post("/api/add_agent/evaluate")
+async def evaluate_add_agent(req: AddAgentEvaluateRequest):
+    if req.sessionId not in add_agent_sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    sess = add_agent_sessions[req.sessionId]
+    if not sess.watermarked_trajectory or not sess.baseline_trajectory:
+        raise HTTPException(status_code=400, detail="Not enough data to evaluate")
+
+    lang_instruction = "Reasoning must be in English."
+    if req.language == "zh":
+        lang_instruction = "请使用中文进行简要评价 (Reasoning must be in Chinese)."
+
+    def summarize_trajectory(traj):
+        summary = ""
+        for t in traj:
+            role = t.get("role")
+            msg = t.get("message", "")
+            if role == "user":
+                summary += f"User: {msg}\n"
+            elif role == "assistant":
+                try:
+                    data = json.loads(msg)
+                    summary += f"Assistant Thought: {data.get('thought')}\nAssistant Action: {data.get('action')}\n"
+                    if "final_answer" in data.get("action_args", {}):
+                        summary += f"Assistant Final Answer: {data['action_args']['final_answer']}\n"
+                except Exception:
+                    summary += f"Assistant: {msg}\n"
+            elif role == "tool":
+                summary += f"Tool Output: {msg[:200]}...\n"
+        return summary
+
+    baseline_summary = summarize_trajectory(sess.baseline_trajectory)
+    watermarked_summary = summarize_trajectory(sess.watermarked_trajectory)
+    query = sess.task_query or sess.last_user_message or "Add agent task"
+
+    import random
+    is_baseline_A = random.choice([True, False])
+    if is_baseline_A:
+        summary_A = baseline_summary
+        summary_B = watermarked_summary
+    else:
+        summary_A = watermarked_summary
+        summary_B = baseline_summary
+
+    prompt = f"""Task: {query}
+    
+    Model A Trajectory/Answer:
+    {summary_A}
+
+    Model B Trajectory/Answer:
+    {summary_B}
+
+    Please evaluate Model A and Model B based on the task using criteria such as correctness, efficiency, and helpfulness.
+    Provide a score (0-10) for each and a brief reason.
+    {lang_instruction}
+    
+    You must output strictly in JSON format:
+    {{
+        "model_a_score": <float>,
+        "model_b_score": <float>,
+        "reason": "<string>"
+    }}
+    """
+
+    try:
+        completion = await sess.async_client.chat.completions.create(
+            model=sess.model,
+            messages=[
+                {"role": "system", "content": "You are an impartial judge evaluating two AI models."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.0
+        )
+        content = completion.choices[0].message.content or ""
+        start = content.find("{")
+        end = content.rfind("}")
+        if start == -1 or end == -1 or end <= start:
+            raise ValueError("Invalid evaluation payload")
+        json_str = content[start:end+1]
+        res_json = json.loads(json_str)
+
+        swapped = not is_baseline_A
+        if swapped:
+            final_result = {
+                "model_a_score": res_json.get("model_b_score", 0),
+                "model_b_score": res_json.get("model_a_score", 0),
+                "reason": res_json.get("reason", "")
+            }
+        else:
+            final_result = res_json
+
+        sess.evaluation_result = final_result
+        return final_result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- Scenario Persistence ---
 

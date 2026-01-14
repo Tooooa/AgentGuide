@@ -23,7 +23,7 @@ def build_messages(wrapper: PromptWatermarkWrapper, candidates, user_task: str):
         "你是一个决策助手。返回每个候选动作的概率，且只输出 JSON。\n"
         + wrapper.get_instruction()
     )
-    user_prompt = user_task + "\n候选动作：\n" + "\n".join(f"- {c}" for c in candidates)
+    user_prompt = user_task + "\ncandidates：\n" + "\n".join(f"- {c}" for c in candidates)
     return [
         {"role": "system", "content": base_system},
         {"role": "user", "content": user_prompt},
