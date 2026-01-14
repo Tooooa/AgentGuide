@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Box, Cpu, Plus, Search, Zap } from 'lucide-react';
+import { ArrowRight, Box, Cpu, Plus, Search, Zap, BookOpen } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
 import AddAgentModal from '../modals/AddAgentModal';
 import { api } from '../../services/api';
@@ -8,7 +8,7 @@ import { scenarios as presetScenarios } from '../../data/mockData';
 import type { Trajectory } from '../../data/mockData';
 
 interface WelcomeScreenProps {
-    onStart: (config: { scenarioId: string; payload: string; erasureRate: number; query?: string }) => void;
+    onStart: (config: { scenarioId: string; payload: string; erasureRate: number; query?: string; mode?: 'dashboard' | 'add_agent' | 'book_demo'; agentRepoUrl?: string }) => void;
     initialScenarioId: string;
     initialErasureRate: number;
     isLiveMode: boolean;
@@ -106,7 +106,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             });
         }
     };
-    
+
     const handleAddAgentApply = (data: { repoUrl: string; apiKey: string }) => {
         setApiKey(data.apiKey);
         setAddAgentRepoUrl(data.repoUrl);
@@ -127,6 +127,26 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-indigo-200/20 rounded-full blur-3xl" />
                 <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] bg-blue-200/20 rounded-full blur-3xl" />
             </div>
+
+            {/* 3D Book Entry Button */}
+            <button
+                onClick={() => onStart({
+                    scenarioId: '',
+                    payload: payload,
+                    erasureRate: erasureRate,
+                    mode: 'book_demo'
+                })}
+                className="absolute top-8 left-8 z-50 flex items-center gap-3 px-5 py-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 hover:bg-white text-indigo-600 transition-all duration-300 group border border-white/50"
+            >
+                <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                    <BookOpen size={20} className="text-indigo-600" />
+                </div>
+                <div className="flex flex-col items-start">
+                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">New Feature</span>
+                    <span className="text-sm font-bold text-slate-700">3D Book Demo</span>
+                </div>
+                <ArrowRight size={16} className="text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all ml-2" />
+            </button>
 
             {/* Main Container */}
             <div className="w-full max-w-7xl flex items-center justify-between gap-8 relative z-10 h-[800px]">
