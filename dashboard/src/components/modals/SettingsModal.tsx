@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
@@ -35,6 +35,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     const { locale } = useI18n();
     const [showPayloadWarning, setShowPayloadWarning] = useState(false);
     const [showPayloadFormatError, setShowPayloadFormatError] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setShowPayloadFormatError(false);
+        }
+    }, [isOpen]);
 
     const handlePayloadChange = (newPayload: string) => {
         // 验证载荷内容只包含0和1
@@ -98,11 +104,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                         <Zap size={24} strokeWidth={2.5} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h2>
+                                        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                                            {locale === 'zh' ? '设置' : 'Settings'}
+                                        </h2>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${isLiveMode ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
                                                 }`}>
-                                                {isLiveMode ? 'Live Mode' : 'Simulation'}
+                                                {isLiveMode
+                                                    ? (locale === 'zh' ? '实时模式' : 'Live Mode')
+                                                    : (locale === 'zh' ? '模拟' : 'Simulation')}
                                             </span>
                                             <span className="text-xs text-slate-400 font-mono">
                                                 {new Date().toLocaleTimeString()}
@@ -124,10 +134,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                 {/* Info Box - Similar to "RLNC 编码详情" */}
                                 <div className="p-5 bg-indigo-50/80 rounded-2xl border border-indigo-100/50">
                                     <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
-                                        System Configuration
+                                        {locale === 'zh' ? '系统配置' : 'System Configuration'}
                                     </h3>
                                     <p className="text-sm text-indigo-700/80 leading-relaxed">
-                                        Configure your agent's runtime parameters and payload settings. Changes affect real-time processing and watermarking behavior.
+                                        {locale === 'zh'
+                                            ? '配置您的 Agent 运行时参数和载荷设置。更改将影响实时处理和水印行为。'
+                                            : 'Configure your agent\'s runtime parameters and payload settings. Changes affect real-time processing and watermarking behavior.'}
                                     </p>
                                 </div>
 
@@ -136,26 +148,26 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <div>
                                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                                            Runtime Mode
+                                            {locale === 'zh' ? '运行模式' : 'Runtime Mode'}
                                         </label>
                                         <div className="flex gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-100">
                                             <button
                                                 onClick={() => isLiveMode && onToggleLiveMode()}
                                                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${!isLiveMode
-                                                        ? 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200/50'
-                                                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100/50'
+                                                    ? 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200/50'
+                                                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100/50'
                                                     }`}
                                             >
-                                                Simulation
+                                                {locale === 'zh' ? '模拟' : 'Simulation'}
                                             </button>
                                             <button
                                                 onClick={() => !isLiveMode && onToggleLiveMode()}
                                                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${isLiveMode
-                                                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                                                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100/50'
+                                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100/50'
                                                     }`}
                                             >
-                                                <Zap size={16} fill="currentColor" /> Live Mode
+                                                <Zap size={16} fill="currentColor" /> {locale === 'zh' ? '实时模式' : 'Live Mode'}
                                             </button>
                                         </div>
                                     </div>
@@ -165,7 +177,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                         <div>
                                             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                                                DeepSeek API Key
+                                                {locale === 'zh' ? 'DeepSeek API 密钥' : 'DeepSeek API Key'}
                                             </label>
                                             <div className="relative group">
                                                 <input
@@ -183,7 +195,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                     <div>
                                         <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                            {locale === 'zh' ? 'Payload / 载荷' : 'Active Payload'}
+                                            {locale === 'zh' ? '载荷内容' : 'Active Payload'}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -195,7 +207,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                             />
                                             {!payload && (
                                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                    <span className="text-slate-300 italic text-sm">No payload data available</span>
+                                                    <span className="text-slate-300 italic text-sm">
+                                                        {locale === 'zh' ? '暂无载荷数据' : 'No payload data available'}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
@@ -220,13 +234,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                                         onClick={onClose}
                                         className="flex-1 py-3.5 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all font-bold text-sm"
                                     >
-                                        {locale === 'zh' ? 'Close' : 'Cancel'}
+                                        {locale === 'zh' ? '取消' : 'Cancel'}
                                     </button>
                                     <button
                                         onClick={handleApply}
                                         className="flex-[2] py-3.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-200 transition-all active:scale-[0.98]"
                                     >
-                                        {locale === 'zh' ? 'Save Changes' : 'Confirm'}
+                                        {locale === 'zh' ? '确认' : 'Confirm'}
                                     </button>
                                 </div>
                             </div>
