@@ -87,9 +87,17 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                         </div>
                     </div>
                     <div className="flex-1 text-right">
-                        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
-                            <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">{locale === 'zh' ? '用户继续' : 'User Continuation'}</p>
-                            {step.thought}
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl rounded-tr-none p-5 text-indigo-900 text-sm shadow-sm inline-block text-left relative overflow-hidden">
+                            {/* Decorative background element like in FlowFeed */}
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-100/50 to-transparent rounded-bl-full pointer-events-none" />
+
+                            <p className="font-bold text-[10px] text-indigo-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                <div className="w-1 h-1 rounded-full bg-indigo-400" />
+                                {locale === 'zh' ? '用户继续' : 'User Continuation'}
+                            </p>
+                            <p className="leading-relaxed relative z-10 font-medium">
+                                {step.thought}
+                            </p>
                         </div>
                     </div>
                 </div>

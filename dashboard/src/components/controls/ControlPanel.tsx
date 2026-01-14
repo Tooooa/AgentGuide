@@ -293,7 +293,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             {evaluationResult && (
                                 <div className="bg-white rounded-lg border border-indigo-100 p-3 shadow-sm flex items-center justify-between">
                                     <div className="flex flex-col items-center flex-1 border-r border-indigo-50 last:border-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{locale === 'zh' ? '基座' : 'Base'}</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{locale === 'zh' ? '无水印' : 'Base'}</span>
                                         <div className="flex items-center text-sm font-bold text-slate-700">
                                             {evaluationResult.model_a_score.toFixed(1)}
                                             <span className="text-[10px] text-slate-400 ml-0.5">/10</span>
@@ -304,7 +304,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                     {/* <div className="text-[10px] font-bold text-indigo-200 px-2">VS</div> */}
 
                                     <div className="flex flex-col items-center flex-1">
-                                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{locale === 'zh' ? '本模型' : 'Ours'}</span>
+                                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{locale === 'zh' ? '有水印' : 'Ours'}</span>
                                         <div className="flex items-center text-sm font-bold text-indigo-600">
                                             {evaluationResult.model_b_score.toFixed(1)}
                                             <span className="text-[10px] text-indigo-300 ml-0.5">/10</span>
