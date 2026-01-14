@@ -172,7 +172,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                     {showWatermarkDetails && <span>{locale === 'zh' ? '分箱' : 'Bins'}</span>}
                                 </div>
                                 <div
-                                    className={`h-28 flex gap-3 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100 ${!showWatermarkDetails ? 'justify-center' : 'cursor-pointer hover:bg-white/50 transition-colors'}`}
+                                    className={`h-32 flex gap-3 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100 ${!showWatermarkDetails ? 'justify-center' : 'cursor-pointer hover:bg-white/50 transition-colors'}`}
                                     onClick={showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
                                 >
                                     {/* Chart 1 */}
@@ -180,8 +180,20 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                         className={`h-full relative ${showWatermarkDetails ? 'flex-1' : 'w-1/2 cursor-pointer hover:bg-white/50 transition-colors rounded-lg'}`}
                                         onClick={!showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
                                     >
+                                        {/* 选中指示手指 */}
+                                        {sortedDistribution.findIndex(d => d.isSelected) !== -1 && (
+                                            <div 
+                                                className="absolute top-0 z-10 w-4 h-4"
+                                                style={{ 
+                                                    left: `${(sortedDistribution.findIndex(d => d.isSelected) + 0.5) / sortedDistribution.length * 100}%`,
+                                                    transform: 'translateX(-50%) rotate(90deg)'
+                                                }}
+                                            >
+                                                <img src="/手指.svg" alt="selected" className="w-full h-full" />
+                                            </div>
+                                        )}
                                         <ResponsiveContainer width="99%" height="100%">
-                                            <BarChart data={sortedDistribution}>
+                                            <BarChart data={sortedDistribution} margin={{ top: 20, right: 5, left: 5, bottom: 5 }}>
                                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
                                                 {/* Slicing Lines */}
                                                 {sortedDistribution.map((d, i) => (
@@ -189,7 +201,10 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                 ))}
                                                 <Bar dataKey="prob" radius={[2, 2, 0, 0]} maxBarSize={60}>
                                                     {sortedDistribution.map((entry, index) => (
-                                                        <Cell key={`c-${index}`} fill={entry.isSelected ? '#818cf8' : '#ddd6fe'} />
+                                                        <Cell 
+                                                            key={`c-${index}`} 
+                                                            fill={entry.isSelected ? '#6366f1' : '#a78bfa'}
+                                                        />
                                                     ))}
                                                 </Bar>
                                             </BarChart>
@@ -210,12 +225,27 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
 
                                             {/* Chart 2: Bins */}
                                             <div className="flex-1 h-full relative">
+                                                {/* 选中指示手指 */}
+                                                {bins.findIndex(b => b.isTarget) !== -1 && (
+                                                    <div 
+                                                        className="absolute top-0 z-10 w-4 h-4"
+                                                        style={{ 
+                                                            left: `${(bins.findIndex(b => b.isTarget) + 0.5) / bins.length * 100}%`,
+                                                            transform: 'translateX(-50%) rotate(90deg)'
+                                                        }}
+                                                    >
+                                                        <img src="/手指.svg" alt="selected" className="w-full h-full" />
+                                                    </div>
+                                                )}
                                                 <ResponsiveContainer width="99%" height="100%">
-                                                    <BarChart data={bins}>
+                                                    <BarChart data={bins} margin={{ top: 20, right: 5, left: 5, bottom: 5 }}>
                                                         <Tooltip cursor={{ fill: 'transparent' }} content={() => null} />
                                                         <Bar dataKey="weight" radius={[2, 2, 0, 0]} maxBarSize={60}>
                                                             {bins.map((e, idx) => (
-                                                                <Cell key={`b-${idx}`} fill={e.isTarget ? '#6366f1' : '#ddd6fe'} />
+                                                                <Cell 
+                                                                    key={`b-${idx}`} 
+                                                                    fill={e.isTarget ? '#4f46e5' : '#a78bfa'}
+                                                                />
                                                             ))}
                                                         </Bar>
                                                     </BarChart>
