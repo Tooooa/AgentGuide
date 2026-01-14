@@ -417,6 +417,17 @@ def _build_add_agent_scoring_messages(user_message: str) -> List[Dict[str, str]]
     return injected
 
 
+def _render_prompt_messages(messages: List[Dict[str, Any]]) -> str:
+    lines: List[str] = []
+    for msg in messages:
+        role = msg.get("role", "")
+        content = msg.get("content")
+        if content is None:
+            continue
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+
+
 class AddAgentSession:
     def __init__(self, session_id: str, api_key: str, repo_url: str):
         self.session_id = session_id
