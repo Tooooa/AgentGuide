@@ -6,10 +6,11 @@ import * as THREE from 'three';
 // Configuration
 const PAGE_WIDTH = 3;
 const PAGE_HEIGHT = 4.2;
-const PAGE_DEPTH = 0.04; // Slightly thicker for better presence
-const CORNER_RADIUS = 0.15; // Larger radius for more visible rounded corners
-const ROUGHNESS = 0.15; // Smoother surface
-const METALNESS = 0.05; // Slight metallic sheen
+const PAGE_DEPTH = 0.03;
+const COVER_DEPTH = 0.08; // Thicker cover for more presence
+const CORNER_RADIUS = 0.12;
+const ROUGHNESS = 0.3;
+const METALNESS = 0.0;
 
 interface PageProps {
     number: number;
@@ -37,34 +38,47 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
         
         const rotDiff = targetRotation - group.current.rotation.y;
         
-        // Smooth easing animation
-        const easing = 1 - Math.pow(1 - 0.08, delta * 60);
+        // Smoother easing
+        const easing = 1 - Math.pow(1 - 0.06, delta * 60);
         group.current.rotation.y += rotDiff * easing;
 
         const progress = Math.max(0, Math.min(1, -group.current.rotation.y / Math.PI));
         
-        // Z position - simpler calculation
+        // Z position - ensure proper stacking
         const spacing = 0.008;
         const frontZ = 0.5;
         
         let targetZ: number;
-        if (number === currentSpread || (opened && number === currentSpread - 1)) {
+        
+        // The page that just flipped (showing its back as left side) and 
+        // the next page (showing its front as right side) should be at front
+        const isCurrentLeftPage = opened && number === currentSpread - 1;
+        const isCurrentRightPage = !opened && number === currentSpread;
+        
+        if (isCurrentLeftPage || isCurrentRightPage) {
             // Current visible pages at front
             targetZ = frontZ;
-        } else if (number < currentSpread) {
-            // Already flipped pages - stack behind
-            targetZ = frontZ - (currentSpread - number) * spacing;
-        } else {
+        } else if (number < currentSpread - 1) {
+            // Already flipped pages - stack behind, further back for older pages
+            targetZ = frontZ - 0.05 - (currentSpread - 1 - number) * spacing;
+        } else if (number >= currentSpread) {
             // Not yet flipped pages - stack behind
-            targetZ = frontZ - (number - currentSpread) * spacing;
+            targetZ = frontZ - (number - currentSpread + 1) * spacing;
+        } else {
+            targetZ = frontZ - 0.02;
         }
         
         // Smoothly animate Z position
         zRef.current += (targetZ - zRef.current) * easing;
 
-        // Lift curve during animation
-        const liftHeight = 1.5;
-        const lift = Math.sin(progress * Math.PI) * liftHeight;
+        // Elegant lift curve
+        const liftHeight = 1.8;
+        const liftCurve = Math.sin(progress * Math.PI);
+        const lift = liftCurve * liftHeight;
+        
+        // Slight forward tilt during flip
+        const tiltAmount = liftCurve * 0.08;
+        group.current.rotation.x = tiltAmount;
 
         group.current.position.z = zRef.current + lift;
     });
@@ -106,15 +120,18 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
 
     // Define materials array
     const materialArray = useMemo(() => {
-        // Edge material - brown color for paper edges
+        // Edge material - rich brown for paper edges with slight texture feel
         const sideMat = new THREE.MeshStandardMaterial({ 
-            color: '#8B7355',
-            roughness: 0.4,
+            color: isCover ? '#5D4037' : '#A1887F',
+            roughness: 0.7,
             metalness: 0.0
         });
 
-        // Paper color - warm brown/tan
-        const paperColor = '#D2B48C';
+        // Paper color - warm antique paper tone
+        const paperColor = '#E8DCC8';
+        
+        // Cover has richer, darker appearance
+        const coverColor = '#4E342E';
 
         // FRONT face
         let frontMat;
@@ -123,17 +140,19 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
                 map: frontTexture,
                 alphaMap: roundedMask,
                 transparent: true,
-                roughness: isCover ? 0.2 : ROUGHNESS,
-                metalness: isCover ? 0.1 : METALNESS,
-                color: '#ffffff'
+                roughness: isCover ? 0.4 : ROUGHNESS,
+                metalness: isCover ? 0.05 : METALNESS,
+                color: '#ffffff',
+                envMapIntensity: 0.3
             });
         } else {
             frontMat = new THREE.MeshStandardMaterial({
-                color: paperColor,
+                color: isCover ? coverColor : paperColor,
                 alphaMap: roundedMask,
                 transparent: true,
-                roughness: ROUGHNESS,
-                metalness: METALNESS
+                roughness: isCover ? 0.5 : ROUGHNESS,
+                metalness: METALNESS,
+                envMapIntensity: 0.2
             });
         }
 
@@ -146,15 +165,17 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
                 transparent: true,
                 roughness: ROUGHNESS,
                 metalness: METALNESS,
-                color: '#ffffff'
+                color: '#ffffff',
+                envMapIntensity: 0.3
             });
         } else {
             backMat = new THREE.MeshStandardMaterial({ 
-                color: paperColor,
+                color: isCover ? coverColor : paperColor,
                 alphaMap: roundedMask,
                 transparent: true,
-                roughness: ROUGHNESS,
-                metalness: METALNESS
+                roughness: isCover ? 0.5 : ROUGHNESS,
+                metalness: METALNESS,
+                envMapIntensity: 0.2
             });
         }
 
@@ -163,11 +184,10 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
 
     return (
         <group ref={group}>
-            {/* All pages pivot from spine (x=0), positioned to the right */}
+            {/* Page pivot point and position */}
             <group position={[PAGE_WIDTH / 2, 0, 0]}>
-                {/* Main page */}
                 <mesh ref={meshRef} material={materialArray} castShadow receiveShadow>
-                    <boxGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, isCover ? PAGE_DEPTH * 1.5 : PAGE_DEPTH]} />
+                    <boxGeometry args={[PAGE_WIDTH, PAGE_HEIGHT, isCover ? COVER_DEPTH : PAGE_DEPTH]} />
                 </mesh>
             </group>
         </group>
@@ -176,7 +196,23 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
 
 const Book = ({ pageIndex, setTotalPages, setCurrentPage }: { pageIndex: number, setTotalPages: (n: number) => void, setCurrentPage: (n: number) => void }) => {
     const [hovered, setHover] = useState(false);
+    const groupRef = useRef<THREE.Group>(null);
+    const positionRef = useRef(-PAGE_WIDTH / 2);
     useCursor(hovered);
+    
+    // Animate book position: centered when closed, shifted left when open
+    useFrame((_, delta) => {
+        if (!groupRef.current) return;
+        
+        // When pageIndex is 0 (cover), book is centered (shift left by half page width)
+        // When pageIndex > 0 (opened), book stays at origin so spine is at center
+        const targetX = pageIndex === 0 ? -PAGE_WIDTH / 2 : 0;
+        
+        const easing = 1 - Math.pow(1 - 0.06, delta * 60);
+        positionRef.current += (targetX - positionRef.current) * easing;
+        
+        groupRef.current.position.x = positionRef.current;
+    });
 
     // Load cover
     const coverTexture = useTexture('/book_cover.png');
@@ -274,6 +310,7 @@ const Book = ({ pageIndex, setTotalPages, setCurrentPage }: { pageIndex: number,
 
     return (
         <group
+            ref={groupRef}
             onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
             onPointerOut={(e) => { e.stopPropagation(); setHover(false); }}
         >
@@ -299,48 +336,50 @@ export default function BookDemo({ onBack }: { onBack: () => void }) {
     };
 
     return (
-        <div className="w-full h-screen bg-sky-100 relative overflow-hidden font-sans">
-            {/* Light blue background with subtle gradients */}
+        <div className="w-full h-screen relative overflow-hidden font-sans" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e8f4fc 100%)' }}>
+            {/* Decorative background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-sky-200/50 rounded-full blur-3xl" />
-                <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] bg-blue-200/40 rounded-full blur-3xl" />
+                <div className="absolute -top-[30%] -left-[15%] w-[60%] h-[60%] bg-sky-200/40 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+                <div className="absolute top-[50%] -right-[15%] w-[50%] h-[70%] bg-blue-200/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+                <div className="absolute -bottom-[20%] left-[20%] w-[40%] h-[40%] bg-indigo-100/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
             </div>
 
             <button
                 onClick={onBack}
-                className="absolute top-8 left-8 z-50 text-sky-600 hover:text-sky-800 transition-colors flex items-center gap-2 font-medium"
+                className="absolute top-8 left-8 z-50 text-sky-700 hover:text-sky-900 transition-all duration-300 flex items-center gap-2 font-medium bg-white/60 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm hover:shadow-md hover:bg-white/80"
             >
-                ← Back
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back
             </button>
 
-            {/* Enhanced page indicator */}
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white/70 backdrop-blur-lg px-8 py-4 rounded-full shadow-lg border border-sky-200/60 transition-all duration-300">
+            {/* Page indicator */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-white/80 backdrop-blur-lg px-6 py-3 rounded-full shadow-lg border border-white/50 transition-all duration-300">
                 {new Array(totalPages + 1).fill(0).map((_, i) => (
-                    <div
+                    <button
                         key={i}
                         onClick={() => setCurrentPage(i)}
                         className={`
-                            rounded-full transition-all duration-300 cursor-pointer
+                            rounded-full transition-all duration-300 
                             ${i === currentPage
-                                ? 'w-3 h-3 bg-gradient-to-r from-sky-400 to-blue-500 scale-125 shadow-lg shadow-sky-500/50'
-                                : 'w-2 h-2 bg-sky-300 hover:bg-sky-400 hover:scale-110'
+                                ? 'w-3 h-3 bg-gradient-to-r from-sky-500 to-blue-600 shadow-md'
+                                : 'w-2 h-2 bg-sky-300/70 hover:bg-sky-400 hover:scale-125'
                             }
                         `}
                     />
                 ))}
             </div>
             
-            {/* Invisible click areas for navigation */}
+            {/* Navigation areas */}
             <div 
                 className="absolute left-0 top-0 w-1/2 h-full z-40 cursor-pointer group"
                 onClick={handlePrev}
-                title="Previous Page"
             >
-                {/* Visual indicator on hover */}
-                <div className="absolute left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur-md rounded-full p-3 shadow-lg border border-sky-200">
-                        <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1">
+                    <div className="bg-white/90 backdrop-blur-md rounded-full p-3 shadow-xl border border-sky-100">
+                        <svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                         </svg>
                     </div>
                 </div>
@@ -348,74 +387,71 @@ export default function BookDemo({ onBack }: { onBack: () => void }) {
             <div 
                 className="absolute right-0 top-0 w-1/2 h-full z-40 cursor-pointer group"
                 onClick={handleNext}
-                title="Next Page"
             >
-                {/* Visual indicator on hover */}
-                <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur-md rounded-full p-3 shadow-lg border border-sky-200">
-                        <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-x-1">
+                    <div className="bg-white/90 backdrop-blur-md rounded-full p-3 shadow-xl border border-sky-100">
+                        <svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <Canvas shadows camera={{ position: [0, 0, 8.5], fov: 35 }}>
-                {/* Enhanced lighting setup for premium look */}
-                <ambientLight intensity={0.6} />
+            <Canvas shadows camera={{ position: [0, 0.5, 8], fov: 35 }}>
+                {/* Enhanced lighting for depth and dimension */}
+                <ambientLight intensity={0.5} />
                 
-                {/* Main directional light with soft shadows */}
+                {/* Key light - main illumination from top-right */}
                 <directionalLight 
-                    position={[5, 8, 5]} 
-                    intensity={1.5} 
+                    position={[4, 5, 5]} 
+                    intensity={1.0} 
                     castShadow
-                    shadow-mapSize-width={4096}
-                    shadow-mapSize-height={4096}
-                    shadow-camera-far={50}
-                    shadow-camera-left={-10}
-                    shadow-camera-right={10}
-                    shadow-camera-top={10}
-                    shadow-camera-bottom={-10}
+                    shadow-mapSize-width={2048}
+                    shadow-mapSize-height={2048}
+                    shadow-camera-far={20}
+                    shadow-camera-left={-5}
+                    shadow-camera-right={5}
+                    shadow-camera-top={5}
+                    shadow-camera-bottom={-5}
                     shadow-bias={-0.0001}
+                    color="#fff8f0"
                 />
                 
-                {/* Fill lights for softer shadows */}
-                <pointLight position={[-5, 5, -5]} intensity={0.4} color="#e0e7ff" />
-                <pointLight position={[5, -3, 5]} intensity={0.3} color="#fef3c7" />
-                
-                {/* Rim light for edge definition */}
-                <spotLight 
-                    position={[0, 10, -5]} 
-                    angle={0.4} 
-                    penumbra={1} 
-                    intensity={0.6} 
-                    color="#ffffff"
-                    castShadow
+                {/* Fill light - softer from left */}
+                <directionalLight 
+                    position={[-3, 2, 3]} 
+                    intensity={0.3} 
+                    color="#f0f5ff"
                 />
+                
+                {/* Back light for rim/edge definition */}
+                <pointLight position={[0, 2, -3]} intensity={0.4} color="#ffeedd" />
 
                 <PresentationControls
                     global
-                    rotation={[0, 0, 0]}
-                    polar={[-Math.PI / 12, Math.PI / 12]}
+                    rotation={[0.1, 0, 0]}
+                    polar={[-Math.PI / 10, Math.PI / 10]}
                     azimuth={[-Math.PI / 6, Math.PI / 6]}
                 >
                     <Float
-                        rotationIntensity={0.1}
-                        floatIntensity={0.2}
-                        speed={1.2}
-                        floatingRange={[-0.03, 0.03]}
+                        rotationIntensity={0.05}
+                        floatIntensity={0.1}
+                        speed={1.5}
+                        floatingRange={[-0.015, 0.015]}
                     >
-                        <React.Suspense fallback={null}>
-                            <Book pageIndex={currentPage} setTotalPages={setTotalPages} setCurrentPage={setCurrentPage} />
-                        </React.Suspense>
+                        <group position={[0, 0.1, 0]}>
+                            <React.Suspense fallback={null}>
+                                <Book pageIndex={currentPage} setTotalPages={setTotalPages} setCurrentPage={setCurrentPage} />
+                            </React.Suspense>
+                        </group>
                     </Float>
                 </PresentationControls>
 
-                {/* Premium environment with soft lighting */}
-                <Environment preset="apartment" />
+                {/* Environment for realistic reflections */}
+                <Environment preset="city" />
                 
-                {/* Subtle fog for depth */}
-                <fog attach="fog" args={['#e0f2fe', 12, 25]} />
+                {/* Soft fog for atmospheric depth */}
+                <fog attach="fog" args={['#e8f4fc', 12, 28]} />
             </Canvas>
         </div>
     );
