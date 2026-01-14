@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Box, Cpu, Plus, Search, Zap } from 'lucide-react';
 import { useI18n } from '../../i18n/I18nContext';
+import AddAgentModal from '../modals/AddAgentModal';
 import { api } from '../../services/api';
 import { scenarios as presetScenarios } from '../../data/mockData';
 import type { Trajectory } from '../../data/mockData';
@@ -28,6 +29,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 }) => {
     const { locale } = useI18n();
     const [selectedMode, setSelectedMode] = useState<Mode>(null);
+    const [isAddAgentModalOpen, setIsAddAgentModalOpen] = useState(false);
+    const [addAgentRepoUrl, setAddAgentRepoUrl] = useState('');
 
     // Config State
     const [selectedScenarioId, setSelectedScenarioId] = useState<string>('');
@@ -102,6 +105,19 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 query: ''
             });
         }
+    };
+    
+    const handleAddAgentApply = (data: { repoUrl: string; apiKey: string }) => {
+        setApiKey(data.apiKey);
+        setAddAgentRepoUrl(data.repoUrl);
+        setIsAddAgentModalOpen(false);
+        onStart({
+            scenarioId: '',
+            payload,
+            erasureRate,
+            mode: 'add_agent',
+            agentRepoUrl: data.repoUrl
+        });
     };
 
     return (
@@ -201,6 +217,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                                     erasureRate: erasureRate,
                                                     query: ''
                                                 });
+                                            } else if (mode.id === 'add') {
+                                                setActiveIndex(index);
+                                                setSelectedMode(mode.id as Mode);
+                                                setIsAddAgentModalOpen(true);
                                             } else {
                                                 setActiveIndex(index);
                                                 setSelectedMode(mode.id as Mode);
@@ -353,6 +373,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     </div>
                 </div>
             </div>
+            <AddAgentModal
+                isOpen={isAddAgentModalOpen}
+                onClose={() => setIsAddAgentModalOpen(false)}
+                onApply={handleAddAgentApply}
+                apiKey={apiKey}
+                repoUrl={addAgentRepoUrl}
+            />
         </div>
     );
 };

@@ -61,7 +61,12 @@ DEFAULT_MAX_SESSIONS = 128
 
 class Message(BaseModel):
     role: str
-    content: str
+    content: Optional[str] = None
+    tool_call_id: Optional[str] = None
+
+
+def _message_to_dict(message: Message) -> Dict[str, Any]:
+    return message.model_dump(exclude_none=True)
 
 
 class CompletionRequest(BaseModel):
@@ -86,7 +91,7 @@ def _debug_enabled() -> bool:
 
 def _debug_print(label: str, payload: Any) -> None:
     if _debug_enabled():
-        print(f"[agentmark:{label}] {json.dumps(payload, ensure_ascii=False)}")
+        print(f"[agentmark:{label}] {json.dumps(payload, ensure_ascii=False, default=str)}")
 
 
 def _extract_system_prompt_text(messages: List[Message]) -> str:
@@ -94,6 +99,27 @@ def _extract_system_prompt_text(messages: List[Message]) -> str:
         if msg.role == "system":
             return msg.content or ""
     return ""
+
+
+def _render_messages(messages: List[Dict[str, Any]]) -> str:
+    lines: List[str] = []
+    for msg in messages:
+        role = msg.get("role", "")
+        content = msg.get("content")
+        if content is None:
+            continue
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+
+
+def _sanitize_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    cleaned: List[Dict[str, Any]] = []
+    for msg in messages:
+        if msg.get("role") == "tool" and not msg.get("tool_call_id"):
+            # Avoid invalid tool messages breaking downstream APIs.
+            continue
+        cleaned.append(msg)
+    return cleaned
 
 
 def _get_session_key(
@@ -137,20 +163,44 @@ def _get_watermarker(session_key: str) -> AgentWatermarker:
     return wm
 
 
-def _inject_prompt(messages: List[Message], instr: str, candidates: Optional[List[str]], mode: str) -> List[dict]:
+def _inject_prompt(
+    messages: List[Message],
+    instr: str,
+    candidates: Optional[List[str]],
+    mode: str,
+    tools: Optional[List[Any]] = None,
+) -> List[dict]:
     # Add a dedicated system message for AgentMark instruction at the FRONT to avoid clobbering user prompt
     msgs = [{"role": "system", "content": instr}]
-    msgs.extend([m.dict() for m in messages])
+    msgs.extend([_message_to_dict(m) for m in messages])
 
     if candidates:
         user_lines = "候选动作：\n" + "\n".join(f"- {c}" for c in candidates)
+        tool_lines = ""
+        if tools:
+            tool_specs = []
+            for tool in tools:
+                if not isinstance(tool, dict):
+                    continue
+                fn = tool.get("function", {}) if isinstance(tool.get("function"), dict) else tool
+                name = fn.get("name") or tool.get("name")
+                params = fn.get("parameters", {}) or {}
+                props = params.get("properties", {}) if isinstance(params, dict) else {}
+                if name:
+                    if props:
+                        keys = ", ".join(props.keys())
+                        tool_specs.append(f"- {name}({keys})")
+                    else:
+                        tool_specs.append(f"- {name}(...)")
+            if tool_specs:
+                tool_lines = "\n可用工具参数：\n" + "\n".join(tool_specs)
         # Append to last user message, or add new user message if none
         for m in reversed(msgs):
             if m["role"] == "user":
-                m["content"] = (m["content"] or "") + "\n" + user_lines
+                m["content"] = (m["content"] or "") + "\n" + user_lines + tool_lines
                 break
         else:
-            msgs.append({"role": "user", "content": user_lines})
+            msgs.append({"role": "user", "content": user_lines + tool_lines})
     else:
         # Bootstrap mode: ask LLM to propose candidates + probabilities
         bootstrap_note = (
@@ -185,13 +235,29 @@ def _resolve_model(requested_model: str) -> str:
     return DEFAULT_MODEL_MAP.get(requested_model, requested_model)
 
 
-def _should_two_pass(req: CompletionRequest) -> bool:
-    mode = (os.getenv("AGENTMARK_TWO_PASS") or "auto").strip().lower()
-    if mode in ("1", "true", "yes", "on"):
-        return True
-    if mode in ("0", "false", "no", "off"):
-        return False
-    return bool(req.tools)
+def _tool_mode(req: CompletionRequest) -> str:
+    mode_env = (os.getenv("AGENTMARK_TOOL_MODE") or "").strip().lower()
+    if mode_env in {"proxy", "two_pass", "none"}:
+        return mode_env
+    two_pass_env = (os.getenv("AGENTMARK_TWO_PASS") or "").strip().lower()
+    if two_pass_env in ("1", "true", "yes", "on"):
+        return "two_pass"
+    if two_pass_env in ("0", "false", "no", "off"):
+        return "proxy"
+    return "proxy" if req.tools else "none"
+
+
+def _build_tool_calls(action: str, action_args: Any) -> List[Dict[str, Any]]:
+    if not action:
+        return []
+    args = action_args if isinstance(action_args, dict) else {}
+    return [
+        {
+            "id": f"call_agentmark_{uuid.uuid4().hex[:8]}",
+            "type": "function",
+            "function": {"name": action, "arguments": json.dumps(args)},
+        }
+    ]
 
 
 def _build_tool_calls(action: str, action_args: Any) -> List[Dict[str, Any]]:
@@ -237,6 +303,59 @@ def _coerce_candidates(raw: Any) -> List[str]:
                 out.append(str(item))
         return out
     return [str(raw)]
+
+
+def _placeholder_for_schema(schema: Any) -> Any:
+    if not isinstance(schema, dict):
+        return ""
+    dtype = schema.get("type")
+    if dtype == "string":
+        return ""
+    if dtype in ("number", "integer"):
+        return 0
+    if dtype == "boolean":
+        return False
+    if dtype == "array":
+        return []
+    if dtype == "object":
+        return {}
+    return None
+
+
+def _build_action_args_map(
+    payload: Dict[str, Any],
+    candidates: List[str],
+    tools: Optional[List[Any]],
+) -> Dict[str, Any]:
+    action_args_map: Dict[str, Any] = {}
+    if isinstance(payload, dict):
+        raw_args = payload.get("action_args") or payload.get("args") or {}
+        if isinstance(raw_args, dict):
+            action_args_map.update(raw_args)
+
+    tool_schema: Dict[str, Dict[str, Any]] = {}
+    if tools:
+        for tool in tools:
+            if not isinstance(tool, dict):
+                continue
+            fn = tool.get("function", {}) if isinstance(tool.get("function"), dict) else tool
+            name = fn.get("name") or tool.get("name")
+            params = fn.get("parameters", {}) if isinstance(fn, dict) else {}
+            props = params.get("properties", {}) if isinstance(params, dict) else {}
+            if name and isinstance(props, dict):
+                tool_schema[name] = props
+
+    for name in candidates:
+        args = action_args_map.get(name)
+        if isinstance(args, dict) and args:
+            continue
+        props = tool_schema.get(name, {})
+        placeholder_args: Dict[str, Any] = {}
+        for key, schema in props.items():
+            placeholder_args[key] = _placeholder_for_schema(schema)
+        action_args_map[name] = placeholder_args if placeholder_args else (args if isinstance(args, dict) else {})
+
+    return action_args_map
 
 
 def _extract_agentmark_from_system(messages: List[Message]) -> Dict[str, Any]:
@@ -320,12 +439,19 @@ def proxy_completion(req: CompletionRequest, request: Request):
         wm = _get_watermarker(session_key)
         round_used = wm.current_round
         context_used = _extract_context(req, system_agentmark, session_key, round_used)
-        rewritten = _inject_prompt(req.messages, instr, candidates if candidates else None, mode)
+        rewritten = _inject_prompt(
+            req.messages,
+            instr,
+            candidates if candidates else None,
+            mode,
+            tools=req.tools,
+        )
+        rewritten = _sanitize_messages(rewritten)
         _debug_print(
             "inbound_request",
             {
                 "model": req.model,
-                "messages": [m.dict() for m in req.messages],
+                "messages": [_message_to_dict(m) for m in req.messages],
                 "tools": req.tools,
                 "extra_body": req.extra_body,
                 "context": req.context,
@@ -367,7 +493,17 @@ def proxy_completion(req: CompletionRequest, request: Request):
                 round_num=round_used,
             )
         except Exception as e:
+            logger.exception("watermark processing failed")
             raise HTTPException(status_code=500, detail=f"watermark processing failed: {e}")
+
+        action_args_map = _build_action_args_map(
+            result.get("raw_payload") or {},
+            candidates,
+            req.tools,
+        )
+        if action_args_map:
+            if not isinstance(result.get("action_args"), dict):
+                result["action_args"] = action_args_map.get(result["action"], {})
 
         round_used = result["frontend_data"]["watermark_meta"]["round_num"]
         decoded_bits = wm.decode(
@@ -377,11 +513,11 @@ def proxy_completion(req: CompletionRequest, request: Request):
             round_num=round_used,
         )
 
-        # Two-pass: for tool-using agents, re-call LLM to emit tool_calls
         final_resp = scoring_resp
-        two_pass = _should_two_pass(req)
-        if two_pass:
-            base_messages = [m.dict() for m in req.messages]
+        tool_mode = _tool_mode(req)
+        execution_messages: Optional[List[Dict[str, Any]]] = None
+        if tool_mode == "two_pass":
+            base_messages = _sanitize_messages([_message_to_dict(m) for m in req.messages])
             tool_choice = None
             if req.tools and result["action"] in candidates:
                 tool_choice = {"type": "function", "function": {"name": result["action"]}}
@@ -396,6 +532,7 @@ def proxy_completion(req: CompletionRequest, request: Request):
                     "session_id": session_key,
                 },
             )
+            execution_messages = base_messages
             final_resp = client.chat.completions.create(
                 model=target_model,
                 messages=base_messages,
@@ -407,7 +544,7 @@ def proxy_completion(req: CompletionRequest, request: Request):
 
         # Build response: keep original structure, append watermark info
         resp_dict = final_resp.model_dump()
-        if not two_pass and req.tools:
+        if tool_mode == "proxy" and req.tools:
             tool_calls = _build_tool_calls(result["action"], result["action_args"])
             if resp_dict.get("choices"):
                 resp_dict["choices"][0]["message"]["tool_calls"] = tool_calls
@@ -415,25 +552,40 @@ def proxy_completion(req: CompletionRequest, request: Request):
                 resp_dict["choices"][0]["message"]["content"] = None
             _debug_print(
                 "tool_calls_proxy",
-                {"tool_calls": tool_calls, "arguments_obj": result["action_args"]},
+                {
+                    "tool_calls": tool_calls,
+                    "arguments_obj": result["action_args"],
+                    "selected_probability": result["probabilities_used"].get(result["action"]),
+                },
             )
         resp_dict["watermark"] = {
             "action": result["action"],
             "action_args": result["action_args"],
+            "action_args_full": action_args_map,
             "probabilities_used": result["probabilities_used"],
+            "selected_probability": result["probabilities_used"].get(result["action"]),
             "frontend_data": result["frontend_data"],
             "decoded_bits": decoded_bits,
             "candidates_used": candidates,
             "session_id": session_key,
             "context_used": result["frontend_data"]["watermark_meta"].get("context"),
             "round_num": round_used,
-            "mode": (mode if candidates else "bootstrap") + ("_two_pass" if two_pass else ""),
+            "mode": (mode if candidates else "bootstrap") + f"_{tool_mode}",
             "raw_llm_output": raw_text,
+            "prompt_trace": {
+                "scoring_messages": rewritten,
+                "scoring_prompt_text": _render_messages(rewritten),
+                "execution_messages": execution_messages,
+                "execution_prompt_text": _render_messages(execution_messages)
+                if execution_messages
+                else None,
+            },
         }
         logger.info("watermark=%s", resp_dict["watermark"])
-        print(f"[watermark] {json.dumps(resp_dict['watermark'])}")
+        print(f"[watermark] {json.dumps(resp_dict['watermark'], ensure_ascii=False, default=str)}")
         return resp_dict
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("proxy_completion failed")
         raise HTTPException(status_code=500, detail=str(e))

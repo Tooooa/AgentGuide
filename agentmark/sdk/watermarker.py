@@ -13,7 +13,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any
-
+import os
 import torch
 
 from agentmark.core.watermark_sampler import (

@@ -6,6 +6,7 @@ import FlowFeed from './components/execution/FlowFeed';
 import DecoderPanel from './components/decoder/DecoderPanel';
 import ComparisonView from './components/layout/ComparisonView';
 import WelcomeScreen from './components/layout/WelcomeScreen';
+import AddAgentDashboard from './components/plugin/AddAgentDashboard';
 import SaveScenarioModal from './components/modals/SaveScenarioModal';
 import SettingsModal from './components/modals/SettingsModal';
 import ConfirmDialog from './components/modals/ConfirmDialog';
@@ -70,6 +71,7 @@ function AppContent() {
   } = useSimulation();
 
   const [hasStarted, setHasStarted] = useState(false);
+  const [viewMode, setViewMode] = useState<'dashboard' | 'add_agent'>('dashboard');
   // const [isComparisonMode, setIsComparisonMode] = useState(false); // Removed
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -89,6 +91,12 @@ function AppContent() {
   const [hasCompletedCompareTutorial, setHasCompletedCompareTutorial] = useState(false);
   const [showCompareTutorial, setShowCompareTutorial] = useState(false);
   const [compareTutorialStep, setCompareTutorialStep] = useState(1);
+
+  const handleHome = useCallback(() => {
+    setHasStarted(false);
+    setViewMode('dashboard');
+    handleReset();
+  }, [handleReset]);
   
   // 引导目标元素的ref
   const settingsButtonRef = useRef<HTMLButtonElement>(null!);
@@ -122,18 +130,26 @@ function AppContent() {
   // Actually, let's just use the hook's payload directly for DecoderPanel too, 
   // but DecoderPanel prop is 'targetPayload'.
 
-  const [agentPromptPreview, setAgentPromptPreview] = useState('');
+  const [addAgentRepoUrl, setAddAgentRepoUrl] = useState('');
 
-  const handleStart = (config: { scenarioId: string; payload: string; erasureRate: number; query?: string; agentPromptPreview?: string }) => {
-    setActiveScenarioId(config.scenarioId);
-    if (config.query) {
-      setCustomQuery(config.query);
-    } else {
-      setCustomQuery(""); // Reset if not custom
+  const handleStart = (config: { scenarioId: string; payload: string; erasureRate: number; query?: string; mode?: 'dashboard' | 'add_agent'; agentRepoUrl?: string }) => {
+    const nextMode = config.mode || 'dashboard';
+    setViewMode(nextMode);
+    if (nextMode === 'dashboard') {
+      setActiveScenarioId(config.scenarioId);
+      if (config.query) {
+        setCustomQuery(config.query);
+      } else {
+        setCustomQuery(""); // Reset if not custom
+      }
+      setPayload(config.payload); // Sync to hook
+      setErasureRate(config.erasureRate);
     }
-    setAgentPromptPreview(config.agentPromptPreview || '');
-    setPayload(config.payload); // Sync to hook
-    setErasureRate(config.erasureRate);
+    if (nextMode === 'add_agent') {
+      setAddAgentRepoUrl(config.agentRepoUrl || '');
+      setPayload(config.payload);
+      setErasureRate(config.erasureRate);
+    }
     // Note: setHasStarted logic will trigger the effect below
     setHasStarted(true);
   };
@@ -202,24 +218,30 @@ function AppContent() {
 
   // 初次进入主页面时自动弹出设置窗口
   useEffect(() => {
-    if (hasStarted && isFirstEntry) {
+    if (!hasStarted || viewMode !== 'dashboard') {
+      return;
+    }
+    if (isFirstEntry) {
       // 使用 setTimeout 避免 React 同步状态更新的警告
       setTimeout(() => {
         setIsSettingsModalOpen(true);
         setIsFirstEntry(false);
       }, 0);
     }
-  }, [hasStarted, isFirstEntry]);
+  }, [hasStarted, isFirstEntry, viewMode]);
 
   // 当设置窗口关闭时，如果是首次进入且未完成教程，则启动新手引导
   useEffect(() => {
+    if (viewMode !== 'dashboard') {
+      return;
+    }
     if (!isSettingsModalOpen && !isFirstEntry && !hasCompletedTutorial && !showTutorial && tutorialStep === 1) {
       // 等待设置窗口关闭动画完成后再启动引导
       setTimeout(() => {
         setShowTutorial(true);
       }, 500);
     }
-  }, [isSettingsModalOpen, isFirstEntry, hasCompletedTutorial, showTutorial, tutorialStep]);
+  }, [isSettingsModalOpen, isFirstEntry, hasCompletedTutorial, showTutorial, tutorialStep, viewMode]);
 
   // 首次切换到Compare模式时启动Compare教程（仅当有活动对话时）
   useEffect(() => {
@@ -320,7 +342,16 @@ function AppContent() {
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="h-screen overflow-hidden"
             >
-              {isComparisonMode ? (
+              {viewMode === 'add_agent' ? (
+                <AddAgentDashboard
+                  onHome={handleHome}
+                  apiKey={apiKey}
+                  repoUrl={addAgentRepoUrl}
+                  payload={payload}
+                  erasureRate={erasureRate}
+                  setErasureRate={setErasureRate}
+                />
+              ) : isComparisonMode ? (
                 // Comparison Mode Layout
                 <div className="h-full p-4 grid grid-cols-[340px_1fr] gap-6 overflow-hidden max-w-[1920px] mx-auto">
                   <div className="h-full overflow-hidden">
@@ -348,7 +379,6 @@ function AppContent() {
                       visibleSteps={visibleSteps}
                       erasedIndices={erasedIndices}
                       userQuery={customQuery || activeScenario.userQuery}
-                      agentPromptPreview={agentPromptPreview}
                       onContinue={handleContinue}
                       isPlaying={isPlaying}
                       onTogglePlay={() => setIsPlaying(!isPlaying)}
@@ -368,10 +398,7 @@ function AppContent() {
                       promptInputRef={promptInputRef}
                     />
                   }
-                  onHome={() => {
-                    setHasStarted(false);
-                    handleReset();
-                  }}
+                  onHome={handleHome}
                   onSettings={() => setIsSettingsModalOpen(true)}
                   settingsButtonRef={settingsButtonRef}
                 />

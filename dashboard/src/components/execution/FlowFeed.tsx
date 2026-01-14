@@ -9,7 +9,7 @@ interface FlowFeedProps {
     visibleSteps: Step[];
     erasedIndices: Set<number>;
     userQuery: string;
-    agentPromptPreview?: string;
+    userQueryLabel?: string;
     onContinue?: (prompt: string) => void;
     isPlaying?: boolean;
     onTogglePlay?: () => void;
@@ -21,7 +21,7 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
     visibleSteps,
     erasedIndices,
     userQuery,
-    agentPromptPreview,
+    userQueryLabel,
     onContinue,
     isPlaying,
     onTogglePlay,
@@ -82,8 +82,10 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                 </div>
                             </div>
                             <div className="flex-1 text-right">
-                                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
-                                    <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">User Prompt</p>
+                                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
+                                    <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">
+                                        {userQueryLabel || "User Prompt"}
+                                    </p>
                                     {userQuery || "No query provided."}
                                 </div>
                             </div>
@@ -251,16 +253,6 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                     </button>
                                 )}
                             </div>
-                            {agentPromptPreview && (
-                                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1">
-                                        {locale === 'zh' ? 'PROMPT 预览' : 'Prompt Preview'}
-                                    </div>
-                                    <div className="text-sm text-slate-700 whitespace-pre-wrap">
-                                        {agentPromptPreview}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
