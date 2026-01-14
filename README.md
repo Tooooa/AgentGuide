@@ -273,6 +273,7 @@ Open Terminal 3:
 cd AgentMark
 cd dashboard
 npm install  # Only needed first time
+npm i @react-three/fiber @react-three/drei three
 npm run dev
 ```
 

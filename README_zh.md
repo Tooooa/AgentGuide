@@ -252,6 +252,7 @@ python dashboard/server/app.py
 cd AgentMark
 cd dashboard
 npm install
+npm i @react-three/fiber @react-three/drei three
 npm run dev
 ```
 

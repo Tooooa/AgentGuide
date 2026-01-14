@@ -1085,6 +1085,7 @@ async def add_agent_turn(req: AddAgentTurnRequest):
                 debug=False,
                 extra_body={"agentmark": agentmark_body},
                 tools_override=ADD_AGENT_TOOLS,
+                temperature=0.0,
             )
         except Exception as exc:
             print(f"[WARN] Swarm bridge failed, falling back to direct call: {exc}")
@@ -1097,6 +1098,7 @@ async def add_agent_turn(req: AddAgentTurnRequest):
                 messages=messages,
                 tools=ADD_AGENT_TOOLS,
                 extra_body={"agentmark": agentmark_body},
+                temperature=0.0,
             )
         except Exception as exc:
             detail = f"Proxy call failed ({proxy_base}): {exc}"
