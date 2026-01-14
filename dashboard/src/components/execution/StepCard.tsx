@@ -29,10 +29,9 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetails = true, showDistribution = false, displayIndex }) => {
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    const displayThought = step.thought?.trim() ? step.thought : "no thought";
-    
+
     // 使用 displayIndex 如果提供了，否则使用 step.stepIndex
     const stepNumber = displayIndex !== undefined ? displayIndex : step.stepIndex;
 
@@ -89,7 +88,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                     </div>
                     <div className="flex-1 text-right">
                         <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
-                            <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">User Continuation</p>
+                            <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">{locale === 'zh' ? '用户继续' : 'User Continuation'}</p>
                             {step.thought}
                         </div>
                     </div>
@@ -99,11 +98,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-4 group"
-        >
+        <div className="flex gap-4 group">
             {/* Avatar Column */}
             <div className="flex-shrink-0 flex flex-col items-center gap-2 pt-2">
                 <div className="w-10 h-10 rounded-full bg-indigo-600 shadow-md shadow-indigo-200 flex items-center justify-center text-white z-10 relative">
@@ -118,13 +113,6 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
 
             {/* Content Column */}
             <div className="flex-1 min-w-0 space-y-4">
-
-                {/* Header Row (Optional - maybe redundant with bubble headers) */}
-                {/* <div className="flex items-center gap-2 text-xs text-slate-400 pl-1">
-                    <span className="font-mono font-bold">AgentMark Model</span>
-                    <span>•</span>
-                    <span>{step.stepType.toUpperCase()}</span>
-                </div> */}
 
                 {/* 1. THOUGHT + CHARTS Block */}
                 <div className="bg-white rounded-2xl rounded-tl-none border border-slate-100 shadow-sm p-5 relative overflow-hidden">
@@ -146,10 +134,10 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                         {((step.thought && step.thought !== "Task Completed") || step.stepType !== 'finish') && (
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                    <Brain size={14} /> THOUGHT
+                                    <Brain size={14} /> {locale === 'zh' ? '思考' : 'THOUGHT'}
                                 </div>
                                 <p className="text-sm text-slate-700 italic leading-relaxed font-serif pl-2 border-l-2 border-slate-100">
-                                    {displayThought}
+                                    {step.thought || (locale === 'zh' ? '思考中...' : 'Thinking...')}
                                 </p>
                             </div>
                         )}
@@ -158,15 +146,15 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                         {(showWatermarkDetails || showDistribution) && (
                             <div className="space-y-2 relative">
                                 <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                    <span>{showWatermarkDetails ? 'Differential Decoding' : 'Probability Distribution'}</span>
-                                    {showWatermarkDetails && <span>Bins</span>}
+                                    <span>{showWatermarkDetails ? (locale === 'zh' ? '差分解码' : 'Differential Decoding') : (locale === 'zh' ? '概率分布' : 'Probability Distribution')}</span>
+                                    {showWatermarkDetails && <span>{locale === 'zh' ? '分箱' : 'Bins'}</span>}
                                 </div>
-                                <div 
+                                <div
                                     className={`h-28 flex gap-3 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100 ${!showWatermarkDetails ? 'justify-center' : 'cursor-pointer hover:bg-white/50 transition-colors'}`}
                                     onClick={showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
                                 >
                                     {/* Chart 1 */}
-                                    <div 
+                                    <div
                                         className={`h-full relative ${showWatermarkDetails ? 'flex-1' : 'w-1/2 cursor-pointer hover:bg-white/50 transition-colors rounded-lg'}`}
                                         onClick={!showWatermarkDetails ? () => setIsDetailOpen(true) : undefined}
                                     >
@@ -223,12 +211,12 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                             <div className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">
                                                 PAYLOAD {step.watermark.bits}
                                             </div>
-                                            <span>Sort & Slice</span>
+                                            <span>{locale === 'zh' ? '排序切片' : 'Sort & Slice'}</span>
                                             <ArrowRight size={8} />
-                                            <span>Select Bin <span className="text-indigo-600 font-bold">T_{step.distribution.findIndex(x => x.isSelected) + 1}</span></span>
+                                            <span>{locale === 'zh' ? '选择分箱' : 'Select Bin'} <span className="text-indigo-600 font-bold">T_{step.distribution.findIndex(x => x.isSelected) + 1}</span></span>
                                             <ArrowRight size={8} />
                                             <RotateCcw size={8} />
-                                            <span>Sample</span>
+                                            <span>{locale === 'zh' ? '采样' : 'Sample'}</span>
                                         </div>
                                     </div>
                                 )}
@@ -240,7 +228,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                 {/* 2. ACTION Block */}
                 <div className="space-y-1 pl-4 border-l-2 border-slate-200 ml-5">
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                        <Terminal size={14} /> ACTION
+                        <Terminal size={14} /> {locale === 'zh' ? '动作' : 'ACTION'}
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4 font-mono text-sm text-slate-800 shadow-sm border border-slate-200 break-all overflow-wrap-anywhere">
                         {step.action}
@@ -251,7 +239,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                 {step.stepType === 'tool' && (
                     <div className="space-y-1 pl-4 border-l-2 border-slate-200 ml-5">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                            <Activity size={14} /> ENVIRONMENT
+                            <Activity size={14} /> {locale === 'zh' ? '环境' : 'ENVIRONMENT'}
                         </div>
                         <div className="bg-slate-50 rounded-xl p-4 font-mono text-xs text-slate-600 shadow-sm border border-slate-200 max-h-40 overflow-y-auto custom-scrollbar">
                             {/* Truncate or formatted observation */}
@@ -267,7 +255,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                 {step.stepType === 'finish' && (
                     <div className="space-y-1 pl-4 border-l-2 border-emerald-200 ml-5">
                         <div className="flex items-center gap-2 text-xs font-bold text-emerald-500 uppercase tracking-wider mb-2">
-                            <Bot size={14} /> FINAL RESPONSE
+                            <Bot size={14} /> {locale === 'zh' ? '最终回复' : 'FINAL RESPONSE'}
                         </div>
                         <div className="bg-emerald-50/50 rounded-xl p-5 font-serif text-sm text-slate-800 shadow-sm border border-emerald-100 leading-relaxed">
                             {/* Use ReactMarkdown to render the final answer */}
@@ -280,23 +268,23 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                             strong: ({ node, ...props }: any) => <span className="font-bold text-slate-900" {...props} />,
                                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             ul: ({ node, ...props }: any) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        ol: ({ node, ...props }: any) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        li: ({ node, ...props }: any) => <li className="pl-1" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        h1: ({ node, ...props }: any) => <h3 className="text-lg font-bold text-emerald-800 mt-4 mb-2" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        h2: ({ node, ...props }: any) => <h4 className="text-base font-bold text-emerald-700 mt-3 mb-2" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        h3: ({ node, ...props }: any) => <h5 className="text-sm font-bold text-emerald-600 mt-2 mb-1" {...props} />,
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        a: ({ node, ...props }: any) => <a className="text-emerald-600 underline hover:text-emerald-800" {...props} />,
-                                    }}
-                                >
-                                    {(step.finalAnswer || step.toolDetails || "").replace(/^\[Finish\]\s*/, "")}
-                                </ReactMarkdown>
-                            </div>
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            ol: ({ node, ...props }: any) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            li: ({ node, ...props }: any) => <li className="pl-1" {...props} />,
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            h1: ({ node, ...props }: any) => <h3 className="text-lg font-bold text-emerald-800 mt-4 mb-2" {...props} />,
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            h2: ({ node, ...props }: any) => <h4 className="text-base font-bold text-emerald-700 mt-3 mb-2" {...props} />,
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            h3: ({ node, ...props }: any) => <h5 className="text-sm font-bold text-emerald-600 mt-2 mb-1" {...props} />,
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            a: ({ node, ...props }: any) => <a className="text-emerald-600 underline hover:text-emerald-800" {...props} />,
+                                        }}
+                                    >
+                                        {(step.finalAnswer || step.toolDetails || "").replace(/^\[Finish\]\s*/, "")}
+                                    </ReactMarkdown>
+                                </div>
                             ) : (
                                 <div className="text-slate-500 italic">
                                     {step.thought || "Task completed"}
@@ -314,7 +302,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                     displayIndex={stepNumber}
                 />
             </div>
-        </motion.div>
+        </div>
     );
 };
 

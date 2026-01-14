@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
+import { useI18n } from '../../i18n/I18nContext';
 
 import StepCard from '../execution/StepCard';
 import type { Step } from '../../data/mockData';
@@ -24,6 +25,7 @@ interface Segment {
 }
 
 const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedIndices, scenarioId, evaluationResult, userQuery, evaluationRef, utilityMonitorRef, chartRef }) => {
+    const { locale } = useI18n();
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -110,7 +112,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                                 </div>
                             </div>
                             <div className="flex-1">
-                                <p className="font-bold text-[10px] text-slate-400 mb-1 uppercase tracking-wide">User Question</p>
+                                <p className="font-bold text-[10px] text-slate-400 mb-1 uppercase tracking-wide">{locale === 'zh' ? '用户提问' : 'User Question'}</p>
                                 <p className="text-slate-700 leading-relaxed">{query}</p>
                             </div>
                         </div>
@@ -123,7 +125,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
     return (
         <div className="h-full flex flex-col gap-4">
             {/* Main Content - Single scrollable container with aligned segments */}
-            <div 
+            <div
                 className="flex-1 overflow-y-auto bg-slate-50 rounded-2xl scrollbar-thin scrollbar-thumb-slate-200"
                 ref={scrollRef}
                 onScroll={handleScroll}
@@ -132,10 +134,10 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                 <div ref={evaluationRef} className="sticky top-0 bg-slate-50 z-20 px-4 pt-4 pb-2">
                     <div className="grid grid-cols-2 gap-6">
                         <div className="p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
-                            <span className="font-bold text-slate-600 text-sm">Original (Base)</span>
+                            <span className="font-bold text-slate-600 text-sm">{locale === 'zh' ? '无水印Agent' : 'Original (Base)'}</span>
                         </div>
                         <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl shadow-sm">
-                            <span className="font-bold text-indigo-700 text-sm">Ours (Watermarked)</span>
+                            <span className="font-bold text-indigo-700 text-sm">{locale === 'zh' ? '有水印Agent' : 'Ours (Watermarked)'}</span>
                         </div>
                     </div>
                 </div>
@@ -150,55 +152,56 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ visibleSteps, erasedInd
                         // 计算当前 segment 之前的累计步骤数
                         const prevBaselineCount = segments.slice(0, segIndex).reduce((acc, s) => acc + s.baselineSteps.length, 0);
                         const prevWatermarkedCount = segments.slice(0, segIndex).reduce((acc, s) => acc + s.watermarkedSteps.length, 0);
-                        
+
                         return (
-                        <React.Fragment key={`segment-${segIndex}`}>
-                            {/* Two columns for agent steps */}
-                            <div className="grid grid-cols-2 gap-6 mb-4">
-                                {/* Left: Baseline steps */}
-                                <div className="space-y-4 p-2 bg-white rounded-xl border border-slate-100">
-                                    {segment.baselineSteps.length > 0 ? (
-                                        segment.baselineSteps.map((step, stepIdx) => (
-                                            <StepCard
-                                                key={`nw-${segIndex}-${stepIdx}`}
-                                                step={step}
-                                                isErased={false}
-                                                showWatermarkDetails={false}
-                                                showDistribution={true}
-                                                displayIndex={prevBaselineCount + stepIdx + 1}
-                                            />
-                                        ))
-                                    ) : (
-                                        <div className="text-center text-slate-400 text-sm py-8 italic">
-                                            (No more steps)
-                                        </div>
-                                    )}
+                            <React.Fragment key={`segment-${segIndex}`}>
+                                {/* Two columns for agent steps */}
+                                <div className="grid grid-cols-2 gap-6 mb-4">
+                                    {/* Left: Baseline steps */}
+                                    <div className="space-y-4 p-2 bg-white rounded-xl border border-slate-100">
+                                        {segment.baselineSteps.length > 0 ? (
+                                            segment.baselineSteps.map((step, stepIdx) => (
+                                                <StepCard
+                                                    key={`nw-${segIndex}-${stepIdx}`}
+                                                    step={step}
+                                                    isErased={false}
+                                                    showWatermarkDetails={false}
+                                                    showDistribution={true}
+                                                    displayIndex={prevBaselineCount + stepIdx + 1}
+                                                />
+                                            ))
+                                        ) : (
+                                            <div className="text-center text-slate-400 text-sm py-8 italic">
+                                                {locale === 'zh' ? '(暂无更多步骤)' : '(No more steps)'}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Right: Watermarked steps */}
+                                    <div ref={segIndex === 0 ? chartRef : undefined} className="space-y-4 p-2 bg-white rounded-indigo-xl border border-indigo-100">
+                                        {segment.watermarkedSteps.length > 0 ? (
+                                            segment.watermarkedSteps.map((step, stepIdx) => (
+                                                <StepCard
+                                                    key={`wm-${segIndex}-${stepIdx}`}
+                                                    step={step}
+                                                    isErased={erasedIndices.has(step.stepIndex)}
+                                                    showWatermarkDetails={true}
+                                                    displayIndex={prevWatermarkedCount + stepIdx + 1}
+                                                />
+                                            ))
+                                        ) : (
+                                            <div className="text-center text-slate-400 text-sm py-8 italic">
+                                                {locale === 'zh' ? '(暂无更多步骤)' : '(No more steps)'}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Right: Watermarked steps */}
-                                <div ref={segIndex === 0 ? chartRef : undefined} className="space-y-4 p-2 bg-white rounded-xl border border-indigo-100">
-                                    {segment.watermarkedSteps.length > 0 ? (
-                                        segment.watermarkedSteps.map((step, stepIdx) => (
-                                            <StepCard
-                                                key={`wm-${segIndex}-${stepIdx}`}
-                                                step={step}
-                                                isErased={erasedIndices.has(step.stepIndex)}
-                                                showWatermarkDetails={true}
-                                                displayIndex={prevWatermarkedCount + stepIdx + 1}
-                                            />
-                                        ))
-                                    ) : (
-                                        <div className="text-center text-slate-400 text-sm py-8 italic">
-                                            (No more steps)
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* User Input - Centered and aligned */}
-                            {segment.userInput && renderUserQuery(segment.userInput.thought, `user-input-${segIndex}`)}
-                        </React.Fragment>
-                    )})}
+                                {/* User Input - Centered and aligned */}
+                                {segment.userInput && renderUserQuery(segment.userInput.thought, `user-input-${segIndex}`)}
+                            </React.Fragment>
+                        )
+                    })}
 
                     <div ref={bottomRef} className="h-4" />
                 </div>

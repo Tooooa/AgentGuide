@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, Award, CheckCircle, AlertCircle } from 'lucide-react';
 
+import { useI18n } from '../../i18n/I18nContext';
+
 interface EvaluationResult {
     model_a_score: number;
     model_b_score: number;
@@ -15,6 +17,8 @@ interface EvaluationModalProps {
 }
 
 const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, result, isLoading }) => {
+    const { locale } = useI18n();
+
     if (!isOpen) return null;
 
     return (
@@ -27,8 +31,8 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                             <Award size={24} className="text-indigo-500" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold tracking-tight text-slate-800">AI Evaluation Report</h2>
-                            <p className="text-slate-500 text-sm">Automated analysis by Judge Model</p>
+                            <h2 className="text-xl font-bold tracking-tight text-slate-800">{locale === 'zh' ? 'AI 评估报告' : 'AI Evaluation Report'}</h2>
+                            <p className="text-slate-500 text-sm">{locale === 'zh' ? '由 Judge 模型自动分析' : 'Automated analysis by Judge Model'}</p>
                         </div>
                     </div>
                     <button
@@ -44,7 +48,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-4">
                             <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-300 rounded-full animate-spin"></div>
-                            <p className="text-slate-500 font-medium animate-pulse">Analyzing trajectories...</p>
+                            <p className="text-slate-500 font-medium animate-pulse">{locale === 'zh' ? '正在分析轨迹...' : 'Analyzing trajectories...'}</p>
                         </div>
                     ) : result ? (
                         <div className="space-y-8">
@@ -53,13 +57,13 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                                 {/* Model A (Baseline) */}
                                 <div className="bg-indigo-100/30 rounded-xl p-6 border border-indigo-200/40 flex flex-col items-center gap-3 relative overflow-hidden group hover:border-indigo-300/60 transition-colors">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-indigo-300/50"></div>
-                                    <span className="text-sm font-bold text-slate-600 uppercase tracking-widest">Base Model</span>
+                                    <span className="text-sm font-bold text-slate-600 uppercase tracking-widest">{locale === 'zh' ? '无水印Agent' : 'Base Model'}</span>
                                     <div className="text-5xl font-black text-slate-700 font-mono tracking-tighter">
                                         {result.model_a_score}<span className="text-2xl text-slate-400">/10</span>
                                     </div>
                                     {result.model_a_score > result.model_b_score && (
                                         <div className="absolute top-3 right-3 text-emerald-500 bg-emerald-50 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                                            <CheckCircle size={12} /> WINNER
+                                            <CheckCircle size={12} /> {locale === 'zh' ? '胜出' : 'WINNER'}
                                         </div>
                                     )}
                                 </div>
@@ -67,13 +71,13 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                                 {/* Model B (Ours) */}
                                 <div className="bg-indigo-100/40 rounded-xl p-6 border border-indigo-200/50 flex flex-col items-center gap-3 relative overflow-hidden group hover:border-indigo-300/70 transition-colors">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-indigo-400/60"></div>
-                                    <span className="text-sm font-bold text-indigo-500 uppercase tracking-widest">Ours (Watermarked)</span>
+                                    <span className="text-sm font-bold text-indigo-500 uppercase tracking-widest">{locale === 'zh' ? '有水印Agent' : 'Ours (Watermarked)'}</span>
                                     <div className="text-5xl font-black text-indigo-600 font-mono tracking-tighter">
                                         {result.model_b_score}<span className="text-2xl text-indigo-300">/10</span>
                                     </div>
                                     {result.model_b_score > result.model_a_score && (
                                         <div className="absolute top-3 right-3 text-indigo-600 bg-indigo-100/70 px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                                            <Award size={12} /> WINNER
+                                            <Award size={12} /> {locale === 'zh' ? '胜出' : 'WINNER'}
                                         </div>
                                     )}
                                 </div>
@@ -83,7 +87,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
                                 <div className="flex items-center gap-2 mb-3 text-slate-700 font-bold border-b border-slate-200 pb-2">
                                     <AlertCircle size={18} />
-                                    <h3>Evaluation Reasoning</h3>
+                                    <h3>{locale === 'zh' ? '评估理由' : 'Evaluation Reasoning'}</h3>
                                 </div>
                                 <p className="text-slate-600 leading-relaxed text-sm">
                                     {result.reason}
@@ -91,7 +95,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center text-slate-400 py-12">No result available.</div>
+                        <div className="text-center text-slate-400 py-12">{locale === 'zh' ? '暂无结果。' : 'No result available.'}</div>
                     )}
                 </div>
 
@@ -101,7 +105,7 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                         onClick={onClose}
                         className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium shadow-sm transition-all hover:shadow-md active:scale-95"
                     >
-                        Close Report
+                        {locale === 'zh' ? '关闭报告' : 'Close Report'}
                     </button>
                 </div>
             </div>

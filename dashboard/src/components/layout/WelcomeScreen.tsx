@@ -92,7 +92,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     const handleSelectScenario = (s: Trajectory) => {
         setSelectedScenarioId(s.id);
         const title = locale === 'zh' ? s.title.zh : s.title.en;
-        setPromptText(s.userQuery || title);
+        const query = (locale === 'zh' && s.userQueryZh) ? s.userQueryZh : s.userQuery;
+        setPromptText(query || title);
         setShowScenarioList(false);
     };
 
@@ -162,7 +163,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                         <img src="/logo_1.svg" alt="AgentMark Logo Text" className="h-24 opacity-90 drop-shadow-sm" style={{ backgroundColor: 'transparent' }} />
                     </div>
                     <p className="text-slate-600 text-xl font-medium tracking-wide mt-6 whitespace-nowrap">
-                        a utility-preserving watermark for agents
+                        A utility-preserving watermark for agents
                     </p>
                 </motion.div>
 
@@ -206,6 +207,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                 const baseHeight = '140px'; // 扩大
                                 const activeHeight = '160px'; // 扩大
                                 const expandedHeight = '650px'; // Tool use expanded
+
+                                const getModeTitle = (m: any) => m.title;
+
+                                const getModeDesc = (m: any) => m.desc;
 
                                 return (
                                     <motion.div
@@ -287,7 +292,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                                                 value={promptText}
                                                                 onChange={(e) => setPromptText(e.target.value)}
                                                                 onFocus={() => setShowScenarioList(true)}
-                                                                placeholder={locale === 'zh' ? "输入您的请求..." : "Enter your query..."}
+                                                                placeholder="Enter your query..."
                                                                 className="w-full pl-12 pr-5 py-4 rounded-2xl border border-slate-200 focus:border-indigo-500 outline-none transition-all text-base bg-slate-50/50"
                                                             />
 
@@ -304,7 +309,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                                                             {presetScenarios.length > 0 && (
                                                                                 <>
                                                                                     <div className="px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
-                                                                                        {locale === 'zh' ? '预设场景' : 'Preset Scenarios'}
+                                                                                        Preset Scenarios
                                                                                     </div>
                                                                                     {presetScenarios.map(s => (
                                                                                         <button
@@ -315,7 +320,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                                                                             }}
                                                                                             className="w-full text-left px-5 py-4 hover:bg-indigo-50 text-sm transition-colors"
                                                                                         >
-                                                                                            {locale === 'zh' ? s.title.zh : s.title.en}
+                                                                                            {s.title.en}
                                                                                         </button>
                                                                                     ))}
                                                                                 </>
@@ -375,9 +380,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className={`font-bold truncate transition-all duration-300 ${isActive ? 'text-2xl text-slate-900 mb-2' : 'text-xl text-slate-500 mb-1'}`}>
-                                                        {mode.title}
+                                                        {getModeTitle(mode)}
                                                     </h3>
-                                                    <p className={`text-base truncate transition-all duration-300 ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>{mode.desc}</p>
+                                                    <p className={`text-base truncate transition-all duration-300 ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>{getModeDesc(mode)}</p>
                                                 </div>
                                                 {isActive && (
                                                     <div className={`text-indigo-600 transition-opacity duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}>

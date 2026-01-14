@@ -129,7 +129,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                 )}
                             </div>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin scrollbar-thumb-slate-200">
                             {scenarios.length === 0 ? (
                                 <div className="text-center text-slate-400 text-xs py-8">
@@ -148,7 +148,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                         const diffMins = Math.floor(diffMs / 60000);
                                         const diffHours = Math.floor(diffMs / 3600000);
                                         const diffDays = Math.floor(diffMs / 86400000);
-                                        
+
                                         if (diffMins < 1) {
                                             timeStr = locale === 'zh' ? '刚刚' : 'Just now';
                                         } else if (diffMins < 60) {
@@ -161,7 +161,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                             timeStr = date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
                                         }
                                     }
-                                    
+
                                     return (
                                         <div
                                             key={s.id}
@@ -224,7 +224,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             )}
                         </div>
                         <div className="p-2 border-t border-slate-50">
-                            <button 
+                            <button
                                 onClick={() => {
                                     if (onRefreshHistory) {
                                         setIsHistoryViewOpen?.(true);
@@ -241,7 +241,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 {/* 3. Toggles & Utility Monitor (Expanded) */}
                 <div className="flex-1 min-h-0 flex flex-col gap-4">
                     {/* Toggle (Light Theme) */}
-                    <div 
+                    <div
                         ref={modeToggleRef}
                         className="bg-slate-100 p-1 rounded-lg flex border border-slate-200/60"
                     >
@@ -252,7 +252,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                 : 'text-slate-400 hover:text-slate-600'
                                 }`}
                         >
-                            <Activity size={14} /> STANDARD
+                            <Activity size={14} /> {locale === 'zh' ? '标准模式' : 'STANDARD'}
                         </button>
                         <button
                             onClick={onToggleComparisonMode}
@@ -261,7 +261,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                 : 'text-slate-400 hover:text-slate-600'
                                 }`}
                         >
-                            <Columns size={14} /> COMPARE
+                            <Columns size={14} /> {locale === 'zh' ? '对比模式' : 'COMPARE'}
                         </button>
                     </div>
 
@@ -279,12 +279,12 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                 {isEvaluating ? (
                                     <>
                                         <div className="w-3 h-3 border-2 border-indigo-200 border-t-white rounded-full animate-spin"></div>
-                                        Evaluating...
+                                        {locale === 'zh' ? '正在评估...' : 'Evaluating...'}
                                     </>
                                 ) : (
                                     <>
                                         <Award size={14} className="text-amber-300" />
-                                        Evaluate Agents
+                                        {locale === 'zh' ? '评估 Agent' : 'Evaluate Agents'}
                                     </>
                                 )}
                             </button>
@@ -293,7 +293,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             {evaluationResult && (
                                 <div className="bg-white rounded-lg border border-indigo-100 p-3 shadow-sm flex items-center justify-between">
                                     <div className="flex flex-col items-center flex-1 border-r border-indigo-50 last:border-0">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Base</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{locale === 'zh' ? '基座' : 'Base'}</span>
                                         <div className="flex items-center text-sm font-bold text-slate-700">
                                             {evaluationResult.model_a_score.toFixed(1)}
                                             <span className="text-[10px] text-slate-400 ml-0.5">/10</span>
@@ -304,7 +304,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                     {/* <div className="text-[10px] font-bold text-indigo-200 px-2">VS</div> */}
 
                                     <div className="flex flex-col items-center flex-1">
-                                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Ours</span>
+                                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">{locale === 'zh' ? '本模型' : 'Ours'}</span>
                                         <div className="flex items-center text-sm font-bold text-indigo-600">
                                             {evaluationResult.model_b_score.toFixed(1)}
                                             <span className="text-[10px] text-indigo-300 ml-0.5">/10</span>
@@ -319,7 +319,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                     <div ref={utilityMonitorRef} className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col min-h-0">
                         <div className="flex items-center gap-2 text-indigo-900 border-b border-indigo-50 pb-2 mb-3 shrink-0">
                             <Activity size={16} />
-                            <h3 className="font-bold text-xs uppercase tracking-wide">Utility Monitor</h3>
+                            <h3 className="font-bold text-xs uppercase tracking-wide">{locale === 'zh' ? '性能监控' : 'Utility Monitor'}</h3>
                         </div>
 
                         <div className="flex-1 flex flex-col gap-2 min-h-0 overflow-y-auto pr-1">
@@ -338,8 +338,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                             <XAxis dataKey="step" hide />
                                             <YAxis tick={{ fontSize: 9 }} axisLine={false} tickLine={false} width={20} />
-                                            <Tooltip 
-                                                contentStyle={{ fontSize: '10px' }} 
+                                            <Tooltip
+                                                contentStyle={{ fontSize: '10px' }}
                                                 itemStyle={{ padding: 0 }}
                                                 wrapperStyle={{ zIndex: 1000 }}
                                                 isAnimationActive={false}
@@ -366,8 +366,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                             <XAxis dataKey="step" hide />
                                             <YAxis tick={{ fontSize: 9 }} axisLine={false} tickLine={false} width={20} />
-                                            <Tooltip 
-                                                contentStyle={{ fontSize: '10px' }} 
+                                            <Tooltip
+                                                contentStyle={{ fontSize: '10px' }}
                                                 itemStyle={{ padding: 0 }}
                                                 wrapperStyle={{ zIndex: 1000 }}
                                                 isAnimationActive={false}
@@ -535,14 +535,14 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider transition-all ${!isComparisonMode ? 'bg-indigo-500 text-white shadow' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
                             }`}
                     >
-                        <Activity size={12} /> Standard
+                        <Activity size={12} /> {locale === 'zh' ? '标准' : 'Standard'}
                     </button>
                     <button
                         onClick={onToggleComparisonMode}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[10px] uppercase font-bold tracking-wider transition-all ${isComparisonMode ? 'bg-indigo-500 text-white shadow' : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
                             }`}
                     >
-                        <Columns size={12} /> Compare
+                        <Columns size={12} /> {locale === 'zh' ? '对比' : 'Compare'}
                     </button>
                 </div>
 

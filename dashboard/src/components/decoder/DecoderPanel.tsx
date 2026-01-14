@@ -19,7 +19,7 @@ interface DecoderPanelProps {
     promptInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-const DecoderPanel: React.FC<DecoderPanelProps> = ({ 
+const DecoderPanel: React.FC<DecoderPanelProps> = ({
     visibleSteps,
     erasedIndices,
     targetPayload,
@@ -176,7 +176,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
 
                             {/* 内容 */}
                             <p className="text-sm text-slate-700 leading-relaxed mb-4">
-                                {locale === 'zh' 
+                                {locale === 'zh'
                                     ? `当前解码进度为${currentRank}/${requiredRank}，继续输入prompt可继续收集数据集，解码进度满才能解码出水印载荷。`
                                     : `Current decoding progress is ${currentRank}/${requiredRank}. Continue inputting prompts to collect more datasets. Decoding progress must be full to decode the watermark payload.`}
                             </p>
@@ -199,7 +199,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
             </AnimatePresence>
 
             {/* 0. Channel Noise Control */}
-            <div 
+            <div
                 ref={channelNoiseRef}
                 className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-1"
             >
@@ -239,22 +239,22 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
             </div>
 
             {/* 1. Decoding Status / Progress */}
-            <div 
+            <div
                 ref={decoderProgressRef}
                 className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col gap-3"
             >
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="font-bold text-slate-800 text-sm">{locale === 'zh' ? '解码进度' : 'Decoding Progress'}</h2>
-                        <span className="text-xs text-slate-400 font-mono">RANK: {currentRank}/{requiredRank}</span>
+                        <span className="text-xs text-slate-400 font-mono">{locale === 'zh' ? '秩' : 'RANK'}: {currentRank}/{requiredRank}</span>
                     </div>
                     {isSuccess ? (
                         <div className="bg-emerald-100 text-emerald-600 px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold">
-                            <CheckCircle2 size={14} /> <span>SUCCESS</span>
+                            <CheckCircle2 size={14} /> <span>{locale === 'zh' ? '解码成功' : 'SUCCESS'}</span>
                         </div>
                     ) : (
                         <div className="bg-indigo-50 text-indigo-500 px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold">
-                            <Lock size={14} /> <span>LOCKED</span>
+                            <Lock size={14} /> <span>{locale === 'zh' ? '锁定' : 'LOCKED'}</span>
                         </div>
                     )}
                 </div>
@@ -275,7 +275,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                         animate={{ opacity: 1, height: 'auto' }}
                         className="bg-emerald-50 rounded border border-emerald-100 p-2 text-center"
                     >
-                        <p className="text-[10px] text-emerald-600 uppercase tracking-wider mb-1">Payload Recovered</p>
+                        <p className="text-[10px] text-emerald-600 uppercase tracking-wider mb-1">{locale === 'zh' ? '水印提取成功' : 'Payload Recovered'}</p>
                         <p className="font-mono text-lg font-bold text-emerald-800 tracking-widest">{targetPayload || "AGENTMARK"}</p>
                     </motion.div>
                 )}
@@ -286,7 +286,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                 <div className="p-4 border-b border-slate-50 bg-slate-50/30 flex items-center gap-2">
                     <Database size={14} className="text-slate-400" />
                     <h3 className="font-bold text-xs text-slate-500 uppercase tracking-wider">
-                        {locale === 'zh' ? '接收到的数据集' : 'Received Datasets'}
+                        {locale === 'zh' ? '接收到的日志' : 'Received Logs'}
                     </h3>
                     <span className="ml-auto bg-slate-200 text-slate-600 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
                         {datasetSteps.length}
@@ -319,7 +319,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center mb-1">
                                                 <span className={`text-xs font-bold ${isErased ? 'text-rose-400' : 'text-slate-700'}`}>
-                                                    Dataset #{displayIndex + 1}
+                                                    {locale === 'zh' ? `日志 #${displayIndex + 1}` : `Log #${displayIndex + 1}`}
                                                 </span>
                                                 <span className="text-[10px] font-mono text-slate-400">
                                                     {"14:02:23"}

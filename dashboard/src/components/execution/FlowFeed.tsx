@@ -112,17 +112,17 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                 </div>
                             </div>
                             <div className="flex-1 text-right">
-                                <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl rounded-tr-none p-4 text-white text-sm shadow-md inline-block text-left">
-                                    <p className="font-bold text-[10px] text-indigo-100 mb-1 uppercase tracking-wide">
+                                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl rounded-tr-none p-5 text-indigo-900 text-sm shadow-sm inline-block text-left relative overflow-hidden">
+                                    {/* Decorative background element */}
+                                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-100/50 to-transparent rounded-bl-full pointer-events-none" />
+
+                                    <p className="font-bold text-[10px] text-indigo-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                                        <div className="w-1 h-1 rounded-full bg-indigo-400" />
                                         {userQueryLabel || "User Prompt"}
                                     </p>
-                                    {userQueryFormat === 'json' ? (
-                                        <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed">
-                                            {userQuery}
-                                        </pre>
-                                    ) : (
-                                        <span>{userQuery || "No query provided."}</span>
-                                    )}
+                                    <p className="leading-relaxed relative z-10 font-medium">
+                                        {userQuery || "No query provided."}
+                                    </p>
                                 </div>
                                 {userInputHighlight && (
                                     <div className="mt-3 bg-white/95 border border-indigo-100 rounded-xl p-3 text-left text-slate-700 shadow-sm">
@@ -169,7 +169,7 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                     // 只计算非 user_input 步骤的序号
                     const nonUserSteps = visibleSteps.slice(0, index + 1).filter(s => s.stepType !== 'user_input' && !s.isHidden);
                     const displayIndex = nonUserSteps.length;
-                    
+
                     return step.isHidden ? null : (
                         <StepCard
                             key={`step-${index}-${step.stepIndex}`}
@@ -193,7 +193,7 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                 <div className="fixed inset-0 z-10" onClick={() => setShowPrompts(false)} />
                                 <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-20">
                                     <div className="p-2 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide pl-2">Suggested Prompts</p>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide pl-2">{locale === 'zh' ? '建议提示词' : 'Suggested Prompts'}</p>
                                         <button onClick={() => setShowPrompts(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-200">
                                             <X size={14} />
                                         </button>
@@ -226,14 +226,9 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                             </>
                         )}
 
-                        <div className="relative overflow-hidden bg-white/70 rounded-[28px] p-4 shadow-[0_18px_40px_rgba(15,23,42,0.12)] border border-indigo-100/70 ring-1 ring-white/70 backdrop-blur-2xl">
-                            <div className="pointer-events-none absolute inset-0">
-                                <div className="absolute -top-12 -right-6 h-40 w-40 rounded-full bg-sky-200/50 blur-3xl" />
-                                <div className="absolute -bottom-14 left-12 h-48 w-48 rounded-full bg-indigo-200/45 blur-3xl" />
-                                <div className="absolute top-4 left-1/2 h-24 w-32 -translate-x-1/2 rounded-full bg-cyan-200/40 blur-2xl" />
-                            </div>
-                            <p className="relative z-10 text-xs font-semibold text-indigo-600 uppercase tracking-[0.18em] mb-3 flex items-center gap-2">
-                                <Bot size={14} /> Continue Task
+                        <div className="bg-white rounded-2xl p-4 shadow-xl border border-indigo-100 ring-1 ring-indigo-50/50 backdrop-blur-sm">
+                            <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                                <Bot size={14} /> {locale === 'zh' ? '继续任务' : 'Continue Task'}
                             </p>
                             <div className="relative z-10 flex gap-3 items-center">
                                 <input
@@ -287,10 +282,10 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                     {isSending ? (
                                         <>
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Sending...
+                                            {locale === 'zh' ? '发送中...' : 'Sending...'}
                                         </>
                                     ) : (
-                                        "Send"
+                                        locale === 'zh' ? '发送' : 'Send'
                                     )}
                                 </button>
                                 {onTogglePlay && (
@@ -298,7 +293,7 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                         className="rounded-xl px-3 py-2 text-sm font-bold transition-all flex items-center justify-center gap-2
                                             bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 shadow-sm hover:shadow-md"
                                         onClick={onTogglePlay}
-                                        title={isPlaying ? "Pause" : "Resume"}
+                                        title={isPlaying ? (locale === 'zh' ? '暂停' : 'Pause') : (locale === 'zh' ? '继续' : 'Resume')}
                                     >
                                         {isPlaying ? <Pause size={18} /> : <Play size={18} />}
                                     </button>
