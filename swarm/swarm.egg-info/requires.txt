@@ -1,7 +1,0 @@
-numpy
-openai>=1.33.0
-pytest
-requests
-tqdm
-pre-commit
-instructor
