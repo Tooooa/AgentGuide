@@ -4,7 +4,7 @@ import { useI18n } from '../../i18n/I18nContext';
 import StepCard from '../execution/StepCard';
 import type { Step } from '../../data/mockData';
 
-import { Columns, Eye, EyeOff, User } from 'lucide-react';
+import { User } from 'lucide-react';
 
 interface ComparisonViewProps {
     visibleSteps: Step[];
@@ -12,8 +12,6 @@ interface ComparisonViewProps {
     scenarioId?: string;
     evaluationResult?: { model_a_score: number, model_b_score: number, reason: string } | null;
     userQuery?: string;
-    baselinePromptText?: string;
-    watermarkedPromptText?: string;
     evaluationRef?: React.RefObject<HTMLDivElement>;
     utilityMonitorRef?: React.RefObject<HTMLDivElement>;
     chartRef?: React.RefObject<HTMLDivElement>;
@@ -33,8 +31,6 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     scenarioId,
     evaluationResult,
     userQuery,
-    baselinePromptText,
-    watermarkedPromptText,
     evaluationRef,
     utilityMonitorRef,
     chartRef,
@@ -144,38 +140,6 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
         </div>
     );
 
-    const renderPromptComparison = () => {
-        if (!baselinePromptText && !watermarkedPromptText) return null;
-        return (
-            <div className="col-span-2 my-4">
-                <div className="w-full bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
-                        <span>Prompt Comparison</span>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-4">
-                        <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-4">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Original Prompt</p>
-                            <pre className="text-xs text-slate-600 whitespace-pre-wrap break-words max-h-56 overflow-auto">
-                                {baselinePromptText || '—'}
-                            </pre>
-                        </div>
-                        <div className={`rounded-xl p-4 ${
-                            isAddAgent 
-                                ? 'bg-amber-50/70 border border-amber-100' 
-                                : 'bg-indigo-50/70 border border-indigo-100'
-                        }`}>
-                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${
-                                isAddAgent ? 'text-amber-500' : 'text-indigo-400'
-                            }`}>Watermarked Prompt</p>
-                            <pre className="text-xs text-slate-600 whitespace-pre-wrap break-words max-h-56 overflow-auto">
-                                {watermarkedPromptText || '—'}
-                            </pre>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div className="h-full flex flex-col gap-4">
@@ -205,7 +169,6 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
 
                 {/* Content area with padding */}
                 <div className="px-4 pb-4">
-                    {renderPromptComparison()}
                     {/* Initial User Query - Aligned in center */}
                     {userQuery && renderUserQuery(userQuery, 'initial-query')}
 

@@ -499,8 +499,6 @@ const AddAgentDashboard: React.FC<AddAgentDashboardProps> = ({
                             scenarioId={sessionId || undefined}
                             userQuery={promptUserInput}
                             evaluationResult={evaluationResult}
-                            baselinePromptText={baselinePromptTraceText}
-                            watermarkedPromptText={promptTraceText}
                             variant="add_agent"
                         />
                     ) : (
