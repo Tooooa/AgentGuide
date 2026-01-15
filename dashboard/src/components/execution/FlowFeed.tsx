@@ -94,6 +94,13 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
     const continueButtonClass = isAddAgent
         ? 'bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-400 hover:to-amber-400 text-white shadow-md shadow-amber-400/30'
         : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg';
+    const formatJsonText = (text: string) => {
+        try {
+            return JSON.stringify(JSON.parse(text), null, 2);
+        } catch {
+            return text;
+        }
+    };
 
     return (
         <div className="flex flex-col h-full relative">
@@ -120,9 +127,15 @@ const FlowFeed: React.FC<FlowFeedProps> = ({
                                         <div className="w-1 h-1 rounded-full bg-indigo-400" />
                                         {userQueryLabel || "User Prompt"}
                                     </p>
-                                    <p className="leading-relaxed relative z-10 font-medium">
-                                        {userQuery || "No query provided."}
-                                    </p>
+                                    {userQueryFormat === 'json' ? (
+                                        <pre className="leading-relaxed relative z-10 text-xs font-mono whitespace-pre-wrap break-words max-h-80 overflow-auto">
+                                            {formatJsonText(userQuery || "")}
+                                        </pre>
+                                    ) : (
+                                        <p className="leading-relaxed relative z-10 font-medium">
+                                            {userQuery || "No query provided."}
+                                        </p>
+                                    )}
                                 </div>
                                 {userInputHighlight && (
                                     <div className="mt-3 bg-white/95 border border-indigo-100 rounded-xl p-3 text-left text-slate-700 shadow-sm">

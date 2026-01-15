@@ -12,6 +12,7 @@ interface ComparisonViewProps {
     scenarioId?: string;
     evaluationResult?: { model_a_score: number, model_b_score: number, reason: string } | null;
     userQuery?: string;
+    promptInstruction?: string;
     evaluationRef?: React.RefObject<HTMLDivElement>;
     utilityMonitorRef?: React.RefObject<HTMLDivElement>;
     chartRef?: React.RefObject<HTMLDivElement>;
@@ -30,6 +31,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
     scenarioId,
     evaluationResult,
     userQuery,
+    promptInstruction,
     evaluationRef,
     utilityMonitorRef,
     chartRef
@@ -76,7 +78,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                 // Construct baseline step
                 const baselineStep: Step = step.baseline ? {
                     ...step,
-                    thought: step.baseline.thought,
+                    thought: step.thought || step.baseline.thought,
                     action: step.baseline.action,
                     toolDetails: step.baseline.toolDetails,
                     distribution: step.baseline.distribution,
@@ -108,11 +110,12 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
         return result;
     }, [visibleSteps]);
 
-    // Render user query bubble
-    const renderUserQuery = (query: string, key: string) => (
+    const renderUserQueryPair = (query: string, key: string) => {
+        const rightQuery = promptInstruction ? `${query}\n\n${promptInstruction}` : query;
+        return (
         <div key={key} className="col-span-2 my-4">
             <div className="w-full bg-gradient-to-r from-indigo-50/50 to-violet-50/50 border border-indigo-100 rounded-2xl p-6">
-                <div className="flex gap-3 max-w-[600px] mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="flex-1">
                         <div className="bg-white border border-slate-200 rounded-2xl p-5 text-sm shadow-sm flex items-center gap-4">
                             <div className="flex-shrink-0">
@@ -122,14 +125,28 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                             </div>
                             <div className="flex-1">
                                 <p className="font-bold text-[10px] text-slate-400 mb-1 uppercase tracking-wide">{locale === 'zh' ? '用户提问' : 'User Question'}</p>
-                                <p className="text-slate-700 leading-relaxed">{query}</p>
+                                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{query}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex-1">
+                        <div className="bg-white border border-slate-200 rounded-2xl p-5 text-sm shadow-sm flex items-center gap-4">
+                            <div className="flex-shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <User size={16} />
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-[10px] text-slate-400 mb-1 uppercase tracking-wide">{locale === 'zh' ? '用户提问 + 指令' : 'User Question + Instruction'}</p>
+                                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{rightQuery}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    );
+        );
+    };
 
     return (
         <div className="h-full flex flex-col gap-4">
@@ -154,7 +171,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                 {/* Content area with padding */}
                 <div className="px-4 pb-4">
                     {/* Initial User Query - Aligned in center */}
-                    {userQuery && renderUserQuery(userQuery, 'initial-query')}
+                    {userQuery && renderUserQueryPair(userQuery, 'initial-query')}
 
                     {/* Render segments */}
                     {segments.map((segment, segIndex) => {
@@ -175,7 +192,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                                                     step={step}
                                                     isErased={false}
                                                     showWatermarkDetails={false}
-                                                    showDistribution={true}
+                                                    showDistribution={false}
                                                     displayIndex={prevBaselineCount + stepIdx + 1}
                                                 />
                                             ))
@@ -207,7 +224,7 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({
                                 </div>
 
                                 {/* User Input - Centered and aligned */}
-                                {segment.userInput && renderUserQuery(segment.userInput.thought, `user-input-${segIndex}`)}
+                                {segment.userInput && renderUserQueryPair(segment.userInput.thought || '', `user-input-${segIndex}`)}
                             </React.Fragment>
                         )
                     })}

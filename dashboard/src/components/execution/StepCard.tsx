@@ -131,13 +131,16 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
 
                     <div className="flex flex-col gap-6">
                         {/* LEFT: THOUGHT */}
-                        {((step.thought && step.thought !== "Task Completed") || step.stepType !== 'finish') && (
+                        {(step.thought &&
+                            step.thought.trim() &&
+                            step.thought !== "Task Completed" &&
+                            step.thought !== "no thought") && (
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
                                     <Brain size={14} /> {locale === 'zh' ? '思考' : 'THOUGHT'}
                                 </div>
                                 <p className="text-sm text-slate-700 italic leading-relaxed font-serif pl-2 border-l-2 border-slate-100">
-                                    {step.thought || (locale === 'zh' ? '思考中...' : 'Thinking...')}
+                                    {step.thought}
                                 </p>
                             </div>
                         )}

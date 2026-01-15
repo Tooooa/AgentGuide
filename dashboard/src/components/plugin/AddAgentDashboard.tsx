@@ -28,6 +28,47 @@ type AddAgentDashboardProps = {
     initialInput?: string;
 };
 
+const PROMPT_INSTRUCTION = `You are an action-selection assistant.
+Return ONLY JSON with your probability over all candidate actions.
+Example:
+{
+  "action_weights": {"Action1": 0.5, "Action2": 0.3, "Action3": 0.2},
+  "action_args": {"Action1": {"arg": "value"}, "Action2": {"arg": "value"}, "Action3": {"arg": "value"}},
+  "thought": "your thought here"
+}
+Requirements:
+- action_weights MUST include every candidate (or top-K if instructed).
+- All action_weights MUST be > 0. Use small values like 1e-3 for unlikely actions.
+- action_args should include the chosen action. Other candidates may be omitted or left as empty objects.
+  If you include other candidates, keep arguments minimal and consistent with the tool schema.
+- Sum does not need to be exact; we will normalize.
+- All action_weights must be > 0; do NOT return all zeros.
+- Avoid uniform weights; if uncertain, break ties with slight preferences by candidate order.
+- If a tool named "agentmark_score_actions" is available, call it with the JSON instead of writing text.
+- Do NOT output any extra text or code fences.
+- Provide a concise rationale in the thought field (no extra sections).`;
+
+const buildGatewayPromptText = (traceText: string) => {
+    if (!traceText) return '';
+    try {
+        const parsed = JSON.parse(traceText);
+        if (Array.isArray(parsed)) {
+            const filtered = parsed.filter((msg) => {
+                const content = typeof msg?.content === 'string' ? msg.content : '';
+                return content && !content.includes(PROMPT_INSTRUCTION);
+            });
+            if (filtered.length > 0) {
+                return filtered
+                    .map((msg) => `${msg.role}: ${msg.content}`)
+                    .join('\n');
+            }
+        }
+    } catch (err) {
+        // ignore parse errors and fall back to text processing
+    }
+    return traceText.replace(PROMPT_INSTRUCTION, '').trim();
+};
+
 const AddAgentDashboard: React.FC<AddAgentDashboardProps> = ({
     onHome,
     apiKey,
@@ -75,6 +116,11 @@ const AddAgentDashboard: React.FC<AddAgentDashboardProps> = ({
         }
         return data;
     }, [steps]);
+
+    const gatewayPromptText = useMemo(() => {
+        if (!promptTraceText) return '';
+        return buildGatewayPromptText(promptTraceText);
+    }, [promptTraceText]);
 
     const formatPromptTrace = useCallback((trace: any) => {
         if (!trace) return '';
@@ -501,7 +547,8 @@ const AddAgentDashboard: React.FC<AddAgentDashboardProps> = ({
                             visibleSteps={steps}
                             erasedIndices={erasedIndices}
                             scenarioId={sessionId || undefined}
-                            userQuery={promptUserInput}
+                            userQuery={gatewayPromptText || promptUserInput}
+                            promptInstruction={PROMPT_INSTRUCTION}
                             evaluationResult={evaluationResult}
                         />
                     ) : (
