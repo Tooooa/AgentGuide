@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Float, PresentationControls, useCursor, useTexture } from '@react-three/drei';
+import { Float, PresentationControls, useCursor, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Configuration
@@ -9,7 +9,7 @@ const PAGE_HEIGHT = 4.2;
 const PAGE_DEPTH = 0.03;
 const COVER_DEPTH = 0.08; // Thicker cover for more presence
 const CORNER_RADIUS = 0.12;
-const ROUGHNESS = 0.3;
+const ROUGHNESS = 0.15; // Lower roughness for brighter paper
 const METALNESS = 0.0;
 
 interface PageProps {
@@ -120,62 +120,46 @@ function Page({ number, opened, totalPages, frontTexture, backTexture, isLeftPag
 
     // Define materials array
     const materialArray = useMemo(() => {
-        // Edge material - rich brown for paper edges with slight texture feel
-        const sideMat = new THREE.MeshStandardMaterial({ 
-            color: isCover ? '#5D4037' : '#A1887F',
-            roughness: 0.7,
-            metalness: 0.0
+        // Edge material - pure white for paper edges
+        const sideMat = new THREE.MeshBasicMaterial({ 
+            color: isCover ? '#FFFFFF' : '#FFFFFF'
         });
 
-        // Paper color - warm antique paper tone
-        const paperColor = '#E8DCC8';
+        // Paper color - pure white
+        const paperColor = '#FFFFFF';
         
         // Cover has richer, darker appearance
-        const coverColor = '#4E342E';
+        const coverColor = '#FFFFFF';
 
-        // FRONT face
+        // FRONT face - use BasicMaterial to show original image colors
         let frontMat;
         if (frontTexture) {
-            frontMat = new THREE.MeshStandardMaterial({
+            frontMat = new THREE.MeshBasicMaterial({
                 map: frontTexture,
                 alphaMap: roundedMask,
-                transparent: true,
-                roughness: isCover ? 0.4 : ROUGHNESS,
-                metalness: isCover ? 0.05 : METALNESS,
-                color: '#ffffff',
-                envMapIntensity: 0.3
+                transparent: true
             });
         } else {
-            frontMat = new THREE.MeshStandardMaterial({
+            frontMat = new THREE.MeshBasicMaterial({
                 color: isCover ? coverColor : paperColor,
                 alphaMap: roundedMask,
-                transparent: true,
-                roughness: isCover ? 0.5 : ROUGHNESS,
-                metalness: METALNESS,
-                envMapIntensity: 0.2
+                transparent: true
             });
         }
 
         // BACK face
         let backMat;
         if (backTexture) {
-            backMat = new THREE.MeshStandardMaterial({
+            backMat = new THREE.MeshBasicMaterial({
                 map: backTexture,
                 alphaMap: roundedMask,
-                transparent: true,
-                roughness: ROUGHNESS,
-                metalness: METALNESS,
-                color: '#ffffff',
-                envMapIntensity: 0.3
+                transparent: true
             });
         } else {
-            backMat = new THREE.MeshStandardMaterial({ 
+            backMat = new THREE.MeshBasicMaterial({ 
                 color: isCover ? coverColor : paperColor,
                 alphaMap: roundedMask,
-                transparent: true,
-                roughness: isCover ? 0.5 : ROUGHNESS,
-                metalness: METALNESS,
-                envMapIntensity: 0.2
+                transparent: true
             });
         }
 
@@ -397,14 +381,15 @@ export default function BookDemo({ onBack }: { onBack: () => void }) {
                 </div>
             </div>
 
-            <Canvas shadows camera={{ position: [0, 0.5, 8], fov: 35 }}>
-                {/* Enhanced lighting for depth and dimension */}
-                <ambientLight intensity={0.5} />
+            <Canvas shadows camera={{ position: [0, 0, 8], fov: 35 }} gl={{ toneMapping: THREE.NoToneMapping }}>
+                {/* Minimal lighting - MeshBasicMaterial doesn't need much light */}
+                {/* But we keep some for shadows on other elements */}
+                <ambientLight intensity={1.0} color="#ffffff" />
                 
-                {/* Key light - main illumination from top-right */}
+                {/* Key light - pure white for accurate colors */}
                 <directionalLight 
                     position={[4, 5, 5]} 
-                    intensity={1.0} 
+                    intensity={0.5} 
                     castShadow
                     shadow-mapSize-width={2048}
                     shadow-mapSize-height={2048}
@@ -414,22 +399,12 @@ export default function BookDemo({ onBack }: { onBack: () => void }) {
                     shadow-camera-top={5}
                     shadow-camera-bottom={-5}
                     shadow-bias={-0.0001}
-                    color="#fff8f0"
+                    color="#ffffff"
                 />
-                
-                {/* Fill light - softer from left */}
-                <directionalLight 
-                    position={[-3, 2, 3]} 
-                    intensity={0.3} 
-                    color="#f0f5ff"
-                />
-                
-                {/* Back light for rim/edge definition */}
-                <pointLight position={[0, 2, -3]} intensity={0.4} color="#ffeedd" />
 
                 <PresentationControls
                     global
-                    rotation={[0.1, 0, 0]}
+                    rotation={[0, 0, 0]}
                     polar={[-Math.PI / 10, Math.PI / 10]}
                     azimuth={[-Math.PI / 6, Math.PI / 6]}
                 >
@@ -447,11 +422,10 @@ export default function BookDemo({ onBack }: { onBack: () => void }) {
                     </Float>
                 </PresentationControls>
 
-                {/* Environment for realistic reflections */}
-                <Environment preset="city" />
+                {/* Removed Environment to preserve original image colors */}
                 
                 {/* Soft fog for atmospheric depth */}
-                <fog attach="fog" args={['#e8f4fc', 12, 28]} />
+                <fog attach="fog" args={['#ffffff', 15, 30]} />
             </Canvas>
         </div>
     );
