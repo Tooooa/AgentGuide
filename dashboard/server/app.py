@@ -94,6 +94,7 @@ class AgentState:
         
         # Execution History
         self.trajectory = [] # List of {role, message}
+        self.swarm_history: List[Dict[str, Any]] = []
         self.step_count = 0
         self.last_observation = ""
         self.done = False
@@ -211,6 +212,10 @@ def search_web(query: str) -> str:
 
 
 ADD_AGENT_SYSTEM_PROMPT = "You are a helpful agent."
+TOOLBENCH_SWARM_PROMPT = (
+    "You are a tool-using agent. Use the provided tools to solve the task. "
+    "Call a tool when needed; otherwise, respond with the final answer."
+)
 
 ADD_AGENT_TOOLS = [
     {
@@ -338,6 +343,7 @@ ADD_AGENT_TOOLS = [
 ]
 
 _SWARM_ADD_AGENT = None
+_SWARM_TOOLBENCH_AGENT = None
 
 
 def _get_swarm_add_agent():
@@ -361,6 +367,88 @@ def _get_swarm_add_agent():
             ],
         )
     return _SWARM_ADD_AGENT
+
+
+def _get_swarm_toolbench_agent():
+    global _SWARM_TOOLBENCH_AGENT
+    if _SWARM_TOOLBENCH_AGENT is None:
+        from swarm import Agent
+
+        _SWARM_TOOLBENCH_AGENT = Agent(
+            name="ToolBench Agent",
+            instructions=TOOLBENCH_SWARM_PROMPT,
+        )
+    return _SWARM_TOOLBENCH_AGENT
+
+
+def _toolbench_param_to_schema(param: Any) -> Optional[Dict[str, Any]]:
+    if isinstance(param, dict):
+        name = param.get("name") or param.get("parameter") or param.get("field")
+        if not name:
+            return None
+        param_type = (param.get("type") or param.get("param_type") or "string").lower()
+        description = (param.get("description") or param.get("desc") or "").strip()
+    elif isinstance(param, str):
+        name = param
+        param_type = "string"
+        description = ""
+    else:
+        return None
+
+    if param_type not in {"string", "number", "integer", "boolean", "object", "array"}:
+        param_type = "string"
+
+    schema = {"name": name, "type": param_type}
+    if description:
+        schema["description"] = description
+    return schema
+
+
+def _build_toolbench_tools(tool_summaries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    tools: List[Dict[str, Any]] = []
+    for tool in tool_summaries:
+        if not isinstance(tool, dict):
+            continue
+        name = tool.get("name") or ""
+        if not name:
+            continue
+        description = (tool.get("description") or "").strip()
+        required_items = tool.get("required_parameters") or []
+        optional_items = tool.get("optional_parameters") or []
+
+        properties: Dict[str, Any] = {}
+        required: List[str] = []
+
+        for item in required_items:
+            schema = _toolbench_param_to_schema(item)
+            if not schema:
+                continue
+            properties[schema["name"]] = {k: v for k, v in schema.items() if k != "name"}
+            required.append(schema["name"])
+
+        for item in optional_items:
+            schema = _toolbench_param_to_schema(item)
+            if not schema:
+                continue
+            if schema["name"] in properties:
+                continue
+            properties[schema["name"]] = {k: v for k, v in schema.items() if k != "name"}
+
+        parameters: Dict[str, Any] = {"type": "object", "properties": properties}
+        if required:
+            parameters["required"] = required
+
+        tools.append(
+            {
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "description": description,
+                    "parameters": parameters,
+                },
+            }
+        )
+    return tools
 
 
 def _get_add_agent_candidates() -> List[str]:
@@ -961,6 +1049,23 @@ def extract_and_normalize_probabilities(output: str, candidates: List[str]) -> D
                 return normalized
 
     return _geometric_fallback(chosen if chosen in candidates else None)
+
+
+def _parse_action_args_from_output(model_output: str, chosen: str) -> Dict[str, Any]:
+    try:
+        start = model_output.find("{")
+        end = model_output.rfind("}")
+        json_str = model_output[start:end + 1] if start != -1 and end != -1 else "{}"
+        data = json.loads(json_str)
+        if "action_args" in data:
+            raw_args = data["action_args"]
+            if isinstance(raw_args, dict) and chosen in raw_args:
+                return raw_args[chosen]
+            if isinstance(raw_args, dict):
+                return raw_args
+        return {}
+    except Exception:
+        return {}
 
 @app.post("/api/init")
 async def init_session(req: InitRequest):
@@ -1689,6 +1794,10 @@ async def step_session(req: StepRequest):
         raise HTTPException(status_code=404, detail="Session not found")
     
     sess = sessions[req.sessionId]
+    use_shared_thought = (os.getenv("AGENTMARK_BASELINE_SHARE_THOUGHT") or "1").strip().lower() not in {"0", "false", "no"}
+    use_swarm_baseline = (os.getenv("AGENTMARK_BASELINE_USE_SWARM") or "1").strip().lower() not in {"0", "false", "no"}
+    if use_shared_thought:
+        use_swarm_baseline = False
     
     if sess.watermarked_state.step_count >= sess.max_steps:
         # Return immediate JSON for consistency if done
@@ -1722,7 +1831,14 @@ async def step_session(req: StepRequest):
         return StreamingResponse(immediate_done(), media_type="application/x-ndjson")
 
     # --- Generic Single Agent Step Function ---
-    async def step_single_agent(agent_state: AgentState, is_watermarked: bool, output_queue: asyncio.Queue):
+    async def step_single_agent(
+        agent_state: AgentState,
+        is_watermarked: bool,
+        output_queue: asyncio.Queue,
+        *,
+        mirror_agent: Optional[str] = None,
+        capture_output: bool = False,
+    ):
         step_start_time = time.time()
         
         # Check done state
@@ -1741,15 +1857,138 @@ async def step_session(req: StepRequest):
                 },
             }
 
+            shared_payload = None
             if is_watermarked:
                 watermark_data = {
                     "bits": "",
                     "matrixRows": [],
                     "rankContribution": 0,
                 }
-                return final_data, watermark_data, 0
+                return final_data, watermark_data, 0, shared_payload
 
-            return final_data, None, 0
+            return final_data, None, 0, shared_payload
+
+        if (not is_watermarked) and use_swarm_baseline:
+            try:
+                if not agent_state.swarm_history:
+                    agent_state.swarm_history.append(
+                        {
+                            "role": "user",
+                            "content": f"Task: {agent_state.task.get('query', '')}\nBegin!",
+                        }
+                    )
+
+                tools_override = _build_toolbench_tools(agent_state.episode["tool_summaries"])
+                from swarm import Swarm
+
+                swarm_client = Swarm(client=sess.client)
+                completion = swarm_client.get_chat_completion(
+                    agent=_get_swarm_toolbench_agent(),
+                    history=agent_state.swarm_history,
+                    context_variables={},
+                    model_override=sess.model,
+                    stream=False,
+                    debug=False,
+                    tools_override=tools_override,
+                    temperature=0.0,
+                )
+
+                message = completion.choices[0].message
+                tool_calls = message.tool_calls or []
+                content = (message.content or "").strip()
+
+                chosen = "Finish"
+                action_args: Dict[str, Any] = {}
+                tool_call_id = None
+                if tool_calls:
+                    first_call = tool_calls[0]
+                    chosen = first_call.function.name
+                    tool_call_id = first_call.id
+                    raw_args = first_call.function.arguments or "{}"
+                    try:
+                        action_args = json.loads(raw_args)
+                    except Exception:
+                        action_args = {}
+                else:
+                    if content:
+                        action_args = {"final_answer": content}
+
+                admissible = agent_state.episode["admissible_commands"]
+                if chosen not in admissible:
+                    chosen = "Finish"
+                    if content:
+                        action_args = {"final_answer": content}
+                    else:
+                        action_args = {}
+
+                probs = uniform_prob(admissible)
+                distribution = [
+                    {"name": k, "prob": v, "isSelected": k == chosen}
+                    for k, v in probs.items()
+                ]
+
+                model_output = json.dumps(
+                    {
+                        "thought": content,
+                        "action": chosen,
+                        "action_args": action_args,
+                        "action_weights": probs,
+                    },
+                    ensure_ascii=False,
+                )
+                agent_state.trajectory.append({"role": "assistant", "message": model_output})
+
+                agent_state.swarm_history.append(message.model_dump())
+
+                final_answer_text = ""
+                if chosen == "Finish":
+                    if isinstance(action_args, dict):
+                        final_answer_text = action_args.get("final_answer", "")
+                    if not final_answer_text:
+                        final_answer_text = content
+
+                action_obj = {"tool": chosen, "arguments": action_args}
+                step_result_obs = await asyncio.to_thread(
+                    agent_state.adapter.step,
+                    action_obj,
+                    agent_state.episode["tool_summaries"],
+                    state=agent_state.task,
+                )
+                observation = step_result_obs["observation"]
+                done = step_result_obs.get("done", False) or chosen == "Finish"
+
+                if chosen != "Finish":
+                    tool_message = {"role": "tool", "content": observation}
+                    if tool_call_id:
+                        tool_message["tool_call_id"] = tool_call_id
+                    agent_state.swarm_history.append(tool_message)
+
+                agent_state.trajectory.append({"role": "tool", "message": observation})
+                agent_state.last_observation = observation
+                agent_state.step_count += 1
+                agent_state.done = done
+
+                obs_display = observation
+                if not done and len(observation) > 200:
+                    obs_display = observation[:200] + "..."
+
+                step_latency = time.time() - step_start_time
+                est_tokens = len(content) / 4 if content else 0.0
+
+                final_data = {
+                    "agent": agent_state.role,
+                    "thought": content or ("Thinking..." if not done else ""),
+                    "action": f"Call: {chosen}",
+                    "observation": obs_display,
+                    "done": done,
+                    "final_answer": final_answer_text if done else "",
+                    "distribution": distribution,
+                    "stepIndex": agent_state.step_count - 1,
+                    "metrics": {"latency": step_latency, "tokens": est_tokens},
+                }
+                return final_data, None, 0, None
+            except Exception as e:
+                print(f"[ERROR] Swarm baseline error: {e}")
 
         # 1. Build Messages
         messages = build_messages(
@@ -1793,6 +2032,12 @@ async def step_session(req: StepRequest):
                         "agent": agent_state.role,
                         "content": content
                     })
+                    if mirror_agent:
+                        await output_queue.put({
+                            "type": "thought",
+                            "agent": mirror_agent,
+                            "content": content
+                        })
 
         except Exception as e:
             print(f"[ERROR] Step Model Error ({agent_state.role}): {e}")
@@ -1856,20 +2101,7 @@ async def step_session(req: StepRequest):
                  chosen = "Finish"
 
         # Parse Action Args
-        try:
-            start = model_output.find("{")
-            end = model_output.rfind("}")
-            json_str = model_output[start:end+1] if start != -1 else "{}"
-            data = json.loads(json_str)
-            action_args = {}
-            if "action_args" in data:
-                raw_args = data["action_args"]
-                if isinstance(raw_args, dict) and chosen in raw_args:
-                     action_args = raw_args[chosen]
-                else:
-                     action_args = raw_args
-        except:
-            action_args = {}
+        action_args = _parse_action_args_from_output(model_output, chosen)
 
         action_obj = {"tool": chosen, "arguments": action_args}
         
@@ -1901,6 +2133,14 @@ async def step_session(req: StepRequest):
         if not thought and model_output.strip() and not model_output.strip().startswith("{"):
              # Just take the text before the first brace
              thought = model_output.split("{")[0].strip()
+
+        shared_payload = None
+        if capture_output:
+            shared_payload = {
+                "model_output": model_output,
+                "probs": probs,
+                "thought": thought,
+            }
 
         # Extract Final Answer
         final_answer_text = ""
@@ -1982,66 +2222,212 @@ async def step_session(req: StepRequest):
                 "matrixRows": matrix_rows,
                 "rankContribution": len(embedded_bits)
             }
-            return final_data, watermark_data, consumed_bits
+            return final_data, watermark_data, consumed_bits, shared_payload
         
-        return final_data, None, 0
+        return final_data, None, 0, shared_payload
+
+
+    async def step_baseline_from_shared(agent_state: AgentState, shared_payload: Dict[str, Any]):
+        step_start_time = time.time()
+
+        if agent_state.done:
+            final_data = {
+                "agent": agent_state.role,
+                "thought": "",
+                "action": "Finish",
+                "observation": "",
+                "done": True,
+                "final_answer": "",
+                "distribution": [],
+                "metrics": {
+                    "latency": 0.0,
+                    "tokens": 0.0,
+                },
+            }
+            return final_data, None, 0, None
+
+        model_output = shared_payload.get("model_output") or ""
+        probs = shared_payload.get("probs") or {}
+        thought = shared_payload.get("thought") or ""
+
+        admissible = agent_state.episode["admissible_commands"]
+        effective_probs = probs if probs else uniform_prob(admissible)
+
+        chosen = "Finish"
+        if effective_probs:
+            chosen = max(effective_probs.items(), key=lambda x: x[1])[0]
+
+        if chosen not in admissible:
+            chosen = "Finish"
+
+        action_args = _parse_action_args_from_output(model_output, chosen)
+        if chosen == "Finish" and not action_args and thought:
+            action_args = {"final_answer": thought}
+
+        action_obj = {"tool": chosen, "arguments": action_args}
+
+        agent_state.trajectory.append({"role": "assistant", "message": model_output})
+
+        step_result_obs = await asyncio.to_thread(
+            agent_state.adapter.step,
+            action_obj,
+            agent_state.episode["tool_summaries"],
+            state=agent_state.task,
+        )
+        observation = step_result_obs["observation"]
+        done = step_result_obs.get("done", False) or chosen == "Finish"
+
+        agent_state.trajectory.append({"role": "tool", "message": observation})
+        agent_state.last_observation = observation
+        agent_state.step_count += 1
+        agent_state.done = done
+
+        obs_display = observation
+        if not done and len(observation) > 200:
+            obs_display = observation[:200] + "..."
+
+        step_latency = time.time() - step_start_time
+        est_tokens = len(model_output) / 4 if model_output else 0.0
+
+        final_answer_text = ""
+        if chosen == "Finish":
+            if isinstance(action_args, dict):
+                final_answer_text = action_args.get("final_answer", "")
+            if not final_answer_text:
+                final_answer_text = thought
+
+        distribution = [
+            {"name": k, "prob": v, "isSelected": k == chosen}
+            for k, v in effective_probs.items()
+        ]
+
+        final_data = {
+            "agent": agent_state.role,
+            "thought": thought or ("Thinking..." if not done else ""),
+            "action": f"Call: {chosen}",
+            "observation": obs_display,
+            "done": done,
+            "final_answer": final_answer_text if done else "",
+            "distribution": distribution,
+            "stepIndex": agent_state.step_count - 1,
+            "metrics": {"latency": step_latency, "tokens": est_tokens},
+        }
+
+        return final_data, None, 0, None
 
 
     # MAIN GENERATOR
     async def step_generator():
         queue = asyncio.Queue()
-        
+
+        share_now = use_shared_thought and not sess.watermarked_state.done and not sess.baseline_state.done
+
+        if share_now:
+            task_wm = asyncio.create_task(
+                step_single_agent(
+                    sess.watermarked_state,
+                    True,
+                    queue,
+                    mirror_agent="baseline",
+                    capture_output=True,
+                )
+            )
+
+            pending_tasks = {task_wm}
+
+            while pending_tasks:
+                queue_task = asyncio.create_task(queue.get())
+
+                done, pending = await asyncio.wait(
+                    pending_tasks | {queue_task},
+                    return_when=asyncio.FIRST_COMPLETED
+                )
+
+                if queue_task in done:
+                    chunk = queue_task.result()
+                    yield json.dumps(chunk) + "\n"
+                else:
+                    queue_task.cancel()
+
+                for t in done:
+                    if t in pending_tasks:
+                        pending_tasks.remove(t)
+
+            while not queue.empty():
+                chunk = await queue.get()
+                yield json.dumps(chunk) + "\n"
+
+            try:
+                result_wm = await task_wm
+                if result_wm:
+                    final_data_wm, wm_trace, consumed, shared_payload = result_wm
+                    sess.bit_index += consumed
+                    final_data_wm["watermark"] = wm_trace
+                    yield json.dumps({"type": "result", "data": final_data_wm}) + "\n"
+
+                    if shared_payload:
+                        result_bl = await step_baseline_from_shared(sess.baseline_state, shared_payload)
+                        if result_bl:
+                            final_data_bl, _, _, _ = result_bl
+                            final_data_bl["watermark"] = { "bits": "", "matrixRows": [], "rankContribution": 0 }
+                            yield json.dumps({"type": "result", "data": final_data_bl}) + "\n"
+
+            except Exception as e:
+                print(f"[ERROR] Task execution failed: {e}")
+                yield json.dumps({"type": "error", "message": str(e)}) + "\n"
+            return
+
         # Create tasks
         task_wm = asyncio.create_task(step_single_agent(sess.watermarked_state, True, queue))
         task_bl = asyncio.create_task(step_single_agent(sess.baseline_state, False, queue))
-        
+
         pending_tasks = {task_wm, task_bl}
-        
+
         while pending_tasks:
             # Wait for either queue item or task completion
             # We create a task for queue.get()
             queue_task = asyncio.create_task(queue.get())
-            
+
             done, pending = await asyncio.wait(
                 pending_tasks | {queue_task},
                 return_when=asyncio.FIRST_COMPLETED
             )
-            
+
             # Handle queue item
             if queue_task in done:
                 chunk = queue_task.result()
                 yield json.dumps(chunk) + "\n"
             else:
                 queue_task.cancel()
-            
+
             # Handle agent tasks completion
             for t in done:
                 if t in pending_tasks:
                     pending_tasks.remove(t)
-        
+
         # Consume any remaining queue items
         while not queue.empty():
             chunk = await queue.get()
             yield json.dumps(chunk) + "\n"
-        
+
         # Get results
         try:
             result_wm = await task_wm
             result_bl = await task_bl
-            
+
             # Unpack Watermark Result
             if result_wm:
-                final_data_wm, wm_trace, consumed = result_wm
+                final_data_wm, wm_trace, consumed, _ = result_wm
                 sess.bit_index += consumed
                 final_data_wm["watermark"] = wm_trace
                 yield json.dumps({"type": "result", "data": final_data_wm}) + "\n"
-                
+
             # Unpack Baseline Result
             if result_bl:
-                final_data_bl, _, _ = result_bl
+                final_data_bl, _, _, _ = result_bl
                 final_data_bl["watermark"] = { "bits": "", "matrixRows": [], "rankContribution": 0 }
                 yield json.dumps({"type": "result", "data": final_data_bl}) + "\n"
-                
+
         except Exception as e:
             print(f"[ERROR] Task execution failed: {e}")
             yield json.dumps({"type": "error", "message": str(e)}) + "\n"
