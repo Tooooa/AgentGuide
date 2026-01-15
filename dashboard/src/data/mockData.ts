@@ -53,10 +53,14 @@ export type Trajectory = {
     };
     taskName: string; // Legacy support or internal ID
     userQuery: string;
+    promptTrace?: string;
+    baselinePromptTrace?: string;
     userQueryZh?: string; // Added for localization
     totalSteps: number;
     steps: Step[];
     evaluation?: { model_a_score: number, model_b_score: number, reason: string };
+    createdAt?: string;
+    updatedAt?: string;
 };
 
 // --- Helper Functions ---

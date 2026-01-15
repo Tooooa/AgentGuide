@@ -276,6 +276,18 @@ npm run dev
 
 > 说明：网关从请求的 `tools` 参数中抽取候选工具并进行水印采样。
 
+### 常见问题排查
+
+- **502 Bad Gateway Error**:
+  如果在调用 API 时遇到 `502 Bad Gateway` 错误，通常是由于系统全局代理配置（如 `http_proxy`）干扰了与 localhost 的连接。
+  
+  **解决方法**: 启动服务时设置 `no_proxy`，确保本地流量绕过代理。
+
+  ```bash
+  export no_proxy=localhost,127.0.0.1,0.0.0.0
+  # 然后重启 proxy 和 backend 服务
+  ```
+
 ---
 
 ## 📚 实验指南

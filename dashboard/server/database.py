@@ -29,6 +29,7 @@ class ConversationDB:
                 steps_json TEXT,
                 payload TEXT,
                 evaluation_json TEXT,
+                scenario_type TEXT DEFAULT 'benchmark',
                 is_pinned INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -38,6 +39,17 @@ class ConversationDB:
         # Add is_pinned column if it doesn't exist (for existing databases)
         try:
             cursor.execute("ALTER TABLE conversations ADD COLUMN is_pinned INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
+        
+        # Add columns if they don't exist (for existing databases)
+        try:
+            cursor.execute("ALTER TABLE conversations ADD COLUMN is_pinned INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+
+        try:
+            cursor.execute("ALTER TABLE conversations ADD COLUMN scenario_type TEXT DEFAULT 'benchmark'")
         except sqlite3.OperationalError:
             pass  # Column already exists
         
@@ -72,8 +84,8 @@ class ConversationDB:
         cursor.execute("""
             INSERT OR REPLACE INTO conversations 
             (id, title_en, title_zh, task_name, user_query, total_steps, 
-             steps_json, payload, evaluation_json, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+             steps_json, payload, evaluation_json, scenario_type, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         """, (
             conv_id,
             title_en,
@@ -83,7 +95,8 @@ class ConversationDB:
             conversation_data.get("totalSteps", len(steps)),
             json.dumps(steps, ensure_ascii=False),
             conversation_data.get("payload", ""),
-            json.dumps(evaluation, ensure_ascii=False) if evaluation else None
+            json.dumps(evaluation, ensure_ascii=False) if evaluation else None,
+            conversation_data.get("type", "benchmark")
         ))
         
         conn.commit()
@@ -109,27 +122,28 @@ class ConversationDB:
         
         return self._row_to_dict(row)
     
-    def list_conversations(self, limit: int = 100, search: str = None) -> List[Dict]:
-        """List all conversations, pinned first, then newest first, with optional search"""
+    def list_conversations(self, limit: int = 100, search: str = None, type_filter: str = None) -> List[Dict]:
+        """List all conversations, pinned first, then newest first, with optional search and type filter"""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
+        query = "SELECT * FROM conversations WHERE 1=1"
+        params = []
+
+        if type_filter:
+            query += " AND scenario_type = ?"
+            params.append(type_filter)
+
         if search:
-            # Search in title and user query
             search_pattern = f"%{search}%"
-            cursor.execute("""
-                SELECT * FROM conversations 
-                WHERE title_en LIKE ? OR title_zh LIKE ? OR user_query LIKE ?
-                ORDER BY is_pinned DESC, created_at DESC 
-                LIMIT ?
-            """, (search_pattern, search_pattern, search_pattern, limit))
-        else:
-            cursor.execute("""
-                SELECT * FROM conversations 
-                ORDER BY is_pinned DESC, created_at DESC 
-                LIMIT ?
-            """, (limit,))
+            query += " AND (title_en LIKE ? OR title_zh LIKE ? OR user_query LIKE ?)"
+            params.extend([search_pattern, search_pattern, search_pattern])
+
+        query += " ORDER BY is_pinned DESC, created_at DESC LIMIT ?"
+        params.append(limit)
+
+        cursor.execute(query, params)
         
         rows = cursor.fetchall()
         conn.close()
@@ -208,6 +222,7 @@ class ConversationDB:
             "steps": steps,
             "payload": row["payload"],
             "evaluation": evaluation,
+            "type": row["scenario_type"] if "scenario_type" in row.keys() else "benchmark",
             "isPinned": bool(row["is_pinned"]) if "is_pinned" in row.keys() else False,
             "createdAt": row["created_at"],
             "updatedAt": row["updated_at"]

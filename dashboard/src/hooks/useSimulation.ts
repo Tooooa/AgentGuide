@@ -38,7 +38,7 @@ export const useSimulation = () => {
     // Refresh saved scenarios
     const refreshScenarios = useCallback(async () => {
         try {
-            const saved = await api.listScenarios();
+            const saved = await api.listScenarios('benchmark');
             setSavedScenarios(saved);
         } catch (e) {
             console.error("Failed to load saved scenarios", e);
@@ -99,23 +99,23 @@ export const useSimulation = () => {
                 steps: []
             };
         }
-        
+
         // Priority 1: If we have a liveScenario and it matches activeScenarioId, use it
         if (isLiveMode && liveScenario && liveScenario.id === activeScenarioId) {
             return liveScenario;
         }
-        
+
         // Priority 2: Find in allScenarios (includes saved scenarios)
         const found = allScenarios.find(s => s.id === activeScenarioId);
         if (found) {
             return found;
         }
-        
+
         // Priority 3: If we have a liveScenario but ID doesn't match, still use it (current session)
         if (isLiveMode && liveScenario) {
             return liveScenario;
         }
-        
+
         // Fallback: Empty scenario (not first from list)
         return {
             id: 'empty-initial',
@@ -143,7 +143,7 @@ export const useSimulation = () => {
         const loadHistoryScenario = async () => {
             // Check if user clicked on a saved scenario (not current live session)
             const clickedScenario = savedScenarios.find(s => s.id === activeScenarioId);
-            
+
             if (isLiveMode && clickedScenario && clickedScenario.steps.length > 0) {
                 // Check if it's different from current liveScenario
                 if (!liveScenario || liveScenario.id !== activeScenarioId) {
@@ -154,11 +154,11 @@ export const useSimulation = () => {
                     });
                     setCurrentStepIndex(clickedScenario.steps.length);
                     setIsPlaying(false);
-                    
+
                     // Set sessionId to match the clicked scenario
                     // This allows continuing the conversation
                     setSessionId(activeScenarioId);
-                    
+
                     // Load evaluation result if exists
                     if (clickedScenario.evaluation) {
                         setEvaluationResult(clickedScenario.evaluation);
@@ -168,7 +168,7 @@ export const useSimulation = () => {
                 }
             }
         };
-        
+
         loadHistoryScenario();
     }, [activeScenarioId, savedScenarios, isLiveMode]);
 
@@ -465,27 +465,27 @@ export const useSimulation = () => {
                     if (!prev) return null;
                     const steps = [...prev.steps];
                     const placeholderStep = steps[initialStepIndex];
-                    
+
                     if (placeholderStep) {
                         // Check if this step received any real data
                         // A step has data if it has action, non-placeholder thought, or distribution
-                        const hasWatermarkedData = placeholderStep.action || 
+                        const hasWatermarkedData = placeholderStep.action ||
                             (placeholderStep.thought && placeholderStep.thought !== "Thinking..." && placeholderStep.thought !== "") ||
                             placeholderStep.distribution.length > 0 ||
                             placeholderStep.stepType === 'finish' ||
                             !!placeholderStep.finalAnswer;
-                        
-                        const hasBaselineData = placeholderStep.baseline?.action || 
+
+                        const hasBaselineData = placeholderStep.baseline?.action ||
                             (placeholderStep.baseline?.thought && placeholderStep.baseline.thought !== "Thinking..." && placeholderStep.baseline.thought !== "") ||
                             (placeholderStep.baseline?.distribution?.length ?? 0) > 0 ||
                             placeholderStep.baseline?.stepType === 'finish' ||
                             !!placeholderStep.baseline?.finalAnswer;
-                        
+
                         // Only remove if we didn't receive any result AND the step has no data
                         // This means it's a truly empty placeholder that was created but never filled
-                        const shouldRemove = !receivedWatermarkedResult && !receivedBaselineResult && 
+                        const shouldRemove = !receivedWatermarkedResult && !receivedBaselineResult &&
                             !hasWatermarkedData && !hasBaselineData;
-                        
+
                         if (shouldRemove) {
                             // Remove the invalid placeholder step (only if it's truly empty)
                             steps.splice(initialStepIndex, 1);
@@ -507,13 +507,13 @@ export const useSimulation = () => {
                             // Re-fetch the latest liveScenario from state
                             setLiveScenario(currentScenario => {
                                 if (!currentScenario) return null;
-                                
+
                                 // Save the current state
                                 const updatedScenario = {
                                     ...currentScenario,
                                     id: sessionId
                                 };
-                                
+
                                 // Generate title if needed
                                 let titleToSave = updatedScenario.title;
                                 if ((!titleToSave.en || titleToSave.en === "Live Session" || titleToSave.en === "New Session" || titleToSave.en === "New Chat") && updatedScenario.steps.length > 0) {
@@ -521,14 +521,14 @@ export const useSimulation = () => {
                                     const titlePreview = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
                                     titleToSave = { en: titlePreview, zh: titlePreview };
                                 }
-                                
+
                                 // Save to database (fire and forget)
                                 api.saveScenario(titleToSave, updatedScenario, sessionId).then(() => {
                                     console.log('[Auto-save] Saved after step completion');
                                 }).catch(err => {
                                     console.error('[Auto-save] Failed to save scenario:', err);
                                 });
-                                
+
                                 return currentScenario; // Return unchanged
                             });
                         } catch (err) {
@@ -612,7 +612,7 @@ export const useSimulation = () => {
                     ...liveScenario,
                     id: sessionId
                 };
-                
+
                 // Generate title if needed
                 let titleToSave = updatedScenario.title;
                 if ((!titleToSave.en || titleToSave.en === "Live Session" || titleToSave.en === "New Session" || titleToSave.en === "New Chat") && updatedScenario.steps.length > 0) {
@@ -620,7 +620,7 @@ export const useSimulation = () => {
                     const titlePreview = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
                     titleToSave = { en: titlePreview, zh: titlePreview };
                 }
-                
+
                 await api.saveScenario(titleToSave, updatedScenario, sessionId);
                 console.log('[Auto-save] Saved scenario:', sessionId);
             } catch (err) {
@@ -661,7 +661,7 @@ export const useSimulation = () => {
         payload,
         setPayload,
         sessionId,
-        
+
         // History View
         isHistoryViewOpen,
         setIsHistoryViewOpen,
@@ -678,10 +678,10 @@ export const useSimulation = () => {
 
                     const newSessionId = data.sessionId;
                     setSessionId(newSessionId);
-                    
+
                     // Create scenario with prompt as title preview
                     const titlePreview = prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt;
-                    
+
                     const updatedScenario = {
                         id: newSessionId,
                         title: { en: titlePreview, zh: titlePreview },
@@ -690,7 +690,7 @@ export const useSimulation = () => {
                         totalSteps: 0,
                         steps: []
                     };
-                    
+
                     // If there's an existing "New Chat" entry (not saved to DB yet), just replace it
                     // No need to delete from DB since empty chats are not saved
                     if (liveScenario && (liveScenario.title.en === "New Chat" || liveScenario.title.zh === "新对话")) {
@@ -714,7 +714,7 @@ export const useSimulation = () => {
                             console.error("Failed to save new conversation", e);
                         }
                     }
-                    
+
                     setLiveScenario(updatedScenario);
                     setActiveScenarioId(newSessionId);
                     setCurrentStepIndex(0);
@@ -786,7 +786,7 @@ export const useSimulation = () => {
                 // After continuing, the backend resets done state, so we can proceed
                 // Set isPlaying to true to enable auto-play, which will trigger handleNext
                 setIsPlaying(true);
-                
+
                 // Auto-save after user input
                 if (liveScenario && currentSessionId) {
                     try {
@@ -794,7 +794,7 @@ export const useSimulation = () => {
                             ...liveScenario,
                             id: currentSessionId
                         };
-                        
+
                         // Generate title if needed
                         let titleToSave = updatedScenario.title;
                         if ((!titleToSave.en || titleToSave.en === "Live Session" || titleToSave.en === "New Session" || titleToSave.en === "New Chat") && updatedScenario.steps.length > 0) {
@@ -802,7 +802,7 @@ export const useSimulation = () => {
                             const titlePreview = firstMessage.length > 30 ? firstMessage.substring(0, 30) + '...' : firstMessage;
                             titleToSave = { en: titlePreview, zh: titlePreview };
                         }
-                        
+
                         // Save to database (fire and forget)
                         api.saveScenario(titleToSave, updatedScenario, currentSessionId).catch(err => {
                             console.error('[Auto-save] Failed to save after continue:', err);
@@ -826,7 +826,7 @@ export const useSimulation = () => {
                 try {
                     // Use sessionId if available, otherwise generate one from liveScenario.id
                     const saveId = sessionId || liveScenario.id;
-                    
+
                     // Generate Title if needed
                     let titleToSave = liveScenario.title;
                     if ((!titleToSave.en || titleToSave.en === "Live Session" || titleToSave.en === "New Session" || titleToSave.en === "New Chat") && liveScenario.steps.length > 0) {
@@ -842,17 +842,17 @@ export const useSimulation = () => {
                             // Ignore title generation errors
                         }
                     }
-                    
+
                     // Save with sessionId as the permanent ID
                     await api.saveScenario(titleToSave, {
                         ...liveScenario,
                         id: saveId,
                         title: titleToSave
                     }, saveId);
-                    
+
                     // Wait for database to update
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    
+
                     // Refresh history list
                     await refreshScenarios();
                 } catch (e) {
@@ -870,7 +870,7 @@ export const useSimulation = () => {
                 totalSteps: 0,
                 steps: []
             };
-            
+
             // 不再立即保存空会话，等待用户发送第一条消息时才保存
             // 这样可以避免历史记录中出现大量空会话
 
@@ -880,7 +880,7 @@ export const useSimulation = () => {
             setErasedIndices(new Set());
             setSessionId(null); // Clear sessionId - will be created when user sends first message
             setCustomQuery("");
-            
+
             setLiveScenario(newEmptyScenario);
             setActiveScenarioId(newChatId);
             setIsLiveMode(true);
@@ -925,14 +925,14 @@ export const useSimulation = () => {
 
             setIsEvaluating(true);
             setIsEvaluationModalOpen(true);
-            
+
             try {
                 // ALWAYS restore session for evaluation to ensure fresh session with both agents' data
                 console.log('[Evaluate] Active scenarioId:', activeScenarioId);
                 console.log('[Evaluate] Active scenario:', activeScenario);
                 console.log('[Evaluate] API Key:', apiKey ? 'Present' : 'Missing');
                 console.log('[Evaluate] Restoring session for evaluation...');
-                
+
                 let currentSessionId: string;
                 try {
                     const data = await api.restoreSession(apiKey, activeScenarioId);
@@ -940,7 +940,7 @@ export const useSimulation = () => {
                     setSessionId(currentSessionId);
                     console.log('[Evaluate] Session restored successfully:', currentSessionId);
                     console.log('[Evaluate] Restored data:', data);
-                    
+
                     // Wait a bit for session to be fully initialized
                     await new Promise(resolve => setTimeout(resolve, 200));
                 } catch (restoreError: any) {
@@ -964,7 +964,7 @@ export const useSimulation = () => {
                 setSavedScenarios(prev => prev.map(s =>
                     s.id === activeScenarioId ? { ...s, evaluation: result } : s
                 ));
-                
+
                 // Refresh scenarios from database to ensure evaluation is persisted
                 await refreshScenarios();
 
@@ -981,7 +981,7 @@ export const useSimulation = () => {
         deleteScenario: async (scenarioId: string) => {
             try {
                 await api.deleteScenario(scenarioId);
-                
+
                 // If deleting current scenario, switch to another one
                 if (activeScenarioId === scenarioId) {
                     // Find another scenario to switch to
@@ -1003,7 +1003,7 @@ export const useSimulation = () => {
                         setActiveScenarioId(newSessionId);
                     }
                 }
-                
+
                 // Refresh scenarios list
                 await refreshScenarios();
             } catch (e) {
@@ -1017,7 +1017,7 @@ export const useSimulation = () => {
                 console.log("[DEBUG] Starting clearAllHistory...");
                 const result = await api.clearAllHistory();
                 console.log("[DEBUG] API response:", result);
-                
+
                 // Create a new empty scenario
                 const newChatId = `new_${Date.now()}`;
                 const newEmptyScenario: Trajectory = {
@@ -1032,7 +1032,7 @@ export const useSimulation = () => {
                 setActiveScenarioId(newChatId);
                 setIsLiveMode(true);
                 setSessionId(null);
-                
+
                 // Refresh scenarios list
                 console.log("[DEBUG] Refreshing scenarios...");
                 await refreshScenarios();
@@ -1048,7 +1048,7 @@ export const useSimulation = () => {
             try {
                 const result = await api.batchDeleteScenarios(ids);
                 console.log(`[INFO] Batch deleted ${result.deleted_count} scenarios`);
-                
+
                 // If current scenario was deleted, switch to a new one
                 if (ids.includes(activeScenarioId)) {
                     const newChatId = `new_${Date.now()}`;
@@ -1065,7 +1065,7 @@ export const useSimulation = () => {
                     setIsLiveMode(true);
                     setSessionId(null);
                 }
-                
+
                 // Refresh scenarios list
                 await refreshScenarios();
                 return result;

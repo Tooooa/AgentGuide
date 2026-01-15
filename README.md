@@ -302,6 +302,18 @@ In the **frontend dashboard** you can:
 
 > **Note**: The gateway extracts candidate tools from the request's `tools` parameter and performs watermark sampling selection.
 
+### Troubleshooting
+
+- **502 Bad Gateway Error**:
+  If you encounter `502 Bad Gateway` when calling the API, it is often caused by a global proxy configuration (e.g., `http_proxy`) interfering with localhost connections.
+  
+  **Fix**: set `no_proxy` when starting the services to ensure local traffic bypasses the proxy.
+
+  ```bash
+  export no_proxy=localhost,127.0.0.1,0.0.0.0
+  # Then restart the proxy and backend
+  ```
+
 ---
 
 ## 📚 Experiment Guide

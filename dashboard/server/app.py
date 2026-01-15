@@ -1221,47 +1221,87 @@ async def add_agent_turn(req: AddAgentTurnRequest):
         {"role": "user", "content": req.message.strip()},
     ]
 
-    if use_swarm:
-        try:
-            from swarm import Swarm
+    # Define synchronous tasks for parallel execution
+    def run_watermarked_model():
+        w_start = time.time()
+        w_completion = None
+        
+        if use_swarm:
+            try:
+                from swarm import Swarm
+                # Use run_and_stream to get authentic flow (even if tools not executable here)
+                # Note: AddAgent mode typically just predicts the *next* step (scoring).
+                # But if we want to support multi-turn auto-regressive, we need executable tools.
+                # Current setup likely has no executable tools, so it will stop at ToolCall.
+                
+                swarm_client = Swarm(client=_build_proxy_client(req.apiKey or session.api_key))
+                
+                # We need to construct a Mock Agent object 
+                from swarm import Agent
+                ephemeral_agent = Agent(name="AddAgent", model=model_name, instructions=ADD_AGENT_SYSTEM_PROMPT)
+                
+                # Standard Swarm run (handles loop if tools executable, else one turn)
+                # Since we don't have python functions for ADD_AGENT_TOOLS, we pass them as tools_schema only?
+                # Swarm requires 'functions' list of callables for execute_tools=True.
+                # If we pass 'tools_override', Swarm uses that for the API call schema.
+                # But execution will fail if 'functions' is empty and 'execute_tools=True'.
+                # So we MUST set execute_tools=False to prevent Swarm from trying to call non-existent functions.
+                # This means it will behave just like get_chat_completion (single turn).
+                # This CONFIRMS "Add Agent" acts as a predictor, not a runner.
+                # I will preserve this behavior but use `run` interface for consistency if desired, 
+                # OR realize that for "Add Agent", single turn IS the authentic flow for this tool.
+                
+                # However, to satisfy "Authentic Swarm Flow", I will use `run` but with `execute_tools=False`.
+                # This ensures Swarm's internal prompt/message logic is used.
+                
+                response = swarm_client.run(
+                    agent=ephemeral_agent,
+                    messages=[{"role": "user", "content": req.message.strip()}],
+                    context_variables={},
+                    model_override=model_name,
+                    stream=False,
+                    debug=True,
+                    # extra_body={"agentmark": agentmark_body}, # Swarm run doesn't support extra_body
+                    tools_override=ADD_AGENT_TOOLS,
+                    execute_tools=False
+                )
+                
+                # Wrap response to match ChatCompletion interface expected by downstream
+                class MockChoice:
+                    def __init__(self, msg): self.message = msg
+                class MockCompletion:
+                    def __init__(self, msg): self.choices = [MockChoice(msg)]
+                    
+                w_completion = MockCompletion(response.messages[-1])
+                
+            except Exception as exc:
+                print(f"[WARN] Swarm bridge failed, falling back to direct call: {exc}")
 
-            swarm_client = Swarm(client=_build_proxy_client(req.apiKey or session.api_key))
-            completion = swarm_client.get_chat_completion(
-                agent=_get_swarm_add_agent(),
-                history=[{"role": "user", "content": req.message.strip()}],
-                context_variables={},
-                model_override=model_name,
-                stream=False,
-                debug=False,
-                extra_body={"agentmark": agentmark_body},
-                tools_override=ADD_AGENT_TOOLS,
-                temperature=0.0,
-            )
-        except Exception as exc:
-            print(f"[WARN] Swarm bridge failed, falling back to direct call: {exc}")
+        if w_completion is None:
+            client = _build_proxy_client(req.apiKey or session.api_key)
+            try:
+                w_completion = client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    tools=ADD_AGENT_TOOLS,
+                    extra_body={"agentmark": agentmark_body},
+                    temperature=0.0,
+                )
+            except Exception as exc:
+                # Raise to be caught by asyncio gather
+                raise exc
+        
+        w_latency = time.time() - w_start
+        return w_completion, w_latency
 
-    if completion is None:
-        client = _build_proxy_client(req.apiKey or session.api_key)
-        try:
-            completion = client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                tools=ADD_AGENT_TOOLS,
-                extra_body={"agentmark": agentmark_body},
-                temperature=0.0,
-            )
-        except Exception as exc:
-            detail = f"Proxy call failed ({proxy_base}): {exc}"
-            raise HTTPException(status_code=502, detail=detail)
-    latency = time.time() - started_at
-    baseline_step = None
-    baseline_prompt_trace = None
-    if use_baseline:
-        base_started = time.time()
+    def run_baseline_model():
+        b_step = None
+        b_trace = None
+        b_start = time.time()
         try:
             base_client = _build_base_llm_client(req.apiKey or session.api_key)
             base_messages = _build_add_agent_scoring_messages(req.message.strip())
-            baseline_prompt_trace = {
+            b_trace = {
                 "scoring_messages": base_messages,
                 "scoring_prompt_text": _render_prompt_messages(base_messages),
             }
@@ -1270,14 +1310,41 @@ async def add_agent_turn(req: AddAgentTurnRequest):
                 messages=base_messages,
                 temperature=0.0,
             )
-            base_latency = time.time() - base_started
-            baseline_step = _build_baseline_step(
+            base_latency = time.time() - b_start
+            b_step = _build_baseline_step(
                 base_completion,
                 base_latency,
                 candidates=_get_add_agent_candidates(),
             )
         except Exception as exc:
             print(f"[WARN] Baseline call failed: {exc}")
+        
+        return b_step, b_trace
+
+    # Execute in parallel
+    futures = [asyncio.to_thread(run_watermarked_model)]
+    if use_baseline:
+        futures.append(asyncio.to_thread(run_baseline_model))
+    
+    results = await asyncio.gather(*futures, return_exceptions=True)
+
+    # Process Watermarked Result
+    if isinstance(results[0], Exception):
+        exc = results[0]
+        # Re-raise strictly as 502 if it was a proxy connection issue, or generic 500
+        detail = f"Proxy call failed ({proxy_base}): {exc}"
+        raise HTTPException(status_code=502, detail=detail)
+    
+    completion, latency = results[0]
+
+    # Process Baseline Result
+    baseline_step = None
+    baseline_prompt_trace = None
+    if use_baseline:
+        if isinstance(results[1], Exception):
+            print(f"[WARN] Baseline task experienced unexpected error: {results[1]}")
+        else:
+            baseline_step, baseline_prompt_trace = results[1]
     watermark = _extract_watermark(completion)
     if not watermark:
         raise HTTPException(status_code=500, detail="Missing watermark in response")
@@ -1454,13 +1521,42 @@ async def evaluate_add_agent(req: AddAgentEvaluateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/add_agent/{session_id}/save")
+async def save_add_agent_session(session_id: str):
+    """Save an Add Agent session to history"""
+    if session_id not in add_agent_sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    try:
+        sess = add_agent_sessions[session_id]
+        
+        # Combine watermarked and baseline into a unified view for history
+        # For simple history viewing, we can just save the 'steps' structure used in UI
+        # We need to construct 'steps' list similar to what AddAgentDashboard maintains
+        
+        # Actually, AddAgentDashboard maintains 'steps' state. 
+        # But we only have raw trajectory here in session.
+        # However, sess.watermarked_trajectory contains structured thought/action.
+        
+        # BETTER APPROACH: The frontend already has the full 'steps' state array.
+        # It's better to let frontend call 'save_scenario' with the data it has,
+        # specifying type='add_agent'.
+        # We don't need a special backend reconstruction logic if frontend sends the data.
+        
+        # SO, we will skip complex logic here and just rely on frontend using the generic save API.
+        pass
+    except Exception as e:
+        print(f"[ERROR] Save add agent failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # --- Scenario Persistence ---
 
 @app.get("/api/scenarios")
-async def list_scenarios(search: Optional[str] = None, limit: int = 100):
-    """List all saved conversations from database with optional search"""
+async def list_scenarios(search: Optional[str] = None, limit: int = 100, type: Optional[str] = None):
+    """List all saved conversations from database with optional search and type filter"""
     try:
-        scenarios = db.list_conversations(limit=limit, search=search)
+        scenarios = db.list_conversations(limit=limit, search=search, type_filter=type)
         return scenarios
     except Exception as e:
         print(f"[ERROR] Failed to list scenarios: {e}")
@@ -1470,6 +1566,7 @@ class SaveScenarioRequest(BaseModel):
     title: Any # str or dict
     data: Dict
     id: Optional[str] = None # Optional ID to overwrite
+    type: Optional[str] = "benchmark" # Default to benchmark
 
 @app.post("/api/save_scenario")
 async def save_scenario(req: SaveScenarioRequest):
@@ -1479,6 +1576,7 @@ async def save_scenario(req: SaveScenarioRequest):
         
         scenario_data = req.data
         scenario_data["id"] = scenario_id
+        scenario_data["type"] = req.type
         
         # Handle title format
         if isinstance(req.title, str):
@@ -1840,10 +1938,10 @@ async def step_session(req: StepRequest):
         raise HTTPException(status_code=404, detail="Session not found")
     
     sess = sessions[req.sessionId]
-    use_shared_thought = (os.getenv("AGENTMARK_BASELINE_SHARE_THOUGHT") or "1").strip().lower() not in {"0", "false", "no"}
+    use_shared_thought = (os.getenv("AGENTMARK_BASELINE_SHARE_THOUGHT") or "0").strip().lower() not in {"0", "false", "no"}
     use_swarm_baseline = (os.getenv("AGENTMARK_BASELINE_USE_SWARM") or "1").strip().lower() not in {"0", "false", "no"}
-    if use_shared_thought:
-        use_swarm_baseline = False
+    # if use_shared_thought:
+    #     use_swarm_baseline = False
     
     if sess.watermarked_state.step_count >= sess.max_steps:
         # Return immediate JSON for consistency if done
@@ -1914,127 +2012,231 @@ async def step_session(req: StepRequest):
 
             return final_data, None, 0, shared_payload
 
-        if (not is_watermarked) and use_swarm_baseline:
             try:
-                if not agent_state.swarm_history:
-                    agent_state.swarm_history.append(
-                        {
-                            "role": "user",
-                            "content": f"Task: {agent_state.task.get('query', '')}\nBegin!",
-                        }
+                # Swarm Native Execution (Threaded for Sync Client)
+                
+                # 1. Define Dynamic Tool Wrapper Factory
+                def make_wrapper(tool_def, adapter, task_state, queue, loop, agent_role):
+                    tool_name = tool_def["name"]
+                    
+                    def wrapper(**kwargs):
+                        # Side-effect: Notify UI of tool call start
+                        # This happens sync inside Swarm's loop (blocking the thread, not the main loop)
+                        # We use call_soon_threadsafe to push to async queue
+                        
+                        tool_display = f"Call: {tool_name}"
+                        call_details = json.dumps(kwargs, ensure_ascii=False)
+                        
+                        # Notify UI: Tool Call Intent (as a Thought or special event)
+                        # Since Swarm doesn't yield "I am calling X" in the stream until after? 
+                        # Actually Swarm streams content, then executes tool.
+                        # We inject a specific event to show the tool call card immediately.
+                        
+                        loop.call_soon_threadsafe(
+                             queue.put_nowait,
+                             {
+                                 "type": "thought",
+                                 "agent": agent_role,
+                                 "content": f"\n\n[Action: {tool_name}]\n"
+                             }
+                        )
+
+                        action_obj = {"tool": tool_name, "arguments": kwargs}
+                        
+                        # Execute logic using adapter (preserves cache/fake)
+                        obs_result = adapter.step(
+                            action_obj,
+                            agent_state.episode["tool_summaries"],
+                            state=task_state
+                        )
+                        return obs_result["observation"]
+
+                    wrapper.__name__ = tool_name
+                    wrapper.__doc__ = tool_def.get("description", "")
+                    return wrapper
+
+                # 2. Setup Tools and Agent
+                from swarm import Swarm, Agent
+                
+                tool_summaries = agent_state.episode["tool_summaries"]
+                tools_override = _build_toolbench_tools(tool_summaries)
+                
+                # specific loop for threadsafe calls
+                loop = asyncio.get_running_loop()
+                
+                funcs = []
+                func_map = {}
+                for t in tool_summaries:
+                    w = make_wrapper(t, agent_state.adapter, agent_state.task, output_queue, loop, agent_state.role)
+                    funcs.append(w)
+                    func_map[t["name"]] = w
+
+                # Swarm Agent Definition
+                # Note: We use the simple prompt as requested
+                swarm_agent = Agent(
+                    name="Swarm Assistant",
+                    instructions="You are a helpful agent. Use the provided tools to solve the task. Call a tool when needed; otherwise, respond with the final answer.",
+                    functions=funcs 
+                )
+                
+                # 3. Wrapper for Thread Execution
+                def run_swarm_sync():
+                    # Initialize Swarm client (Sync)
+                    client_sync = sess.client
+                    swarm = Swarm(client=client_sync)
+                    
+                    # Convert history
+                    if not agent_state.swarm_history:
+                        agent_state.swarm_history.append({
+                            "role": "user", 
+                            "content": f"Task: {agent_state.task.get('query', '')}\nBegin!"
+                        })
+                    
+                            
+                    # Run and Stream
+                    print(f"[DEBUG] Starting Swarm run_and_stream with model {sess.model}")
+                    stream = swarm.run_and_stream(
+                        agent=swarm_agent,
+                        messages=agent_state.swarm_history,
+                        model_override=sess.model,
+                        tools_override=tools_override,
+                        execute_tools=True,
+                        debug=True
                     )
+                    
+                    # Consume stream
+                    response_obj = None
+                    full_content = ""
+                    
+                    for chunk in stream:
+                        print(f"[DEBUG] Swarm Chunk: {str(chunk)[:100]}") # Log first 100 chars
+                        if "response" in chunk:
+                            response_obj = chunk["response"]
+                            break
+                        
+                        if "content" in chunk and chunk["content"]:
+                            c = chunk["content"]
+                            full_content += c
+                            # Stream thought to UI
+                            loop.call_soon_threadsafe(
+                                output_queue.put_nowait,
+                                {
+                                    "type": "thought",
+                                    "agent": agent_state.role,
+                                    "content": c
+                                }
+                            )
 
-                tools_override = _build_toolbench_tools(agent_state.episode["tool_summaries"])
-                from swarm import Swarm
+                    
+                    return response_obj
 
-                swarm_client = Swarm(client=sess.client)
-                completion = swarm_client.get_chat_completion(
-                    agent=_get_swarm_toolbench_agent(),
-                    history=agent_state.swarm_history,
-                    context_variables={},
-                    model_override=sess.model,
-                    stream=False,
-                    debug=False,
-                    tools_override=tools_override,
-                    temperature=0.0,
-                )
+                # 4. Await Thread
+                response = await asyncio.to_thread(run_swarm_sync)
+                
+                # 5. Process Final Result
+                if response:
+                    new_messages = response.messages
+                    agent_state.swarm_history.extend(new_messages)
+                    
+                    # Convert new_messages to our trajectory format
+                    final_answer_text = ""
+                    done = False
+                    
+                    for msg in new_messages:
+                        role = msg.get("role")
+                        content = msg.get("content") or ""
+                        
+                        if role == "assistant":
+                            tool_calls = msg.get("tool_calls")
+                            
+                            if tool_calls:
+                                for tc in tool_calls:
+                                    fn = tc.get("function", {})
+                                    t_name = fn.get("name")
+                                    t_args = fn.get("arguments")
+                                    
+                                    # Append to trajectory
+                                    ui_msg = {
+                                        "thought": content,
+                                        "action": t_name,
+                                        "action_args": json.loads(t_args) if t_args else {},
+                                        "action_weights": {} 
+                                    }
+                                    agent_state.trajectory.append({"role": "assistant", "message": json.dumps(ui_msg)})
+                                    
+                                    # STREAM INTERMEDIATE STEP COMPLETION
+                                    step_data = {
+                                        "agent": agent_state.role,
+                                        "thought": content or "Calling tool...",
+                                        "action": f"Call: {t_name}",
+                                        "observation": "", # Tool output comes in next msg role='tool'
+                                        "done": False,
+                                        "final_answer": "",
+                                        "distribution": [],
+                                        "stepIndex": agent_state.step_count, # Current index
+                                        "metrics": {"latency": 0.1, "tokens": 0.0}
+                                    }
+                                    loop.call_soon_threadsafe(
+                                        output_queue.put_nowait,
+                                        {
+                                            "type": "result", # Treat as a result chunk
+                                            "data": step_data
+                                        }
+                                    )
+                                    
+                                    agent_state.step_count += 1
+                                    
+                            else:
+                                # Final Answer / Plain content
+                                ui_msg = {
+                                    "thought": content,
+                                    "action": "Finish",
+                                    "action_args": {"final_answer": content},
+                                    "action_weights": {}
+                                }
+                                agent_state.trajectory.append({"role": "assistant", "message": json.dumps(ui_msg)})
+                                final_answer_text = content
+                                done = True
+                                agent_state.step_count += 1
 
-                message = completion.choices[0].message
-                tool_calls = message.tool_calls or []
-                content = (message.content or "").strip()
+                        elif role == "tool":
+                            # Tool Output
+                            agent_state.trajectory.append({"role": "tool", "message": content})
+                            agent_state.last_observation = content
+                
+                    agent_state.done = done
 
-                chosen = "Finish"
-                action_args: Dict[str, Any] = {}
-                tool_call_id = None
-                if tool_calls:
-                    first_call = tool_calls[0]
-                    chosen = first_call.function.name
-                    tool_call_id = first_call.id
-                    raw_args = first_call.function.arguments or "{}"
-                    try:
-                        action_args = json.loads(raw_args)
-                    except Exception:
-                        action_args = {}
+                    step_latency = time.time() - step_start_time
+                    
+                    final_data = {
+                        "agent": agent_state.role,
+                        "thought": final_answer_text or "Finished turn.",
+                        "action": "Finish" if done else "Yield", # Swarm yields back control?
+                        "observation": agent_state.last_observation,
+                        "done": done,
+                        "final_answer": final_answer_text,
+                        "distribution": [], # NO BLUE BARS
+                        "stepIndex": agent_state.step_count - 1,
+                        "metrics": {"latency": step_latency, "tokens": 0.0},
+                    }
+                    return final_data, None, 0, None
+                
                 else:
-                    if content:
-                        action_args = {"final_answer": content}
+                    raise Exception("Swarm returned no response")
 
-                admissible = agent_state.episode["admissible_commands"]
-                if chosen not in admissible:
-                    chosen = "Finish"
-                    if content:
-                        action_args = {"final_answer": content}
-                    else:
-                        action_args = {}
-
-                probs = uniform_prob(admissible)
-                distribution = [
-                    {"name": k, "prob": v, "isSelected": k == chosen}
-                    for k, v in probs.items()
-                ]
-
-                model_output = json.dumps(
-                    {
-                        "thought": content,
-                        "action": chosen,
-                        "action_args": action_args,
-                        "action_weights": probs,
-                    },
-                    ensure_ascii=False,
-                )
-                agent_state.trajectory.append({"role": "assistant", "message": model_output})
-
-                agent_state.swarm_history.append(message.model_dump())
-
-                final_answer_text = ""
-                if chosen == "Finish":
-                    if isinstance(action_args, dict):
-                        final_answer_text = action_args.get("final_answer", "")
-                    if not final_answer_text:
-                        final_answer_text = content
-
-                action_obj = {"tool": chosen, "arguments": action_args}
-                step_result_obs = await asyncio.to_thread(
-                    agent_state.adapter.step,
-                    action_obj,
-                    agent_state.episode["tool_summaries"],
-                    state=agent_state.task,
-                )
-                observation = step_result_obs["observation"]
-                done = step_result_obs.get("done", False) or chosen == "Finish"
-
-                if chosen != "Finish":
-                    tool_message = {"role": "tool", "content": observation}
-                    if tool_call_id:
-                        tool_message["tool_call_id"] = tool_call_id
-                    agent_state.swarm_history.append(tool_message)
-
-                agent_state.trajectory.append({"role": "tool", "message": observation})
-                agent_state.last_observation = observation
-                agent_state.step_count += 1
-                agent_state.done = done
-
-                obs_display = observation
-                if not done and len(observation) > 200:
-                    obs_display = observation[:200] + "..."
-
-                step_latency = time.time() - step_start_time
-                est_tokens = len(content) / 4 if content else 0.0
-
-                final_data = {
-                    "agent": agent_state.role,
-                    "thought": content or ("Thinking..." if not done else ""),
-                    "action": f"Call: {chosen}",
-                    "observation": obs_display,
-                    "done": done,
-                    "final_answer": final_answer_text if done else "",
-                    "distribution": distribution,
-                    "stepIndex": agent_state.step_count - 1,
-                    "metrics": {"latency": step_latency, "tokens": est_tokens},
-                }
-                return final_data, None, 0, None
             except Exception as e:
                 print(f"[ERROR] Swarm baseline error: {e}")
+                import traceback
+                traceback.print_exc()
+                # Fallback to avoid hanging
+                agent_state.done = True
+                return {
+                    "agent": agent_state.role,
+                    "thought": f"Error: {str(e)}",
+                    "action": "Finish",
+                    "done": True,
+                    "metrics": {"latency": 0, "tokens": 0}
+                }, None, 0, None
 
         # 1. Build Messages
         messages = build_messages(

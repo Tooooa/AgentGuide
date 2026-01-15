@@ -191,7 +191,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                                         setShowIncompleteWarning(false);
                                         setHasSeenIncompleteWarning(true);
                                     }}
-                                    className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors ${isAddAgent ? 'bg-amber-600 hover:bg-amber-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                                    className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors ${isAddAgent ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                                 >
                                     {locale === 'zh' ? '明白了' : 'Got it'}
                                 </button>
@@ -213,7 +213,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                             {locale === 'zh' ? '信道噪声 (丢包率)' : 'Channel Noise'}
                         </span>
                     </div>
-                    <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${isAddAgent ? 'text-amber-600 bg-amber-50' : 'text-indigo-600 bg-indigo-50'}`}>
+                    <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${isAddAgent ? 'text-indigo-600 bg-indigo-50' : 'text-indigo-600 bg-indigo-50'}`}>
                         {erasureRate}%
                     </span>
                 </div>
@@ -256,7 +256,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                             <CheckCircle2 size={14} /> <span>{locale === 'zh' ? '解码成功' : 'SUCCESS'}</span>
                         </div>
                     ) : (
-                        <div className={`px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${isAddAgent ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                        <div className={`px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${isAddAgent ? 'bg-indigo-50 text-indigo-500' : 'bg-indigo-50 text-indigo-500'}`}>
                             <Lock size={14} /> <span>{locale === 'zh' ? '锁定' : 'LOCKED'}</span>
                         </div>
                     )}
@@ -265,7 +265,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                 {/* Progress Bar */}
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <motion.div
-                        className={`h-full ${isSuccess ? 'bg-emerald-500' : isAddAgent ? 'bg-amber-500' : 'bg-indigo-500'}`}
+                        className={`h-full ${isSuccess ? 'bg-emerald-500' : isAddAgent ? 'bg-indigo-500' : 'bg-indigo-500'}`}
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 0.5 }}
@@ -312,12 +312,12 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                                     className={`relative p-3 rounded-xl border transition-all group cursor-pointer ${isErased
                                         ? 'bg-rose-50 border-rose-100 opacity-70 grayscale-[0.5] hover:opacity-100'
                                         : isAddAgent
-                                            ? 'bg-white border-slate-100 hover:border-amber-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]'
+                                            ? 'bg-white border-slate-100 hover:border-indigo-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]'
                                             : 'bg-white border-slate-100 hover:border-indigo-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]'}`}
                                 >
                                     <div className="flex items-start gap-3">
                                         {/* Icon Box */}
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isErased ? 'bg-rose-100 text-rose-400' : isAddAgent ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isErased ? 'bg-rose-100 text-rose-400' : isAddAgent ? 'bg-indigo-50 text-indigo-500' : 'bg-indigo-50 text-indigo-500'}`}>
                                             <FileDigit size={16} />
                                         </div>
 
@@ -345,7 +345,7 @@ const DecoderPanel: React.FC<DecoderPanelProps> = ({
                                                                 {row.map((bit, cIdx) => (
                                                                     <div
                                                                         key={cIdx}
-                                                                        className={`w-1.5 h-1.5 rounded-full ${bit ? (isAddAgent ? 'bg-amber-500' : 'bg-indigo-500') : 'bg-slate-200'}`}
+                                                                        className={`w-1.5 h-1.5 rounded-full ${bit ? (isAddAgent ? 'bg-indigo-500' : 'bg-indigo-500') : 'bg-slate-200'}`}
                                                                     />
                                                                 ))}
                                                             </div>

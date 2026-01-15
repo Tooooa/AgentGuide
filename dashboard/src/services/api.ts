@@ -74,13 +74,16 @@ export const api = {
         return response.data;
     },
 
-    listScenarios: async (): Promise<any[]> => {
-        const response = await axios.get(`${API_BASE}/api/scenarios`);
+    listScenarios: async (type?: string): Promise<any[]> => {
+        const url = type
+            ? `${API_BASE}/api/scenarios?type=${type}`
+            : `${API_BASE}/api/scenarios`;
+        const response = await axios.get(url);
         return response.data;
     },
 
-    saveScenario: async (title: any, data: any, id?: string) => {
-        const response = await axios.post(`${API_BASE}/api/save_scenario`, { title, data, id });
+    saveScenario: async (title: any, data: any, id?: string, type: string = "benchmark") => {
+        const response = await axios.post(`${API_BASE}/api/save_scenario`, { title, data, id, type });
         return response.data; // { status: "success", id: "..." }
     },
 

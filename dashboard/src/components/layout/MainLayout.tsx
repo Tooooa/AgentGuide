@@ -18,10 +18,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ left, middle, right, onHome, on
     const { locale, setLocale } = useI18n();
     const isCompareLayout = layout === 'compare';
 
+    const isAddAgent = variant === 'add_agent';
+
     return (
-        <div className="h-screen bg-slate-50 flex flex-col font-sans overflow-hidden">
+        <div className={`h-screen flex flex-col font-sans overflow-hidden ${isAddAgent ? 'bg-transparent' : 'bg-slate-50'}`}>
             {/* Header - Fixed Height */}
-            <header className="flex-none px-6 py-4 bg-white/80 backdrop-blur border-b border-slate-200 flex justify-between items-center z-10">
+            <header className={`flex-none px-6 py-4 backdrop-blur border-b flex justify-between items-center z-10 ${isAddAgent
+                ? 'bg-white/60 border-indigo-100/50'
+                : 'bg-white/80 border-indigo-100'
+                }`}>
                 <div className="flex items-center gap-3">
                     <img src="/logo.svg" alt="AgentMark Logo" className="h-10 w-auto" />
                     <img src="/logo_1.svg" alt="AgentMark Text" className="h-6 w-auto mt-1" />
