@@ -4,12 +4,14 @@ Responsibility: Contains all algorithms related to behavior sampling
 """
 
 import random
+import json
 import math
 import torch
 import hmac
 import hashlib
 import numpy as np
 import os
+import json
 
 
 # ==============================================================================
@@ -171,6 +173,8 @@ def differential_based_encoder(prob, indices, bit_stream, bit_index, PRG, precis
     idx, bits = uni_cyclic_shift_enc(bit_stream=bit_stream[bit_index:], n = len(bin_content), PRG = PRG, precision=precision)
     
     num = len(bits)
+    if os.getenv("AGENTMARK_DEBUG_SAMPLER"):
+        print(f"[agentmark:encoder] bin_size={len(bin_content)}, k={math.floor(math.log2(len(bin_content))) if len(bin_content) > 1 else 0}, bits_embedded='{bits}', num={num}")
     prev = bin_content[idx].view(1,1)
 
     return prev, num

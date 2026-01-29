@@ -54,11 +54,14 @@ export const useSimulation = () => {
     // 4. Evaluation Hook
     const {
         evaluationResult,
+        evaluationSessionId,
         isEvaluating,
         isEvaluationModalOpen,
         setEvaluationResult,
         setIsEvaluationModalOpen,
-        evaluateSession
+        evaluateSession,
+        clearEvaluation,
+        error: evaluationError
     } = useEvaluation();
 
     // Sync liveScenario to savedScenarios for real-time updates in history list
@@ -76,12 +79,12 @@ export const useSimulation = () => {
         }
     }, [liveScenario, setSavedScenarios]);
 
-    // Evaluation Sync
+    // Evaluation Sync - only sync if evaluation belongs to current scenario
     useEffect(() => {
-        if (activeScenarioId && activeScenarioId === liveScenario?.id) {
+        if (activeScenarioId && activeScenarioId === liveScenario?.id && evaluationSessionId === activeScenarioId) {
             setLiveScenario(prev => prev ? ({ ...prev, evaluation: evaluationResult || undefined }) : null);
         }
-    }, [evaluationResult, activeScenarioId, liveScenario?.id, setLiveScenario]);
+    }, [evaluationResult, evaluationSessionId, activeScenarioId, liveScenario?.id, setLiveScenario]);
 
 
     const allScenarios = useMemo(() => {
@@ -136,28 +139,32 @@ export const useSimulation = () => {
                     setIsPlaying(false);
                     setSessionId(activeScenarioId); // Allow continuing
 
+                    // Clear any stale evaluation from previous scenario
+                    clearEvaluation();
+                    // Load evaluation from the clicked scenario if it exists
                     if (clickedScenario.evaluation) {
                         setEvaluationResult(clickedScenario.evaluation);
-                    } else {
-                        setEvaluationResult(null);
                     }
                 }
             }
         };
         loadHistoryScenario();
-    }, [activeScenarioId, savedScenarios, liveScenario, setLiveScenario, setCurrentStepIndex, setIsPlaying, setSessionId, setEvaluationResult]);
+    }, [activeScenarioId, savedScenarios, liveScenario, setLiveScenario, setCurrentStepIndex, setIsPlaying, setSessionId, setEvaluationResult, clearEvaluation]);
 
-    // Sync evaluation result to local state when active scenario changes
+    // Clear evaluation when switching to a different scenario
+    // This prevents stale evaluation from showing on unevaluated scenarios
+    const [prevScenarioId, setPrevScenarioId] = useState<string | null>(null);
     useEffect(() => {
-        if (activeScenario && activeScenario.evaluation) {
-            setEvaluationResult(activeScenario.evaluation);
-        } else {
-            // Avoid clearing if we are just updating the same scenario's steps
-            // Only clear if scenario ID changed
-            // But here activeScenario changes on every step update too.
-            // Rely on loadHistoryScenario for initial load.
+        if (activeScenarioId !== prevScenarioId) {
+            setPrevScenarioId(activeScenarioId);
+            // ALWAYS clear evaluation when switching scenarios
+            clearEvaluation();
+            // Then load evaluation from new scenario if it exists
+            if (activeScenario?.evaluation) {
+                setEvaluationResult(activeScenario.evaluation);
+            }
         }
-    }, [activeScenario, setEvaluationResult]);
+    }, [activeScenarioId, prevScenarioId, activeScenario?.evaluation, clearEvaluation, setEvaluationResult]);
 
 
     // History Management Wrappers
@@ -230,13 +237,17 @@ export const useSimulation = () => {
         setIsHistoryViewOpen,
 
         handleContinue,
-        handleNewConversation,
+        handleNewConversation: async () => {
+            clearEvaluation();  // Clear evaluation state when starting new conversation
+            await handleNewConversation();
+        },
 
         evaluationResult,
         isEvaluating,
         isEvaluationModalOpen,
         setIsEvaluationModalOpen,
-        evaluateSession: (lang?: string, force?: boolean) => evaluateSession(sessionId || activeScenarioId, lang, force),
+        evaluateSession: (lang?: string, force?: boolean) => evaluateSession(sessionId || activeScenarioId, activeScenario, lang, force),
+        evaluationError,
 
         deleteScenario: handleDeleteScenario,
         clearAllHistory: handleClearAllHistory,

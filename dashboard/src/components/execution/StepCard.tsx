@@ -189,14 +189,14 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                 <img src="/finger.svg" alt="selected" className="w-full h-full" />
                                             </div>
                                         )}
-                                        <ResponsiveContainer width="99%" height="100%">
+                                        <ResponsiveContainer width="99%" height="100%" debounce={50}>
                                             <BarChart data={sortedDistribution} margin={{ top: 20, right: 5, left: 5, bottom: 5 }}>
-                                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                                                {/* Slicing Lines */}
-                                                {sortedDistribution.map((d, i) => (
+                                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} isAnimationActive={false} />
+                                                {/* Only show a few reference lines to avoid performance issues */}
+                                                {sortedDistribution.slice(0, 5).map((d, i) => (
                                                     <ReferenceLine key={`line-${i}`} y={d.prob} stroke="#cbd5e1" strokeDasharray="3 3" />
                                                 ))}
-                                                <Bar dataKey="prob" radius={[2, 2, 0, 0]} maxBarSize={60}>
+                                                <Bar dataKey="prob" radius={[2, 2, 0, 0]} maxBarSize={60} isAnimationActive={false}>
                                                     {sortedDistribution.map((entry, index) => (
                                                         <Cell
                                                             key={`c-${index}`}
@@ -233,10 +233,10 @@ const StepCard: React.FC<StepCardProps> = ({ step, isErased, showWatermarkDetail
                                                         <img src="/finger.svg" alt="selected" className="w-full h-full" />
                                                     </div>
                                                 )}
-                                                <ResponsiveContainer width="99%" height="100%">
+                                                <ResponsiveContainer width="99%" height="100%" debounce={50}>
                                                     <BarChart data={bins} margin={{ top: 20, right: 5, left: 5, bottom: 5 }}>
-                                                        <Tooltip cursor={{ fill: 'transparent' }} content={() => null} />
-                                                        <Bar dataKey="weight" radius={[2, 2, 0, 0]} maxBarSize={60}>
+                                                        <Tooltip cursor={{ fill: 'transparent' }} content={() => null} isAnimationActive={false} />
+                                                        <Bar dataKey="weight" radius={[2, 2, 0, 0]} maxBarSize={60} isAnimationActive={false}>
                                                             {bins.map((e, idx) => (
                                                                 <Cell
                                                                     key={`b-${idx}`}

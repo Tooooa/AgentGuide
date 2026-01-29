@@ -218,7 +218,19 @@ def parse_action_args_from_output(model_output: str, chosen: str) -> Dict[str, A
         start = model_output.find("{")
         end = model_output.rfind("}")
         json_str = model_output[start:end + 1] if start != -1 and end != -1 else "{}"
-        data = json.loads(json_str)
+        
+        try:
+            data = json.loads(json_str, strict=False)
+        except json.JSONDecodeError:
+            # Fallback: try to escape unescaped newlines which are common in LLM output
+            try:
+                # Naive cleanup: remove raw newlines from the string
+                cleaned_str = json_str.replace('\n', '\\n').replace('\r', '')
+                data = json.loads(cleaned_str, strict=False)
+            except:
+                 # If clean fallback also fails, return empty
+                return {}
+
         if "action_args" in data:
             raw_args = data["action_args"]
             if isinstance(raw_args, dict) and chosen in raw_args:

@@ -1,4 +1,4 @@
-{
+\{
   "_comment_api": "OpenAI API config - Set via environment variables or update here",
   "api_key": "${OPENAI_API_KEY}",
   "base_url": "https://api.deepseek.com",

@@ -53,6 +53,7 @@ function AppContent() {
     evaluationResult,
     isEvaluationModalOpen,
     setIsEvaluationModalOpen,
+    evaluationError, // New
 
     // Delete
     deleteScenario,
@@ -391,6 +392,7 @@ function AppContent() {
         result={evaluationResult}
         isLoading={isEvaluating}
         onReEvaluate={() => evaluateSession(locale, true)}
+        error={evaluationError} // New
       />
 
       {/* Tutorial */}

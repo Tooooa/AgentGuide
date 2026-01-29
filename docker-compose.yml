@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   backend:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: agentmark-backend
@@ -14,6 +12,7 @@ services:
     environment:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AGENTMARK_DEBUG_SAMPLER=1
     env_file:
       - .env
 

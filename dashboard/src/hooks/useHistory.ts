@@ -40,6 +40,8 @@ export const useHistory = (): UseHistoryReturn => {
     const clearAllHistory = useCallback(async () => {
         try {
             await api.clearAllHistory();
+            // Clear local state immediately to update UI
+            setSavedScenarios([]);
         } catch (e) {
             console.error("Clear all failed", e);
             throw e;

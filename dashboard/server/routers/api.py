@@ -2,6 +2,7 @@ import time
 import json
 import asyncio
 import os
+import re
 import tiktoken
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
@@ -409,10 +410,21 @@ async def step_session(req: StepRequest):
                 context_for_key=agent_state.last_observation,
                 round_num=agent_state.step_count
              )
+             
+             # Build matrix rows for RLNC visualization
+             matrix_rows = []
+             if consumed_bits > 0:
+                 # Generate the coefficient vector for this packet
+                 # Each received bit corresponds to an RLNC equation
+                 for i in range(consumed_bits):
+                     bit_global_idx = sess.bit_index + i
+                     coeffs = sess.rlnc._generate_coeffs(bit_global_idx)
+                     matrix_rows.append(coeffs)
+             
              watermark_info = {
                  "bits": rlnc_chunk[:consumed_bits] if consumed_bits > 0 else "",
-                 "matrixRows": [], # Simplified for demo
-                 "rankContribution": 0
+                 "matrixRows": matrix_rows,
+                 "rankContribution": 1 if consumed_bits > 0 else 0
              }
         else:
              if probs:
@@ -428,12 +440,42 @@ async def step_session(req: StepRequest):
         if chosen == "Finish":
             done = True
             final_answer = action_args.get("final_answer", "")
-            agent_state.trajectory.append({"role": "assistant", "message": json.dumps({"action": "Finish", "thought": "Finished", "action_args": action_args})})
+            
+            # Fallback 1: Regex extraction (handles malformed JSON)
+            if not final_answer:
+                match = re.search(r'"final_answer"\s*:\s*"((?:\\.|[^"\\])*)"', model_output, re.DOTALL)
+                if match:
+                    try:
+                         # Attempt to use JSON loader to handle escapes correctly
+                         candidate = match.group(1)
+                         final_answer = json.loads(f'"{candidate}"')
+                    except:
+                         # Fallback manual unescape
+                         final_answer = match.group(1).replace('\\n', '\n').replace('\\"', '"')
+
+            # Fallback 2: If still empty, use thought
+            if not final_answer:
+                thought_content = extract_thought_from_raw_output(model_output)
+                if thought_content:
+                    final_answer = thought_content
+            
+            # Update trajectory with the actual final answer we found
+            action_args_to_save = action_args.copy()
+            if not action_args_to_save.get("final_answer") and final_answer:
+                 action_args_to_save["final_answer"] = final_answer
+            
+            print(f"[DEBUG][Finish] action_args={action_args}, final_answer='{final_answer[:100] if final_answer else 'EMPTY'}...'")
+            print(f"[DEBUG][Finish] RAW model_output={model_output[:1000]}...") # Print first 1000 chars
+
+            # Save raw content for debugging
+            msg_payload = {"action": "Finish", "thought": "Finished", "action_args": action_args_to_save, "raw_content": model_output}
+            agent_state.trajectory.append({"role": "assistant", "message": json.dumps(msg_payload)})
         else:
              # Execute Tool
              tool_def = next((t for t in agent_state.episode["tool_summaries"] if t["name"] == chosen), None)
              if tool_def:
-                 agent_state.trajectory.append({"role": "assistant", "message": json.dumps({"action": chosen, "thought": "Calling tool", "action_args": action_args})})
+                 extracted_thought = extract_thought_from_raw_output(model_output)
+                 agent_state.trajectory.append({"role": "assistant", "message": json.dumps({"action": chosen, "thought": extracted_thought, "action_args": action_args}, ensure_ascii=False)})
                  
                  # Using adapter to execute
                  # We need to construct action object

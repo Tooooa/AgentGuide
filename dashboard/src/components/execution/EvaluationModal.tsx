@@ -16,9 +16,10 @@ interface EvaluationModalProps {
     isLoading: boolean;
     variant?: 'default' | 'add_agent';
     onReEvaluate?: () => void;
+    error?: string | null;
 }
 
-const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, result, isLoading, variant = 'default', onReEvaluate }) => {
+const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, result, isLoading, variant = 'default', onReEvaluate, error }) => {
     const { locale } = useI18n();
     const isAddAgent = variant === 'add_agent';
 
@@ -30,12 +31,20 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                 {/* Header */}
                 <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-200">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isAddAgent ? 'bg-amber-100' : 'bg-indigo-100'
-                            }`}>
-                            <Award size={24} className={isAddAgent ? 'text-amber-500' : 'text-indigo-500'} />
+                        <div className={`p-2 rounded-lg ${error ? 'bg-red-100' : isAddAgent ? 'bg-amber-100' : 'bg-indigo-100'}`}>
+                            {error ? (
+                                <AlertCircle size={24} className="text-red-500" />
+                            ) : (
+                                <Award size={24} className={isAddAgent ? 'text-amber-500' : 'text-indigo-500'} />
+                            )}
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold tracking-tight text-slate-800">{locale === 'zh' ? 'AI 评估报告' : 'AI Evaluation Report'}</h2>
+                            <h2 className="text-xl font-bold tracking-tight text-slate-800">
+                                {error
+                                    ? (locale === 'zh' ? '评估失败' : 'Evaluation Failed')
+                                    : (locale === 'zh' ? 'AI 评估报告' : 'AI Evaluation Report')
+                                }
+                            </h2>
                             <p className="text-slate-500 text-sm">{locale === 'zh' ? '由 Judge 模型自动分析' : 'Automated analysis by Judge Model'}</p>
                         </div>
                     </div>
@@ -51,9 +60,33 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onClose, resu
                 <div className="p-6 md:p-8">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-4">
-                            <div className={`w-12 h-12 border-4 rounded-full animate-spin ${isAddAgent ? 'border-amber-100 border-t-amber-300' : 'border-indigo-100 border-t-indigo-300'
-                                }`}></div>
+                            <div className={`w-12 h-12 border-4 rounded-full animate-spin ${isAddAgent ? 'border-amber-100 border-t-amber-300' : 'border-indigo-100 border-t-indigo-300'}`}></div>
                             <p className="text-slate-500 font-medium animate-pulse">{locale === 'zh' ? '正在分析轨迹...' : 'Analyzing trajectories...'}</p>
+                        </div>
+                    ) : error ? (
+                        <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
+                            <div className="p-4 rounded-full bg-red-50 text-red-500">
+                                <AlertCircle size={48} />
+                            </div>
+                            <div className="space-y-2 max-w-md">
+                                <h3 className="text-lg font-bold text-slate-800">
+                                    {locale === 'zh' ? '无法完成评估' : 'Evaluation Error'}
+                                </h3>
+                                <p className="text-slate-600 text-sm">
+                                    {error}
+                                </p>
+                            </div>
+                            <div className="mt-4">
+                                {onReEvaluate && (
+                                    <button
+                                        onClick={onReEvaluate}
+                                        className="px-4 py-2 text-white bg-red-500 rounded-lg text-sm font-medium hover:bg-red-600 transition-all hover:shadow-sm active:scale-95 flex items-center gap-2"
+                                    >
+                                        <Award size={16} />
+                                        {locale === 'zh' ? '重试' : 'Retry'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ) : result ? (
                         <div className="space-y-8">
