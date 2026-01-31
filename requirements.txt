@@ -1,4 +1,4 @@
-# AgentMark ALFWorld 实验环境依赖
+# AgentMark experiment environment dependencies
 # Python >= 3.9
 # Install dependencies: pip install -r requirements.txt
 
@@ -6,16 +6,21 @@
 openai>=1.0.0
 tqdm>=4.66.0
 
-# PyTorch (CPU版本，ALFWorld文本环境不需要GPU)
+# Dashboard / Web Server
+fastapi>=0.95.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+
+# PyTorch (CPU version, text environment doesn't require GPU)
 torch>=2.0.0
 
-# 数据处理和科学计算
+# Data processing and scientific computing
 numpy>=1.24.0
 
-# 可视化
+# Visualization
 matplotlib>=3.7.0
 
-# 其他工具
+# Miscellaneous tools
 pyyaml>=6.0
 pandas>=1.5.0
 scipy>=1.10.0
@@ -23,10 +28,14 @@ requests>=2.31.0
 tenacity>=8.2.0
 backoff>=2.2.0
 
-# 深度学习与大模型评估
+# Deep learning and LLM evaluation
 transformers>=4.30.0
 accelerate>=0.20.0
-vllm>=0.2.0
+# vllm>=0.2.0
+sentence-transformers>=2.2.0
 
-# 注意：ALFWorld 在 Docker 中单独安装，本地环境请运行：
+# Missing dependency for token counting
+tiktoken>=0.4.0
+
+# Note: ALFWorld is installed separately in Docker. For local environments, please run:
 # pip install alfworld

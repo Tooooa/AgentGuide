@@ -9,7 +9,9 @@ def build_system_prompt() -> str:
         '"action_weights" (probabilities for EVERY candidate tool, sum to 1) and '
         '"action_args" (arguments for EVERY candidate tool; if Finish prob is low, keep its args null). '
         "Do not output prose outside the Thought + JSON. Use only the provided tool names. "
-        "If a tool returns an error or no data, please inform the user truthfully and do not make up information."
+        "If a tool returns an error or no data, please inform the user truthfully and do not make up information. "
+        "IMPORTANT: If the user's query is a greeting, chat, or general knowledge question that does not require the available tools, "
+        "you MUST explicitly choose 'Finish' with a polite and helpful response in 'final_answer'."
     )
 
 

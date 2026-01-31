@@ -4,11 +4,14 @@ Responsibility: Contains all algorithms related to behavior sampling
 """
 
 import random
+import json
 import math
 import torch
 import hmac
 import hashlib
 import numpy as np
+import os
+import json
 
 
 # ==============================================================================
@@ -170,6 +173,8 @@ def differential_based_encoder(prob, indices, bit_stream, bit_index, PRG, precis
     idx, bits = uni_cyclic_shift_enc(bit_stream=bit_stream[bit_index:], n = len(bin_content), PRG = PRG, precision=precision)
     
     num = len(bits)
+    if os.getenv("AGENTMARK_DEBUG_SAMPLER"):
+        print(f"[agentmark:encoder] bin_size={len(bin_content)}, k={math.floor(math.log2(len(bin_content))) if len(bin_content) > 1 else 0}, bits_embedded='{bits}', num={num}")
     prev = bin_content[idx].view(1,1)
 
     return prev, num
@@ -493,12 +498,23 @@ def sample_behavior_differential(probabilities, bit_stream, bit_index, context_f
     random_p = PRG_for_detection.generate_random(n=52)
     cdf = torch.cumsum(prob_new, dim=0)
     bin_indice_idx = torch.searchsorted(cdf, random_p).item()
-    
+
     selected_bin_start_index = bins[bin_indice_idx]
     bin_content_indices = indices_nonzero[selected_bin_start_index:]
     
     # This is equivalent to "Green List" in old engine
     target_behavior_list = [behaviors[i] for i in bin_content_indices]
+
+    if os.getenv("AGENTMARK_DEBUG_SAMPLER"):
+        debug_payload = {
+            "stage": "bin_select",
+            "random_p": float(random_p),
+            "cdf": [float(x) for x in cdf.tolist()],
+            "bin_indice_idx": int(bin_indice_idx),
+            "selected_bin_start_index": int(selected_bin_start_index),
+            "bin_content": target_behavior_list,
+        }
+        print(f"[agentmark:sampler] {json.dumps(debug_payload, ensure_ascii=True)}")
     
     return selected_behavior, target_behavior_list, num_bits_embedded, context_used
 

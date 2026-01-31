@@ -136,7 +136,9 @@ Output:
                 print(f"[WARN] Invalid JSON response from fake generator on attempt {attempt+1}. Retrying...")
             time.sleep(1) # Add a small delay before retrying
         except Exception as e:
-            print(f"[ERROR] Fake generation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"[ERROR] Fake generation failed on attempt {attempt+1}: {e}")
             time.sleep(1)
 
     return {

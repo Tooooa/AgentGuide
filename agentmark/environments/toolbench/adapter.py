@@ -158,7 +158,9 @@ class ToolBenchAdapter:
                 s_tool = re.sub(r"[^A-Za-z0-9_]+", "_", raw_tool_name or tool or "Tool").strip("_")
                 s_api = re.sub(r"[^A-Za-z0-9_]+", "_", api_name or "API").strip("_")
                 
-                fake_resp = self._load_from_fake_cache(cache_key, s_cat, s_tool, s_api)
+                # User requested to NOT use fake cache (always regenerate)
+                # fake_resp = self._load_from_fake_cache(cache_key, s_cat, s_tool, s_api)
+                fake_resp = None 
                 
                 if fake_resp is None:
                     fake_resp = generate_fake_response(
@@ -170,11 +172,11 @@ class ToolBenchAdapter:
                         temperature=self.temperature,
                         query=query
                     )
-                    # Save to cache
+                    # Save to cache (Regenerate/Overwrite)
                     self._save_to_fake_cache(cache_key, fake_resp, s_cat, s_tool, s_api)
-                    obs_prefix = "[Fake]"
+                    obs_prefix = "[Gen]" # Generated fresh
                 else:
-                    obs_prefix = "[FakeCache]"
+                    obs_prefix = "[CacheGen]"
 
                 obs = (
                     f"{obs_prefix} tool={tool} category={cat} api={api_name} "
@@ -182,11 +184,11 @@ class ToolBenchAdapter:
                 )
             else:
                 obs = (
-                    f"[MockExec] tool={tool} category={cat} api={api_name} "
+                    f"tool={tool} category={cat} api={api_name} "
                     f"args={arguments} | desc={desc[:200]}"
                 )
         else:
-            obs = f"[MockExec] Unknown tool {tool}, args={arguments}"
+            obs = f"Unknown tool {tool}, args={arguments}"
 
         # Reserved: future lookup to return real responses from StableToolBench cache
         return {"observation": obs, "done": False, "reward": 0.0, "info": info}

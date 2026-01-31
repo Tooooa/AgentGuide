@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentmark-backend
+    command: uvicorn dashboard.server.app:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AGENTMARK_DEBUG_SAMPLER=1
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: agentmark-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  experiments:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentmark-experiments
+    # Keep container running indefinitely so user can exec into it
+    command: sleep infinity
+    volumes:
+      - .:/app
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    env_file:
+      - .env

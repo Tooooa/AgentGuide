@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .glass {
+    @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-xl;
+  }
+
+  .glass-panel {
+    @apply bg-white/40 backdrop-blur-lg border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/50 text-white;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 font-sans;
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+  min-height: 100vh;
+}

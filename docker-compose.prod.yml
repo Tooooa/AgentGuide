@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    image: toooa908/agentmark-backend:latest
+    container_name: agentmark-backend
+    command: uvicorn dashboard.server.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      # Only mount data/experiments for persistence, not code overriding
+      - ./data:/app/data
+      - ./experiments:/app/experiments
+      - ./output:/app/output
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    env_file:
+      - .env
+
+  frontend:
+    image: toooa908/agentmark-frontend:latest
+    container_name: agentmark-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  experiments:
+    image: toooa908/agentmark-backend:latest
+    container_name: agentmark-experiments
+    command: sleep infinity
+    volumes:
+      - ./data:/app/data
+      - ./experiments:/app/experiments
+      - ./output:/app/output
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    env_file:
+      - .env

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentmark-sdk"
+version = "0.1.0"
+description = "AgentMark behavioral watermark SDK (core sampler + prompt wrappers)"
+authors = [{name = "AgentMark"}]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = [
+  "torch>=1.13",
+  "numpy>=1.24",
+]
+
+[project.urls]
+Homepage = "https://github.com/Tooooa/AgentMark"
+
+[tool.setuptools.packages.find]
+include = ["agentmark*"]
+exclude = ["experiments*", "dashboard*", "assets*", "demo_data*", "output*"]
+

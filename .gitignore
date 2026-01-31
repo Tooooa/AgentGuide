@@ -36,3 +36,15 @@ log/
 # MarkLLM Large Files
 experiments/toolbench/MarkLLM/dataset/
 experiments/toolbench/MarkLLM/watermark/xsir/dictionary/
+
+# Dashboard
+!dashboard/
+!dashboard/src/data/
+dashboard/data/*.db
+dashboard/data/*.json
+!dashboard/data/examples/
+dashboard/server/*.log
+experiments/**/data/
+experiments/**/output/
+experiments/toolbench/data/
+temp_alfworld_data/
