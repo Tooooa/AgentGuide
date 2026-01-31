@@ -324,6 +324,15 @@ class PromptWatermarkWrapper:
             action_args_map = payload.get("action_args") or payload.get("args") or {}
         action_args = action_args_map.get(res.action) if isinstance(action_args_map, dict) else None
 
+        # Fallback: if action_args is None, but we have a non-empty map that doesn't look like candidates
+        if action_args is None and isinstance(action_args_map, dict) and action_args_map:
+            # Check if keys overlap with candidates (if known)
+            keys = set(action_args_map.keys())
+            candidates = set(probs.keys())
+            # If no overlap, assume the map *is* the args for the selected action
+            if not keys.intersection(candidates):
+                action_args = action_args_map
+
         frontend_data = {
             "watermark_meta": {
                 "enabled": True,

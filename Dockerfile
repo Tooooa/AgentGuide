@@ -29,7 +29,9 @@ WORKDIR /app
 COPY requirements.txt .
 # Use TUNA mirrors for PyPI (Accelerate pip in China)
 # Use TUNA mirrors for PyPI (Stable & Save proxy bandwidth)
+# Install CPU-only torch first to reduce size
 RUN pip install --no-cache-dir --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple && \
+    pip install --no-cache-dir "torch>=2.6.0" --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Copy the rest of the application

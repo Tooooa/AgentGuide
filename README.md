@@ -75,11 +75,10 @@ The project provides a reproducible, modular, and extensible codebase to evaluat
 ## 📖 Table of Contents
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
-  - [1. Environment Setup](#1-environment-setup)
-  - [2. Environment Variables](#2-environment-variables)
+  - [1. Docker One-Line Deployment (Recommended)](#1-docker-one-line-deployment-recommended)
+  - [2. Manual Environment Setup](#2-manual-environment-setup)
   - [3. Dashboard Visualization](#3-dashboard-visualization)
-  - [4. Docker Deployment](#4-docker-deployment)
-  - [5. Plug-and-Play One-click Watermarking](#5-plug-and-play-one-click-watermarking)
+  - [4. Plug-and-Play One-click Watermarking](#4-plug-and-play-one-click-watermarking)
 - [Experiment Guide](#experiment-guide)
   - [1. ToolBench Tool Calling Experiment](#1-toolbench-tool-calling-experiment)
   - [2. ALFWorld Embodied Intelligence Experiment](#2-alfworld-embodied-intelligence-experiment)
@@ -111,6 +110,8 @@ AgentMark/
 │   ├── rlnc_trajectory/            # RLNC robustness evaluation
 │   └── semantic_rewriting/         # Semantic rewriting robustness tests
 ├── output/                         # Experiment outputs (logs, predictions)
+├── docker-compose.yml              # Docker Compose (development)
+├── docker-compose.prod.yml         # Docker Compose (production/one-line deploy)
 ├── environment.yml                 # Conda environment (Python 3.9)
 ├── requirements.txt                # Python dependencies (pip)
 ├── .env.example                    # Environment variable template
@@ -121,11 +122,45 @@ AgentMark/
 
 ## 🚀 Quick Start
 
-### 1. ⚙️ Environment Setup
+### 1. 🐳 Docker One-Line Deployment (Recommended)
 
-**For ToolBench and ALFWorld experiments (Python 3.9)**
+**No dependencies required** - deploy the full Web visualization platform with one command:
 
-Use Conda to manage the environment:
+```bash
+curl -fL https://raw.githubusercontent.com/Tooooa/AgentMark/main/docker-compose.prod.yml -o docker-compose.yml
+docker-compose up -d
+```
+
+🎉 **Success!** Access the dashboard at http://localhost:8080
+
+> **Note**: To use LLM APIs, create a `.env` file first:
+> ```bash
+> echo "DEEPSEEK_API_KEY=your_key_here" > .env
+> ```
+
+<details>
+<summary>▶ More Docker Usage (Click to expand)</summary>
+
+**Run experiment container:**
+```bash
+docker-compose up -d experiments
+docker-compose exec experiments bash
+```
+
+**Manual image pull:**
+```bash
+docker pull toooa908/agentmark-backend:latest
+docker pull toooa908/agentmark-frontend:latest
+```
+</details>
+
+---
+
+### 2. ⚙️ Manual Environment Setup
+
+If you need to modify code or develop locally, follow these steps:
+
+**Requirements**: Python 3.9+
 
 ```bash
 # Create and activate environment
@@ -134,20 +169,13 @@ conda activate AgentMark
 
 # Or install manually
 pip install -r requirements.txt
-```
 
-### 2. Environment Variables
-
-Copy and edit the environment template:
-
-```bash
+# Configure environment variables
 cp .env.example .env
-vim .env
-# Fill in your API key (OpenAI / DeepSeek etc.)
-# Use 'export KEY=VALUE' format or apply with:
-export $(grep -v '^#' .env | xargs)
+# Edit .env and fill in your API keys
 ```
 
+---
 
 ### 3. Dashboard Visualization
 
@@ -183,46 +211,7 @@ Since ToolBench API retrieval requires loading cache files, we recommend downloa
 
 ---
 
-### 4. 🐳 Docker Deployment
-
-We provide a Docker-based environment for both running the Web App and executing experiments with zero configuration.
-
-#### Prerequisites
-1. Install Docker and Docker Compose.
-2. Create a `.env` file in the root directory with your API keys:
-   ```bash
-   cp .env.example .env
-   # Edit .env and fill in OPENAI_API_KEY
-   ```
-
-#### Usage Scenarios
-
-**Scenario A: Web Application** (Frontend + Backend)
-One command to start the full stack:
-```bash
-docker-compose up -d backend frontend
-```
-- Access Dashboard at: `http://localhost:8080`
-
-**Scenario B: Running Experiments**
-Start an interactive experiment environment (with auto-downloaded datasets):
-```bash
-# Start container
-docker-compose up -d experiments
-# Enter shell
-docker-compose exec experiments bash
-```
-
-#### One-Line Deployment (Production)
-For quick deployment using pre-built images:
-```bash
-curl -fL https://raw.githubusercontent.com/Tooooa/AgentMark/main/docker-compose.prod.yml -o docker-compose.yml
-docker-compose up -d
-```
-
----
-
-### 5. Plug-and-Play One-click Watermarking
+### 4. Plug-and-Play One-click Watermarking
 
 Gain behavioral watermarking capabilities with zero code changes. By simply pointing your existing Agent's API Base URL to the gateway address, you can instantly enable watermarking. This mode is designed for developers to quickly add copyright protection and provenance to existing Agent systems without modifying core logic.
 

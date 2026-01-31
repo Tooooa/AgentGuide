@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AgentMark"
+Homepage = "https://github.com/Tooooa/AgentMark"
 
 [tool.setuptools.packages.find]
 include = ["agentmark*"]

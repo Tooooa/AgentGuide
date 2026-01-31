@@ -76,11 +76,10 @@
 ## 📖 目录
 - [项目结构](#-项目结构)
 - [快速开始](#-快速开始)
-  - [1. 环境配置](#1-环境配置)
-  - [2. 环境变量配置](#2-环境变量配置)
+  - [1. Docker 一键部署（推荐）](#1-docker-一键部署推荐)
+  - [2. 手动环境配置](#2-手动环境配置)
   - [3. Dashboard 可视化](#3-dashboard-可视化)
-  - [4. Docker 部署](#4-docker-部署)
-  - [5. 插件式一键加水印](#5-插件式一键加水印)
+  - [4. 插件式一键加水印](#4-插件式一键加水印)
 - [实验指南](#-实验指南)
   - [1. ToolBench 工具调用实验](#1-toolbench-工具调用实验)
   - [2. ALFWorld 具身智能实验](#2-alfworld-具身体能实验)
@@ -112,6 +111,8 @@ AgentMark/
 │   ├── rlnc_trajectory/            # RLNC 鲁棒性评测
 │   └── semantic_rewriting/         # 语义重写鲁棒性测试
 ├── output/                         # 实验输出 (日志, 预测结果)
+├── docker-compose.yml              # Docker Compose (开发)
+├── docker-compose.prod.yml         # Docker Compose (生产/一键部署)
 ├── environment.yml                 # Conda 环境配置 (Python 3.9)
 ├── requirements.txt                # Python 依赖 (pip)
 ├── .env.example                    # 环境变量模板
@@ -122,11 +123,45 @@ AgentMark/
 
 ## 🚀 快速开始
 
-### 1. ⚙️ 环境配置
+### 1. 🐳 Docker 一键部署（推荐）
 
-**适用于 ToolBench 和 ALFWorld 实验 (Python 3.9)**
+**无需安装任何依赖**，一行命令即可启动完整的 Web 可视化平台：
 
-建议使用 Conda 管理环境：
+```bash
+curl -fL https://raw.githubusercontent.com/Tooooa/AgentMark/main/docker-compose.prod.yml -o docker-compose.yml
+docker-compose up -d
+```
+
+🎉 **启动成功！** 访问 http://localhost:8080 开始体验。
+
+> **注意**: 如需使用 LLM API，请先创建 `.env` 文件：
+> ```bash
+> echo "DEEPSEEK_API_KEY=your_key_here" > .env
+> ```
+
+<details>
+<summary>▶ 更多 Docker 使用场景（点击展开）</summary>
+
+**运行实验容器：**
+```bash
+docker-compose up -d experiments
+docker-compose exec experiments bash
+```
+
+**手动拉取镜像：**
+```bash
+docker pull toooa908/agentmark-backend:latest
+docker pull toooa908/agentmark-frontend:latest
+```
+</details>
+
+---
+
+### 2. ⚙️ 手动环境配置
+
+如果您需要修改代码或进行开发，请按以下步骤配置本地环境：
+
+**环境要求**: Python 3.9+
 
 ```bash
 # 创建并激活环境
@@ -135,20 +170,13 @@ conda activate AgentMark
 
 # 或者手动安装
 pip install -r requirements.txt
-```
 
-### 2. 环境变量配置
-
-复制并修改环境变量模板：
-
-```bash
+# 配置环境变量
 cp .env.example .env
-vim .env
-# 填入您的 API Key (OpenAI / DeepSeek 等)
-# 注意：请在 .env 中使用 'export KEY=VALUE' 语法，或运行以下命令使其生效：
-export $(grep -v '^#' .env | xargs)
+# 编辑 .env 填入您的 API Key
 ```
 
+---
 
 ### 3. Dashboard 可视化
 
@@ -184,46 +212,7 @@ Dashboard 提供了交互式的水印实验界面，包含实时对比、解码�
 
 ---
 
-### 4. 🐳 Docker 部署
-
-我们提供了完备的 Docker 环境，支持一键启动 Web 应用或无需配置直接运行实验脚本。
-
-#### 准备工作
-1. 安装 Docker 和 Docker Compose。
-2. 在项目根目录创建 `.env` 文件并填入 API Key：
-   ```bash
-   cp .env.example .env
-   # 编辑 .env 填入您的 OPENAI_API_KEY / DEEPSEEK_API_KEY
-   ```
-
-#### 使用场景
-
-**场景 A: 启动 Web 可视化平台**
-一条命令启动前后端服务：
-```bash
-docker-compose up -d backend frontend
-```
-- 访问地址：`http://localhost:8080`
-
-**场景 B: 运行实验 (Experiment CLI)**
-启动一个配置好环境的交互式容器（支持数据集自动下载）：
-```bash
-# 启动容器
-docker-compose up -d experiments
-# 进入容器终端
-docker-compose exec experiments bash
-```
-
-#### 一行命令部署 (生产环境)
-使用预构建镜像进行快速部署：
-```bash
-curl -fL https://raw.githubusercontent.com/Tooooa/AgentMark/main/docker-compose.prod.yml -o docker-compose.yml
-docker-compose up -d
-```
-
----
-
-### 5. 插件式一键加水印
+### 4. 插件式一键加水印
 
 无需修改原有代码，只需将现有 Agent 的 API Base URL 指向网关地址，即可一键获得行为水印能力。这种模式特别适合开发者在不触动核心逻辑的情况下，快速为已有 Agent 系统增加版权保护与溯源功能。
 

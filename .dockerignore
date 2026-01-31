@@ -19,7 +19,22 @@ dashboard/node_modules/
 dashboard/dist/
 
 # Large Data
-experiments/toolbench/data/
+*.zip
+experiments/toolbench/data/*
+!experiments/toolbench/data/data
+experiments/toolbench/data/data/*
+!experiments/toolbench/data/data/toolenv
+experiments/toolbench/data/data/toolenv/*
+!experiments/toolbench/data/data/toolenv/tools
+experiments/toolbench/data/data/toolenv/tools/*
+!experiments/toolbench/data/data/toolenv/tools/retriever_cache.pt
+
+# Also keep stable_toolbench cache per user request:
+!experiments/toolbench/data/stable_toolbench
+experiments/toolbench/data/stable_toolbench/*
+!experiments/toolbench/data/stable_toolbench/cache
+experiments/toolbench/data/stable_toolbench/cache/*
+!experiments/toolbench/data/stable_toolbench/cache/tool_response_cache
 output/
 
 # IDE

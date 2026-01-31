@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: ghcr.io/tooooa/agentmark-backend:latest
+    image: toooa908/agentmark-backend:latest
     container_name: agentmark-backend
     command: uvicorn dashboard.server.app:app --host 0.0.0.0 --port 8000
     ports:
@@ -19,7 +19,7 @@ services:
       - .env
 
   frontend:
-    image: ghcr.io/tooooa/agentmark-frontend:latest
+    image: toooa908/agentmark-frontend:latest
     container_name: agentmark-frontend
     ports:
       - "8080:80"
@@ -27,7 +27,7 @@ services:
       - backend
 
   experiments:
-    image: ghcr.io/tooooa/agentmark-backend:latest
+    image: toooa908/agentmark-backend:latest
     container_name: agentmark-experiments
     command: sleep infinity
     volumes:
